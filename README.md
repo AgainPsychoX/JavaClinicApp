@@ -34,7 +34,7 @@ System pozwala na łatwe zarządzanie szpitalem, od rejestracji wizyt przez term
 		+ np. o przełożeniu wizyty.
 	+ Moduł pacjenta
 		+ Przelądanie szczegółów wizyt (nadchodzących i poprzednich)
-		+ Dodawanie wizyt
+		+ Dodawanie wizyt (z uwzględnieniem terminarzy lekarzy)
 		+ Przekładanie wizyt
 		+ Uzupełenianie szczgółów wizyt (notatki, recepta lekarza itd.)
 	+ Moduł obsługi zasobów i personelu
@@ -71,17 +71,21 @@ System pozwala na łatwe zarządzanie szpitalem, od rejestracji wizyt przez term
 	- ...
 
 ## Przepływ informacji w środowisku systemu 
-Np. Scentralizowany oparty na bazie danych.
+
+Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danych, oczywiście pośrednio przez aplikację. 
 
 ## Użytkownicy aplikacji i ich uprawnienia 
 
 + Pacjenci
+	+ podgląd powiadomień
 	+ zapisują się do lekarzy na wizyty
 	+ mogą przeglądać swoje wizyty (w tym poprzednie poprzednie)
-	+ mogą przekładać wizyty
+	+ mogą przekładać wizyty (lekarze otrzymują powiadomienia)
 + Recepcja
+	+ podgląd powiadomień (w celu informowania pacjentów)
 	+ pośrednia obsługa pacjentów.
 + Lekarze
+	+ podgląd powiadomień
 	+ obsługują pacjentów
 	+ posiadają terminarz dostępności (zmiany mogą wymagać przełożenia wizyt)
 	+ mogą przeglądać wizyty (w tym poprzednie)
@@ -95,10 +99,30 @@ Np. Scentralizowany oparty na bazie danych.
 
 ## Interesariusze 
 
-- Interesariusze wewnętrzni 
-	- ...
 - Interesariusze zewnętrzni 
-	- ...
+	- Pacjenci - dostęp bezpośredni (logowanie na własne konto w aplikacji) albo pośredni (zarządzane przez recepcję i/lub lekarzy).
+- Interesariusze wewnętrzni 
+	- Personel szpitala (recepcja, lekarze, dyrekcja)
+	- Administrator
+
+## Przykładowe scenariusze
+
+1. Pacjent rejestruje się i zapisuje do wybranego lekarza na wizytę.
+	+ Lekarz otrzymuje powiadomienie (konfigurowalne)
+2. Lekarz przyjmuje pacjenta na wizytę i (opcjonalnie) ustawia kolejną wizytę.
+3. Rejestracja niebezpośrednia: Lekarz/Recepcja rejestruje pacjenta w systemie. 
+	+ Pacjent może (ale nie musi korzystać) dostać dane do logowania, które przy pierwszym logowaniu powinien zmienić
+4. Pacjent/Lekarz przekłada wizytę.
+	+ Nowy termin powinien być w zgodzie z terminarzem lekarza i zasobami (jeśli jakieś mają terminarz)
+	+ Powiadomienia dla lekarza/pacjenta.
+	+ Jeśli nie ma dogodnego terminu dla zasobów (lub jest odległy, lub pacjent prosi?), lekarz podejmuje manualne decyzje.
+5. Lekarz prosi o przydział zasobów szpitala dla danej wizyty.
+	+ Wyszukiwanie, 
+	+ Kategorie,
+6. Dyrekcja anuluje przydział zasobu/zawiesza zasób
+	+ Lekarz jest informowany i będzie musiał wybrać inny zasób, anulować lub przełożyć wizytę, albo
+	+ Opcjonalnie: Przekazuje inny zasób, lekarz jest proszony o potwierdzenie.
+7. Dyrekcja konfiguruje harmonogram pracy (personel) lub (cykliczne?) przerwy techniczne dla zasobu (sale, sprzęt).
 
 ## Diagramy UML
 - ###### [Diagram przypadków użycia]
@@ -112,6 +136,21 @@ Wstawić rys. diagramu UML
 
 ## Baza danych
 ###### Diagram ERD
+
++ Użytkownicy
+	+ ...
++ Wizyty
+	+ termin, (opcjonalnie) długość
+	+ mogą być przełożone (ale powinny być zgodne z terminarzami, w tym niektórych zasobów), lekarz/pacjent otrzymują powiadomienia.
+	+ łączą pacjenta, lekarza i opcjonalnie różne zasoby
+	+ mogą zawierać notatki lekarza, skierowania, recepty (?)
++ Zasoby szpitala
+	+ posiadają nazwę, mają różne typy/kategorie, zdjęcie (?)
+	+ mogą mieć terminarz (np. sale, sprzęt, personel)
+	+ mogą być zawieszone dla użycia (aktualizacja terminarza), wtedy mogą wygenerować powiadomienia dla lekarza, jeśli są powiązane wizyty.
++ Terminarz
+	+ posiada stany: ciągłe przedziały (np. dostępność)
+	+ posiada zdarzenia: pojedyncze wizyty (mogą mieć (oczekiwaną) długość)
 
 ###### Skrypt do utworzenia struktury bazy danych
 
