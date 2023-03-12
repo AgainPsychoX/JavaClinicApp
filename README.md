@@ -32,15 +32,29 @@ System pozwala na łatwe zarządzanie przychodnią, od rejestracji wizyt przez t
 	+ Logowanie i rejestracja
 	+ Komunikaty i powiadomienia
 		+ np. o przełożeniu wizyty.
-	+ Moduł pacjenta
+	+ Moduł "moje dane"
+		+ Przeglądanie (i aktualizacja) swoich danych
+    + Moduł "wizyty"
 		+ Przelądanie szczegółów wizyt (nadchodzących i poprzednich)
 		+ Dodawanie wizyt (z uwzględnieniem terminarzy lekarzy)
-		+ Przekładanie wizyt
 		+ Uzupełenianie szczgółów wizyt (notatki, recepta lekarza itd.)
-	+ Moduł obsługi personelu
-		+ Edytowanie terminarzy lekarzy
-	+ Moduł administracji użytkownikami (role)
-		+ Dodawanie kont lekarzy, recepcyjnych i pielęgniarek
+		+ Przekładanie wizyt
+    + Moduł "terminarz"
+		+ Zarządzanie terminarzem i harmonogramem
+    + Moduł "badania"
+        + zlecanie badań (lekarz)
+        + przeglądanie zleconych badań
+        + uzupełenianie danych (pielęgniarki)
+	+ Moduł "recepty"
+    	+ pacjent widzi swoje recepty
+    	+ lekarz widzi wszystkie recepty (z możliwym filtrowaniem)
+    	+ lekarz może dodawać recepty (opcjonalnie: w ramach danej wizyty)
+	+ Moduł "skierowania"
+    	+ pacjent widzi swoje skierowania
+    	+ lekarz widzi wszystkie skierowania (z możliwym filtrowaniem)
+    	+ lekarz może dodawać skierowania (opcjonalnie: w ramach danej wizyty)
+	+ Moduł administracji
+		+ Zarządzanie kontami (lekarzy, recepcyjnych i pielęgniarek)
 	+ Moduł raportów
 		+ Wypełenienie terminarzy (lekarzy, zasobów, personelu)
 		+ Zainteresowanie pacjentów (lekarze, specjalności)
@@ -158,11 +172,13 @@ Wstawić rys. diagramu UML
 	+ kategorie/tagi
 	+ opisowe
 + Recepty
+	+ opcjonalne powiązanie do wizyty
 	+ łączą pacjenta i lekarza
 	+ daty
 	+ tekst (w tym nazwy i dawkowanie, przeciwskazania itd.)
 	+ ID z systemu rządowego e-recept
 + Skierowania
+    + opcjonalne powiązanie do wizyty
 	+ łączą pacjenta i lekarza
 	+ daty
 	+ poradnia/specjalność
