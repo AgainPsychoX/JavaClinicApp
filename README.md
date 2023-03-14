@@ -39,6 +39,10 @@ System pozwala na łatwe zarządzanie przychodnią, od rejestracji wizyt przez t
 		+ Dodawanie wizyt (z uwzględnieniem terminarzy lekarzy)
 		+ Uzupełenianie szczgółów wizyt (notatki, recepta lekarza itd.)
 		+ Przekładanie wizyt
+	+ Moduł "pacjenci”
+		+ Przeglądanie i wyszukiwanie pacjentów
+		+ Dodawanie pacjentów (pośrednia rejestracja)
+		+ Nawigacja do modułów wizyt, badań, recept z filtrowaniem dla danego pacjenta
     + Moduł "terminarz"
 		+ Zarządzanie terminarzem i harmonogramem
     + Moduł "badania"
