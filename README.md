@@ -143,7 +143,7 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 
 ## Diagramy UML
 - ###### [Diagram przypadków użycia]
-	Wstawić rys. diagramu UML
+	![Screenshot](/Diagramy/Dpu.png)
 - ###### [Diagram aktywności]
 Wstawić rys. diagramu UML
 - ###### [Diagram sekwencji]
