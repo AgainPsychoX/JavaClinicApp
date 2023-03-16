@@ -144,10 +144,18 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 ## Diagramy UML
 - ###### [Diagram przypadków użycia]
 	![Screenshot](/Diagramy/Dpu.png)
-- ###### [Diagram aktywności]
-Wstawić rys. diagramu UML
-- ###### [Diagram sekwencji]
-Wstawić rys. diagramu UML
+- ###### [Diagramy aktywności]
+	![Screenshot](/Diagramy/Ustalenieterminarzaakt.png)
+	![Screenshot](/Diagramy/Rejestracjapacjentaakt.png)
+	![Screenshot](/Diagramy/Nadaniespecjalnosciakt.png)
+	![Screenshot](/Diagramy/Edycjawizytyakt.png)
+	![Screenshot](/Diagramy/Nowawizytaakt.png)
+- ###### [Diagramy sekwencji]
+	![Screenshot](/Diagramy/Edycjaterrminarzaseq.png)
+	![Screenshot](/Diagramy/Logowanieseq.png)
+	![Screenshot](/Diagramy/Nadaniespecjalnoscisek.png)
+	![Screenshot](/Diagramy/Tworzeniekontaseq.png)
+	![Screenshot](/Diagramy/Ustalenietermianrzesek.png)
 - ###### [Diagram klas]
 	Wstawić rys. diagramu UML
 
