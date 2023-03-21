@@ -100,7 +100,8 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 	+ mogą przekładać wizyty (lekarze otrzymują powiadomienia)
 + Recepcja
 	+ podgląd powiadomień (w celu informowania pacjentów)
-	+ pośrednia obsługa pacjentów.
+	+ pośrednia obsługa pacjentów.'
+	+ mogą przekładać wizyty
 + Pielęgniarki
 	+ masowe konto dla wszystkich pielęgniarek
 	+ podgląd zleconych badań
@@ -110,7 +111,6 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 	+ obsługują pacjentów
 	+ posiadają terminarz dostępności (zmiany mogą wymagać przełożenia wizyt)
 	+ mogą przeglądać wizyty (w tym poprzednie)
-	+ mogą przekładać wizyty
 + Administrator
 	+ dodawanie specjalnych kont (lekarzy, recepcji, pielęgniarek)
 	+ techniczny nadzór i dostęp do wszystkiego
@@ -134,7 +134,7 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 2. Lekarz przyjmuje pacjenta na wizytę i (opcjonalnie) ustawia kolejną wizytę.
 3. Rejestracja niebezpośrednia: Lekarz/Recepcja rejestruje pacjenta w systemie. 
 	+ Pacjent może (ale nie musi korzystać) dostać dane do logowania, które przy pierwszym logowaniu powinien zmienić
-4. Pacjent/Lekarz przekłada wizytę.
+4. Pacjent/Recepcja przekłada wizytę.
 	+ Nowy termin powinien być w zgodzie z terminarzem lekarza i zasobami (jeśli jakieś mają terminarz)
 	+ Powiadomienia dla lekarza/pacjenta.
 5. Lekarz konfiguruje swój harmonogram pracy lub dodaje urlop w terminarzu.
@@ -177,7 +177,7 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 	+ oczekiwany termin
 	+ oczekiwana długość (standardowy dla pierwszej wizyty, lub ustawiony przez lekarza)
 	+ łączą pacjenta i lekarza
-	+ mogą być przełożone (ale powinny być zgodne z terminarzami, w tym niektórych zasobów), lekarz/pacjent otrzymują powiadomienia.
+	+ mogą być przełożone przez recepcje lub pacjenta (ale powinny być zgodne z terminarzami, w tym niektórych zasobów), lekarz/pacjent otrzymują powiadomienia.
 	+ mogą zawierać notatki lekarza
 + Badania
 	+ daty utworzenia/modyfikacji
