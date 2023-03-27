@@ -75,7 +75,7 @@
                                         <Font name="Garamond Bold" size="16.0" />
                                     </font>
                                 </Button>
-                                <Button fx:id="btResources" alignment="BASELINE_LEFT" prefHeight="64.0" prefWidth="364.0" style="-fx-background-color: A4C2FD;" text="Wyloguj się" textFill="#ec0000">
+                                <Button fx:id="logoutButton" onAction="#logout" alignment="BASELINE_LEFT" prefHeight="64.0" prefWidth="364.0" style="-fx-background-color: A4C2FD;" text="Wyloguj się" textFill="#ec0000">
                                     <padding>
                                         <Insets left="10" />
                                     </padding>

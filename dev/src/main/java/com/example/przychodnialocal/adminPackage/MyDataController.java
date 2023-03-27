@@ -51,4 +51,9 @@ public class MyDataController {
         surnameTextField.setDisable(false);
     }
 
+    @FXML
+    void logout(ActionEvent event) throws IOException {
+//        TODO
+    }
+
 }

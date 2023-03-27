@@ -75,4 +75,9 @@ public class EditController {
         Parent newView = loader.load();
         contentAnchorPane.getChildren().setAll(newView);
     }
+
+    @FXML
+    void logout(ActionEvent event) throws IOException {
+//        TODO
+    }
 }

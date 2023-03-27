@@ -92,4 +92,10 @@ public class MainViewController {
         examinationsButton.setStyle("-fx-background-color: #A4C2FD");
         myDataButton.setStyle("-fx-background-color:  #284C92");
     }
+
+
+    @FXML
+    void logout(ActionEvent event) throws IOException {
+//        TODO
+    }
 }
