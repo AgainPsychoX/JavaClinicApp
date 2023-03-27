@@ -9,17 +9,5 @@ import javafx.scene.layout.AnchorPane;
 
 public class PrescriptionsController {
 
-    @FXML
-    private AnchorPane contentAnchorPane;
-
-    @FXML
-    private TableView<?> prescriptionsTableView;
-
-    @FXML
-    private Button returnButton;
-
-    @FXML
-    private TextField searchPrescriptionsTextField;
-
 
 }

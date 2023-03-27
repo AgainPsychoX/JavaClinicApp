@@ -14,13 +14,7 @@ import java.io.IOException;
 public class MainViewController {
 
     @FXML
-    private Button btResources;
-
-    @FXML
     private AnchorPane contentAnchorPane;
-
-    @FXML
-    private Button deleteNotificationsButton;
 
     @FXML
     private Button examinationsButton;
@@ -31,20 +25,9 @@ public class MainViewController {
     @FXML
     private Button notificationsButton;
 
-    @FXML
-    private TableView<?> notificationsTableView;
 
     @FXML
     private Button prescriptionsButton;
-
-    @FXML
-    private TextField searchNotificationsTextField;
-
-    @FXML
-    private AnchorPane topBar;
-
-    @FXML
-    private Button unreadButton;
 
     @FXML
     private Button visitsButton;
@@ -108,40 +91,5 @@ public class MainViewController {
         prescriptionsButton.setStyle("-fx-background-color: #A4C2FD");
         examinationsButton.setStyle("-fx-background-color: #A4C2FD");
         myDataButton.setStyle("-fx-background-color:  #284C92");
-    }
-
-    public static class MyDataController {
-
-        @FXML
-        private Button btResources;
-
-        @FXML
-        private Button scheduleButton;
-
-        @FXML
-        private Button usersButton;
-
-        @FXML
-        private Button visitsButton;
-
-        @FXML
-        void accountsButton(ActionEvent event) {
-
-        }
-
-        @FXML
-        void myDataButton(ActionEvent event) {
-
-        }
-
-        @FXML
-        void notificationsButton(ActionEvent event) {
-
-        }
-
-        @FXML
-        void editData(ActionEvent event){
-            System.out.println("Edycja");
-        }
     }
 }

@@ -7,11 +7,11 @@
 
 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="366.0" prefWidth="436.0" style="-fx-background-color: #E4E4E4;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/19" fx:controller="com.example.przychodnialocal.patient.MyDataController">
    <children>
-      <Button fx:id="editButton" layoutX="139.0" layoutY="312.0" mnemonicParsing="false" onAction="#editData" prefHeight="26.0" prefWidth="75.0" style="-fx-background-color: #4D89FF;" text="Edytuj" textFill="WHITE" />
-      <Button disable="true" layoutX="227.0" layoutY="312.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="75.0" style="-fx-background-color: #4D89FF;" text="Zapisz" textFill="WHITE" />
-      <TextField disable="true" layoutX="38.0" layoutY="40.0" text="Adam" />
-      <TextField disable="true" layoutX="39.0" layoutY="104.0" text="Kowalski" />
+      <Button fx:id="editButton" layoutX="183.0" layoutY="832.0" mnemonicParsing="false" onAction="#editData" prefHeight="62.0" prefWidth="315.0" style="-fx-background-color: #4D89FF;" text="Edytuj" textFill="WHITE" />
+      <Button disable="true" layoutX="643.0" layoutY="832.0" mnemonicParsing="false" prefHeight="62.0" prefWidth="315.0" style="-fx-background-color: #4D89FF;" text="Zapisz" textFill="WHITE" />
+      <TextField prefHeight="51.0" prefWidth="322.0" fx:id="nameTextField" disable="true" layoutX="38.0" layoutY="40.0" text="Adam" />
+      <TextField prefHeight="51.0" prefWidth="322.0" fx:id="surnameTextField" disable="true" layoutX="39.0" layoutY="124.0" text="Kowalski" />
       <Text layoutX="39.0" layoutY="36.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Imię" />
-      <Text layoutX="39.0" layoutY="100.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Nazwisko" />
+      <Text layoutX="39.0" layoutY="120.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Nazwisko" />
    </children>
 </AnchorPane>

@@ -11,22 +11,8 @@ import javafx.scene.layout.AnchorPane;
 public class VisitsController {
 
     @FXML
-    private AnchorPane contentAnchorPane;
-
-    @FXML
-    private Button createVisitButton;
-
-    @FXML
-    private TableView<?> notificationsTableView;
-
-    @FXML
-    private Button oldVisitsButton;
-
-    @FXML
     private Button returnButton;
 
-    @FXML
-    private TextField searchNotificationsTextField;
 
     @FXML
     private Label visitsLabel;
