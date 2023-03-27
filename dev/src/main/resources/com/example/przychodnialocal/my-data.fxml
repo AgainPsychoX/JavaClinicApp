@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Text?>
+
+<!--<AnchorPane fx:controller="com.example.przychodnialocal.patient.MainViewController.MyDataController" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #E4E4E4;" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1">-->
+<!--   <children>-->
+<!--      <AnchorPane prefHeight="32.0" prefWidth="600.0" style="-fx-background-color: #3F80FF;">-->
+<!--         <children>-->
+<!--            <Text fill="WHITE" layoutX="14.0" layoutY="21.0" strokeType="OUTSIDE" strokeWidth="0.0" text="+LOGO" />-->
+<!--            <Text fill="WHITE" layoutX="422.0" layoutY="20.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Zalogowany jako: Adam Kowalski">-->
+<!--               <font>-->
+<!--                  <Font name="Gill Sans MT" size="12.0" />-->
+<!--               </font>-->
+<!--            </Text>-->
+<!--            <Text fill="#0047ff" layoutX="68.0" layoutY="21.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Administrator">-->
+<!--               <font>-->
+<!--                  <Font name="Garamond Bold" size="18.0" />-->
+<!--               </font>-->
+<!--            </Text>-->
+<!--         </children>-->
+<!--      </AnchorPane>-->
+<!--      <SplitPane dividerPositions="0.257687165775401" layoutY="32.0" prefHeight="368.0" prefWidth="600.0">-->
+<!--         <items>-->
+<!--            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" style="-fx-background-color: #A4C2FD;">-->
+<!--               <children>-->
+<!--                  <VBox alignment="TOP_LEFT" prefHeight="172.0" prefWidth="151.0" spacing="10">-->
+<!--                     <children>-->
+<!--                        <Button fx:id="usersButton" alignment="BASELINE_LEFT" onAction="#notificationsButton" prefHeight="35.0" prefWidth="200.0" style="-fx-background-color: A4C2FD;" text="Powiadomienia" textFill="WHITE">-->
+<!--                           <padding>-->
+<!--                              <Insets left="10" />-->
+<!--                           </padding>-->
+<!--                           <font>-->
+<!--                              <Font name="Garamond Bold" size="16.0" />-->
+<!--                           </font>-->
+<!--                        </Button>-->
+<!--                        <Button fx:id="visitsButton" alignment="BASELINE_LEFT" onAction="#accountsButton" prefHeight="35.0" prefWidth="364.0" style="-fx-background-color: A4C2FD;" text="Zarządzaj kontami" textFill="WHITE">-->
+<!--                           <padding>-->
+<!--                              <Insets left="10" />-->
+<!--                           </padding>-->
+<!--                           <font>-->
+<!--                              <Font name="Garamond Bold" size="16.0" />-->
+<!--                           </font>-->
+<!--                        </Button>-->
+<!--                        <Button fx:id="scheduleButton" alignment="BASELINE_LEFT" onAction="#myDataButton" prefHeight="35.0" prefWidth="364.0" style="-fx-background-color: #284C92;" text="Moje dane" textFill="WHITE">-->
+<!--                           <padding>-->
+<!--                              <Insets left="10" />-->
+<!--                           </padding>-->
+<!--                           <font>-->
+<!--                              <Font name="Garamond Bold" size="16.0" />-->
+<!--                           </font>-->
+<!--                        </Button>-->
+<!--                        <Button fx:id="btResources" alignment="BASELINE_LEFT" prefHeight="35.0" prefWidth="364.0" style="-fx-background-color: A4C2FD;" text="Wyloguj się" textFill="#ec0000">-->
+<!--                           <padding>-->
+<!--                              <Insets left="10" />-->
+<!--                           </padding>-->
+<!--                           <font>-->
+<!--                              <Font name="Garamond Bold" size="16.0" />-->
+<!--                           </font>-->
+<!--                        </Button>-->
+<!--                     </children>-->
+<!--                  </VBox>-->
+<!--               </children>-->
+<!--            </AnchorPane>-->
+<!--         </items>-->
+<!--      </SplitPane>-->
+<!--   </children>-->
+<!--</AnchorPane>-->
+<!--<?xml version="1.0" encoding="UTF-8"?>-->
+<!--<?import javafx.geometry.Insets?>-->
+<!--<?import javafx.scene.control.Button?>-->
+<!--<?import javafx.scene.control.Label?>-->
+<!--<?import javafx.scene.control.Menu?>-->
+<!--<?import javafx.scene.control.MenuBar?>-->
+<!--<?import javafx.scene.control.MenuItem?>-->
+<!--<?import javafx.scene.layout.BorderPane?>-->
+<!--<?import javafx.scene.layout.VBox?>-->
+<!--<?import javafx.scene.text.Font?>-->
+<!--<BorderPane fx:id="borderPane" fx:controller="com.example.przychodnialocal.patient.MainViewController.MyDataController" prefHeight="1024" prefWidth="1440" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1">-->
+<!--&lt;!&ndash;   <top>&ndash;&gt;-->
+<!--&lt;!&ndash;      <MenuBar style="-fx-background-color: 0047FF;" BorderPane.alignment="CENTER">&ndash;&gt;-->
+<!--&lt;!&ndash;         <menus>&ndash;&gt;-->
+<!--&lt;!&ndash;            <Menu text="Logo" />&ndash;&gt;-->
+<!--&lt;!&ndash;            <Menu text="Administrator">&ndash;&gt;-->
+<!--&lt;!&ndash;               <items>&ndash;&gt;-->
+<!--&lt;!&ndash;                  <MenuItem text="1" />&ndash;&gt;-->
+<!--&lt;!&ndash;                  <MenuItem text="2" />&ndash;&gt;-->
+<!--&lt;!&ndash;                  <MenuItem text="2" />&ndash;&gt;-->
+<!--&lt;!&ndash;               </items>&ndash;&gt;-->
+<!--&lt;!&ndash;            </Menu>&ndash;&gt;-->
+<!--&lt;!&ndash;            <Menu mnemonicParsing="false" text="Unspecified Menu" />&ndash;&gt;-->
+<!--&lt;!&ndash;         </menus>&ndash;&gt;-->
+<!--&lt;!&ndash;      </MenuBar>&ndash;&gt;-->
+<!--&lt;!&ndash;   </top>&ndash;&gt;-->
+<!--&lt;!&ndash;   <left>&ndash;&gt;-->
+<!--&lt;!&ndash;      <VBox prefHeight="600" prefWidth="200" style="-fx-background-color: A4C2FD;">&ndash;&gt;-->
+<!--&lt;!&ndash;         <children>&ndash;&gt;-->
+<!--&lt;!&ndash;            <VBox alignment="TOP_LEFT" spacing="10">&ndash;&gt;-->
+<!--&lt;!&ndash;               <children>&ndash;&gt;-->
+<!--&lt;!&ndash;                  <Button fx:id="usersButton" alignment="BASELINE_LEFT" onAction="#notificationsButton" prefHeight="64.0" prefWidth="200.0" style="-fx-background-color: A4C2FD;" text="Powiadomienia" textFill="WHITE">&ndash;&gt;-->
+<!--&lt;!&ndash;                     <padding>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <Insets left="10" />&ndash;&gt;-->
+<!--&lt;!&ndash;                     </padding>&ndash;&gt;-->
+<!--&lt;!&ndash;                     <font>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <Font size="16.0" />&ndash;&gt;-->
+<!--&lt;!&ndash;                     </font>&ndash;&gt;-->
+<!--&lt;!&ndash;                  </Button>&ndash;&gt;-->
+<!--&lt;!&ndash;                  <Button fx:id="visitsButton" alignment="BASELINE_LEFT" onAction="#accountsButton" prefHeight="64.0" prefWidth="364.0" style="-fx-background-color: A4C2FD;" text="Zarządzaj kontami" textFill="WHITE">&ndash;&gt;-->
+<!--&lt;!&ndash;                     <padding>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <Insets left="10" />&ndash;&gt;-->
+<!--&lt;!&ndash;                     </padding>&ndash;&gt;-->
+<!--&lt;!&ndash;                     <font>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <Font size="16.0" />&ndash;&gt;-->
+<!--&lt;!&ndash;                     </font>&ndash;&gt;-->
+<!--&lt;!&ndash;                  </Button>&ndash;&gt;-->
+<!--&lt;!&ndash;                  <Button fx:id="scheduleButton" alignment="BASELINE_LEFT" onAction="#myDataButton" prefHeight="64.0" prefWidth="364.0" style="-fx-background-color: A4C2FD;" text="Moje dane" textFill="WHITE">&ndash;&gt;-->
+<!--&lt;!&ndash;                     <padding>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <Insets left="10" />&ndash;&gt;-->
+<!--&lt;!&ndash;                     </padding>&ndash;&gt;-->
+<!--&lt;!&ndash;                     <font>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <Font size="16.0" />&ndash;&gt;-->
+<!--&lt;!&ndash;                     </font>&ndash;&gt;-->
+<!--&lt;!&ndash;                  </Button>&ndash;&gt;-->
+<!--&lt;!&ndash;                  <Button fx:id="btResources" alignment="BASELINE_LEFT" prefHeight="64.0" prefWidth="364.0" style="-fx-background-color: A4C2FD;" text="Wyloguj się" textFill="#ff2e2e">&ndash;&gt;-->
+<!--&lt;!&ndash;                     <padding>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <Insets left="10" />&ndash;&gt;-->
+<!--&lt;!&ndash;                     </padding>&ndash;&gt;-->
+<!--&lt;!&ndash;                     <font>&ndash;&gt;-->
+<!--&lt;!&ndash;                        <Font size="16.0" />&ndash;&gt;-->
+<!--&lt;!&ndash;                     </font>&ndash;&gt;-->
+<!--&lt;!&ndash;                  </Button>&ndash;&gt;-->
+<!--&lt;!&ndash;               </children>&ndash;&gt;-->
+<!--&lt;!&ndash;            </VBox>&ndash;&gt;-->
+<!--&lt;!&ndash;         </children>&ndash;&gt;-->
+<!--&lt;!&ndash;      </VBox>&ndash;&gt;-->
+<!--&lt;!&ndash;   </left>&ndash;&gt;-->
+<!--   <center>-->
+<!--      <VBox prefHeight="436.0" prefWidth="1039.0" spacing="10.0" BorderPane.alignment="CENTER_LEFT">-->
+<!--         <BorderPane.margin>-->
+<!--            <Insets />-->
+<!--         </BorderPane.margin>-->
+<!--         <children>-->
+<!--            <Label alignment="CENTER" prefHeight="63.0" prefWidth="1039.0" text="Imię" textAlignment="CENTER" />-->
+<!--            <Button mnemonicParsing="false" prefHeight="63.0" prefWidth="1039.0" text="Pacjent" />-->
+<!--            <Button mnemonicParsing="false" prefHeight="63.0" prefWidth="1039.0" text="Lekarz" />-->
+<!--            <Button mnemonicParsing="false" prefHeight="63.0" prefWidth="1039.0" text="Pielęgniarka" />-->
+<!--            <Button mnemonicParsing="false" prefHeight="63.0" prefWidth="1039.0" text="Recepcja" />-->
+<!--            <Button mnemonicParsing="false" prefHeight="63.0" prefWidth="1039.0" text="Administrator" />-->
+<!--         </children>-->
+<!--      </VBox>-->
+<!--   </center>-->
+<!--</BorderPane>-->
+
+<AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="366.0" prefWidth="436.0" style="-fx-background-color: #E4E4E4;" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/19" fx:controller="com.example.przychodnialocal.patient.MainViewController.MyDataController">
+   <children>
+      <Button fx:id="editButton" layoutX="139.0" layoutY="312.0" mnemonicParsing="false" onAction="#editData" prefHeight="26.0" prefWidth="75.0" style="-fx-background-color: #4D89FF;" text="Edytuj" textFill="WHITE" />
+      <Button disable="true" layoutX="227.0" layoutY="312.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="75.0" style="-fx-background-color: #4D89FF;" text="Zapisz" textFill="WHITE" />
+      <TextField disable="true" layoutX="38.0" layoutY="40.0" text="Adam" />
+      <TextField disable="true" layoutX="39.0" layoutY="104.0" text="Kowalski" />
+      <Text layoutX="39.0" layoutY="36.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Imię" />
+      <Text layoutX="39.0" layoutY="100.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Nazwisko" />
+   </children>
+</AnchorPane>
