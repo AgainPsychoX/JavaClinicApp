@@ -80,6 +80,10 @@ System pozwala na łatwe zarządzanie przychodnią, od rejestracji wizyt przez t
 - Zakładka ustawień 
 ...
 
+## Design 
+
+https://www.figma.com/team_invite/redeem/x6u8JQFmyBvkORG4VOMaAp
+
 ## Typy wymaganych dokumentów w projekcie oraz dostęp do nich 
 
 - Raporty PDF 
