@@ -13,43 +13,7 @@ import java.io.IOException;
 public class MyDataController {
 
     @FXML
-    private Button btResources;
-
-    @FXML
     private AnchorPane contentAnchorPane;
-
-    @FXML
-    private Button deleteNotificationsButton;
-
-    @FXML
-    private Button examinationsButton;
-
-    @FXML
-    private Button myDataButton;
-
-    @FXML
-    private Button notificationsButton;
-
-    @FXML
-    private TableView<?> notificationsTableView;
-
-    @FXML
-    private Button prescriptionsButton;
-
-    @FXML
-    private TextField searchNotificationsTextField;
-
-    @FXML
-    private AnchorPane topBar;
-
-    @FXML
-    private Button unreadButton;
-
-    @FXML
-    private Button visitsButton;
-
-    @FXML
-    private Button editButton;
 
     @FXML
     private TextField nameTextField;
@@ -68,7 +32,7 @@ public class MyDataController {
 
     @FXML
     void editButton(ActionEvent event) throws IOException {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("edit-default.fxml"));
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("edit/edit-default.fxml"));
         Parent newView = loader.load();
         contentAnchorPane.getChildren().setAll(newView);
 

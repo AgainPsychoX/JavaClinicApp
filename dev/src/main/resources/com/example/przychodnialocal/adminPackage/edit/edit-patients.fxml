@@ -74,7 +74,7 @@
 
             <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="366.0" prefWidth="436.0" style="-fx-background-color: #E4E4E4;">
                <children>
-                  <Text fill="#3f80ff" layoutX="28.0" layoutY="66.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Lekarze" wrappingWidth="85.60000000000014">
+                  <Text fill="#3f80ff" layoutX="28.0" layoutY="66.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Pacjenci">
                      <font>
                         <Font name="Garamond Bold" size="24.0" />
                      </font>
@@ -91,9 +91,8 @@
                        <TableColumn prefWidth="204.0" text="Specjalizacja" />
                     </columns>
                   </TableView>
-                  <Button layoutX="100.0" layoutY="800.0" mnemonicParsing="false" prefHeight="62.0" prefWidth="222.0" style="-fx-background-color: #4D89FF;" text="Wyświetl terminarz" textFill="WHITE" />
-                  <Button layoutX="400.0" layoutY="800.0" mnemonicParsing="false" prefHeight="62.0" prefWidth="222.0" style="-fx-background-color: #4D89FF;" text="Edytuj" textFill="WHITE" />
-                  <Button layoutX="700.0" layoutY="800.0" mnemonicParsing="false" prefHeight="62.0" prefWidth="222.0" style="-fx-background-color: #4D89FF;" text="Usuń" textFill="WHITE" />
+                  <Button layoutX="300.0" layoutY="800.0" mnemonicParsing="false" prefHeight="62.0" prefWidth="222.0" style="-fx-background-color: #4D89FF;" text="Edytuj" textFill="WHITE" />
+                  <Button layoutX="600.0" layoutY="800.0" mnemonicParsing="false" prefHeight="62.0" prefWidth="222.0" style="-fx-background-color: #4D89FF;" text="Usuń" textFill="WHITE" />
                   <TextField layoutX="860.0" layoutY="61.0" />
                   <Text layoutX="800.0" layoutY="77.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Wyszukaj:" />
                </children>
