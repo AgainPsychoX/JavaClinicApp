@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<BorderPane fx:id="contentPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="300.0" minWidth="400.0" prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.MainWindowController">
+   <left>
+      <ScrollPane fitToWidth="true" hbarPolicy="NEVER" prefWidth="200.0" style="-fx-background-color: #A4C2FD;" stylesheets="@common.css" vmin="1.0" vvalue="1.0" BorderPane.alignment="TOP_CENTER">
+         <content>
+            <VBox fx:id="navigationButtons" alignment="TOP_CENTER" spacing="8.0" />
+         </content></ScrollPane>
+   </left>
+   <top>
+      <HBox alignment="CENTER_LEFT" maxHeight="40.0" prefHeight="40.0" spacing="8.0" style="-fx-background-color: #3F80FF;" BorderPane.alignment="CENTER">
+         <children>
+            <HBox alignment="CENTER_RIGHT" spacing="8.0">
+               <children>
+                  <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="+LOGO">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Text>
+                  <Text fx:id="roleText" fill="#0047ff" strokeType="OUTSIDE" strokeWidth="0.0" text="Administrator">
+                     <font>
+                        <Font size="16.0" />
+                     </font>
+                  </Text>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+               <children>
+                  <Text fx:id="loggedAsText" fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="Zalogowano jako Adam Nowiński" />
+               </children>
+            </HBox>
+         </children>
+         <padding>
+            <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+         </padding>
+      </HBox>
+   </top>
+</BorderPane>

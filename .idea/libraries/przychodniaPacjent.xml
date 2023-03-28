@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="przychodniaPacjent">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/przychodniaPacjent.zip!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>
