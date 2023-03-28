@@ -12,6 +12,16 @@ public class User {
         public boolean isGroupUser() {
             return this == RECEPTIONIST || this == NURSE;
         }
+
+        public String toString() {
+            // TODO: when we have localization it will look much nicer
+            if (this == PATIENT)      return "Pacjent";
+            if (this == RECEPTIONIST) return "Recepcja";
+            if (this == NURSE)        return "Pielęgniarka";
+            if (this == DOCTOR)       return "Lekarz";
+            if (this == ADMIN)        return "Administrator";
+            return this.name();
+        }
     }
 
     public Role role;
@@ -25,7 +35,7 @@ public class User {
 
     static public User authorize(String emailOrPESEL, String password) {
         // TODO: actual authentication
-        if (password.equals("JKB&PZ123")) {
+        if (password.equals("asdf1234")) {
             if (emailOrPESEL.equals(MockPatient.email) || emailOrPESEL.equals(MockPatient.pesel)) return MockPatient;
             if (emailOrPESEL.equals(MockReceptionist.email)) return MockReceptionist;
             if (emailOrPESEL.equals(MockNurses.email)) return MockNurses;

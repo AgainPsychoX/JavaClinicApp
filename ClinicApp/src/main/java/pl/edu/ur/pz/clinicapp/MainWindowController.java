@@ -69,6 +69,8 @@ public class MainWindowController implements Initializable {
 
     @FXML private Text loggedAsText;
 
+    @FXML private Text roleText;
+
     public Window getWindow() {
         return this.contentPane.getScene().getWindow();
     }
@@ -131,7 +133,15 @@ public class MainWindowController implements Initializable {
         historyTracker = new HistoryTracker<>();
 
         // Update displayed names if any
-        loggedAsText.setText("Zalogowany jako " + ClinicApplication.user.name + " " + ClinicApplication.user.surname);
+        if (ClinicApplication.user.name != null) {
+            if (ClinicApplication.user.surname != null) {
+                loggedAsText.setText("Zalogowany jako " + ClinicApplication.user.name + " " + ClinicApplication.user.surname);
+            }
+            else {
+                loggedAsText.setText("Zalogowany jako " + ClinicApplication.user.name);
+            }
+        }
+        roleText.setText(ClinicApplication.user.role.toString());
 
         // Populate navigation menu
         {
@@ -161,6 +171,8 @@ public class MainWindowController implements Initializable {
             c.add(new Button("Wyloguj się") {{
                 this.getStyleClass().addAll("navigation-menu-button", "log-out");
                 this.setOnAction((e) -> {
+                    // Log-out is necessary here, even tho there already is `setOnCloseRequest` for the stage,
+                    // as it just catches window event.
                     ClinicApplication.logOut();
                     getStage().close();
                 });
@@ -172,7 +184,7 @@ public class MainWindowController implements Initializable {
         // TODO: if pending notifications, start with notification view
         switch (ClinicApplication.user.role) {
             case PATIENT -> goToView(Views.VISITS);
-            case DOCTOR -> goToView(Views.SCHEDULE);
+            case DOCTOR -> goToView(Views.PATIENTS);
             default -> goToView(Views.NOTIFICATIONS);
         }
     }
