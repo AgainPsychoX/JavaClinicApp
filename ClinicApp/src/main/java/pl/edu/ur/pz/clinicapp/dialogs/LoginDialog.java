@@ -96,12 +96,12 @@ public class LoginDialog extends Stage {
 
     private void logInUsingRememberedData(String identity, String password) {
         pane.setCenter(loadingView);
-        final boolean success = ClinicApplication.logIn(identity, password);
 
-        if (success) {
+        try {
+            ClinicApplication.logIn(identity, password);
             super.close();
         }
-        else {
+        catch (Exception e) {
             pane.setCenter(logInForm);
             passwordField.clear();
             errorText.setText("Zapamiętane dane logowania są nieprawidłowe. Zaloguj się ponownie.");
@@ -119,12 +119,12 @@ public class LoginDialog extends Stage {
         // TODO: simple validation before even trying to log-in
 
         pane.setCenter(loadingView);
-        final boolean success = ClinicApplication.logIn(identity, password);
 
-        if (success) {
+        try {
+            ClinicApplication.logIn(identity, password);
             super.close();
         }
-        else {
+        catch (Exception e) {
             pane.setCenter(logInForm);
             passwordField.clear();
             errorText.setText("Nieprawidłowe dane logowania!");

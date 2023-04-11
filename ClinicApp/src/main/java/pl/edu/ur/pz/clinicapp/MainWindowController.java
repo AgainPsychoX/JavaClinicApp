@@ -133,15 +133,12 @@ public class MainWindowController implements Initializable {
         historyTracker = new HistoryTracker<>();
 
         // Update displayed names if any
-        if (ClinicApplication.user.name != null) {
-            if (ClinicApplication.user.surname != null) {
-                loggedAsText.setText("Zalogowany jako " + ClinicApplication.user.name + " " + ClinicApplication.user.surname);
-            }
-            else {
-                loggedAsText.setText("Zalogowany jako " + ClinicApplication.user.name);
-            }
+        final var displayName = ClinicApplication.getUser().getDisplayName();
+        final var role = ClinicApplication.getUser().getRole();
+        if (displayName != null) {
+            loggedAsText.setText("Zalogowany jako " + displayName);
         }
-        roleText.setText(ClinicApplication.user.role.toString());
+        roleText.setText(ClinicApplication.getUser().getRole().toString());
 
         // Populate navigation menu
         {
@@ -149,12 +146,12 @@ public class MainWindowController implements Initializable {
 
             // TODO: notifications button should include red dot when there are any unread
             c.add(buttonForNavigationMenu("Powiadomienia", (e) -> goToView(Views.NOTIFICATIONS)));
-            if (!ClinicApplication.user.role.isGroupUser()) {
-                c.add(buttonForNavigationMenu("Moje dane", (e) -> goToView(Views.ACCOUNT_DETAILS, ClinicApplication.user)));
+            if (!role.isGroupUser()) {
+                c.add(buttonForNavigationMenu("Moje dane", (e) -> goToView(Views.ACCOUNT_DETAILS, ClinicApplication.getUser())));
             }
 
-            if (ClinicApplication.user.role == User.Role.PATIENT) {
-                c.add(buttonForNavigationMenu("Wizyty", (e) -> goToView(Views.VISITS, ClinicApplication.user)));
+            if (role == User.Role.PATIENT) {
+                c.add(buttonForNavigationMenu("Wizyty", (e) -> goToView(Views.VISITS, ClinicApplication.getUser())));
             }
             else {
                 c.add(buttonForNavigationMenu("Wizyty", (e) -> goToView(Views.VISITS)));
@@ -163,7 +160,7 @@ public class MainWindowController implements Initializable {
                 c.add(buttonForNavigationMenu("Skierowania", (e) -> goToView(Views.REFERRALS)));
             }
 
-            if (ClinicApplication.user.role == User.Role.ADMIN) {
+            if (role == User.Role.ADMIN) {
                 c.add(buttonForNavigationMenu("Zarządzanie kontami", (e) -> goToView(Views.ACCOUNTS)));
                 c.add(buttonForNavigationMenu("Raporty", (e) -> goToView(Views.REPORTS)));
             }
@@ -182,7 +179,7 @@ public class MainWindowController implements Initializable {
         // Choose initial view
         // TODO: happy welcome/dashboard screen? even if user would only see it once
         // TODO: if pending notifications, start with notification view
-        switch (ClinicApplication.user.role) {
+        switch (role) {
             case PATIENT -> goToView(Views.VISITS);
             case DOCTOR -> goToView(Views.PATIENTS);
             default -> goToView(Views.NOTIFICATIONS);
@@ -235,4 +232,6 @@ public class MainWindowController implements Initializable {
             view.controller.refresh();
         }
     }
+
+
 }
