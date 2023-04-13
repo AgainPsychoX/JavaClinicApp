@@ -38,9 +38,9 @@ public class Referral extends MedicalHistoryEntry {
     }
 
     /**
-     * Date of fulfilment of the referral (when extra medical examinations took place and the feedback data was added).
+     * Date of fulfilment of the referral (when extra medical examinations took place). Null if unknown or not fulfilled yet.
      */
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Timestamp fulfilmentDate;
     public Timestamp getFulfilmentDate() {
         return fulfilmentDate;
@@ -50,14 +50,26 @@ public class Referral extends MedicalHistoryEntry {
     }
 
     /**
-     * Feedback information of the referral being fulfilled.
+     * Feedback information of the referral being fulfilled. Null if unknown or not fulfilled yet.
      */
-    @Column(nullable = false, length = 800)
+    @Column(nullable = true, length = 800)
     private String feedback;
     public String getFeedback() {
         return feedback;
     }
     public void setFeedback(String feedback) {
         this.feedback = feedback;
+    }
+
+    /**
+     * Government assigned ID for prescriptions (Polish "e-skierowanie").
+     */
+    @Column(length = 80, nullable = true)
+    private String governmentId;
+    public String setGovernmentId() {
+        return governmentId;
+    }
+    public void setGovernmentId(String governmentId) {
+        this.governmentId = governmentId;
     }
 }

@@ -19,15 +19,13 @@ public class Schedule {
     }
 
     // TODO: get all entries for given user in given time range (i.e. week, month)
+    //       include medical appointments (for user)
 
     /**
      * Schedule entries represent already allocated time in the schedule.
      */
     @Entity
     @Table(name = "schedule_entries")
-    @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-    @DiscriminatorColumn(name = "Type", discriminatorType = DiscriminatorType.INTEGER)
-    @DiscriminatorValue("0")
     public static class Entry {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -71,7 +69,6 @@ public class Schedule {
 
         public enum Type {
             NONE,
-            APPOINTMENT,
             VACATION,
             HOLIDAYS,
             SICK_LEAVE,
@@ -84,17 +81,6 @@ public class Schedule {
         private Type type;
         public Type getType() {
             return type;
-        }
-    }
-
-    @Entity
-    @DiscriminatorValue("1") // needs to be string constant of Entry.Type enum value ordinal.
-    public static class AppointmentEntry extends Entry {
-        @ManyToOne(fetch = FetchType.LAZY, optional = false)
-        @JoinColumn(name = "appointment_id", referencedColumnName = "id", nullable = true) // nullable, as it's the same table
-        private Appointment appointment;
-        public Appointment getAppointment() {
-            return appointment;
         }
     }
 }
