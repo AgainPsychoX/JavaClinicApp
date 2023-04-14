@@ -12,6 +12,7 @@
 		<class>pl.edu.ur.pz.clinicapp.models.MedicalHistoryEntry</class>
 		<class>pl.edu.ur.pz.clinicapp.models.Notification</class>
 		<class>pl.edu.ur.pz.clinicapp.models.Patient</class>
+		<class>pl.edu.ur.pz.clinicapp.models.Prescription</class>
 		<class>pl.edu.ur.pz.clinicapp.models.Referral</class>
 		<class>pl.edu.ur.pz.clinicapp.models.Schedule.Entry</class>
 		<class>pl.edu.ur.pz.clinicapp.models.Schedule.AppointmentEntry</class>
