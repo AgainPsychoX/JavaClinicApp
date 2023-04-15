@@ -165,7 +165,7 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 
 ## Baza danych
 ###### Diagram ERD
-
+![Screenshot](/Diagramy/ERD.jpg)
 + Użytkownicy
 	+ dane do logowania
 	+ dane kontaktowe
