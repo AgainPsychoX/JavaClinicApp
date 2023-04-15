@@ -166,27 +166,27 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 ## Baza danych
 ###### Diagram ERD
 ![Screenshot](/Diagramy/ERD.jpg)
+
+###### Opis bazy danych
 + Użytkownicy
 	+ dane do logowania
-	+ dane kontaktowe
-	+ ...
-	+ Role (pacjent, lekarz, administrator)
+	+ dane kontaktowe (Imie, Nazwisko, nr.Tel)
+	+ Role (pielegniarka, lekarz, administrator)
 + Lekarze
 	+ specjalność
-	+ harmonogram (dni i godziny przyjęć)
-+ Specjalności
+	+ harmonogram (kazdy dzien ma godzine zaczęcia i rozpoczecia dostępności)
++ Specjalności lekarzy
 	+ nazwa
 	+ standardowy oczekiwany czas wizyty
++ Pacjenci
+	+ adres
+	+ PESEL
 + Wizyty
 	+ oczekiwany termin
 	+ oczekiwana długość (standardowy dla pierwszej wizyty, lub ustawiony przez lekarza)
-	+ łączą pacjenta i lekarza
 	+ mogą być przełożone przez recepcje lub pacjenta (ale powinny być zgodne z terminarzami, w tym niektórych zasobów), lekarz/pacjent otrzymują powiadomienia.
 	+ mogą zawierać notatki lekarza
-+ Badania
-	+ daty utworzenia/modyfikacji
-	+ kategorie/tagi
-	+ opisowe
+	+ łączą pacjenta i lekarza
 + Recepty
 	+ opcjonalne powiązanie do wizyty
 	+ łączą pacjenta i lekarza
@@ -208,23 +208,20 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
   	+ system tworzy wstępne przedziały wg. harmonogramu lekarza (dni i godziny przyjęć w ciągu tygodnia).
   	+ lekarz może uzupełnić na przyszłość terminarz (urlopy, sytuacje losowe itd)
 + Powiadomonienia
-	+ konto źródłowe (opcjonalne?)
+	+ konto źródłowe
 	+ konto docelowe
-	+ data
+	+ data wysłania
+	+ data przeczytania 
 	+ treść
-	+ status
-	+ typ
-	+ opcjonalnie powiazany element (np. wizyta, która jest do przełożenia)
 
 ###### Skrypt do utworzenia struktury bazy danych
 
-###### Opis bazy danych
 
 ## Wykorzystane technologie 
 - Język Java 17
 	- JavaFX
-	- ...
-- Baza danych MySQL
+	- Hibernate
+- Baza danych PostgreSQL
 - Inne z opisem
 
 ## Pliki instalacyjne wraz z opisem instalacji i konfiguracji wraz pierwszego uruchomienia
