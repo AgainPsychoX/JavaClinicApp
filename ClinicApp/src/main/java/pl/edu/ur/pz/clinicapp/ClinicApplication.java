@@ -106,11 +106,13 @@ public class ClinicApplication extends Application {
         disconnectFromDatabase();
         try {
             // We shadow default (anonymous) login details from `persistence.xml` with user specific ones.
+//            TODO fix this facory
             entityManagerFactory = Persistence.createEntityManagerFactory("default", Map.ofEntries(
                     Map.entry("hibernate.connection.username", User.getDatabaseUsernameForInput(emailOrPESEL)),
                     Map.entry("hibernate.connection.password", password)
             ));
             entityManager = entityManagerFactory.createEntityManager();
+
         }
         // TODO: catch security specific exceptions to show "bad password" message.
         catch (ServiceException e) {

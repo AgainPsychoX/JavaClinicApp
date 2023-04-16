@@ -1079,6 +1079,18 @@ SELECT pg_catalog.setval('public.schedule_entries_id_seq', 1, false);
 
 SELECT pg_catalog.setval('public.users_id_seq', 1, false);
 
+DO $do$ BEGIN IF EXISTS(SELECT FROM pg_catalog.pg_roles WHERE rolname LIKE 'anon') THEN DROP OWNED BY anon; DROP ROLE IF EXISTS anon; END IF; END $do$;
+
+CREATE USER anon WITH PASSWORD 'anon';
+REVOKE ALL ON DATABASE clinic FROM anon;
+
+CREATE OR REPLACE FUNCTION public.get_login(input varchar) RETURNS varchar LANGUAGE 'plpgsql' SECURITY DEFINER AS $$ DECLARE result varchar; BEGIN SELECT users.internal_name INTO result FROM public.users INNER JOIN public.patients p on users.id = p.id WHERE users.email LIKE input OR p.pesel LIKE input; RETURN result; END; $$;
+
+
+
+GRANT EXECUTE ON FUNCTION public.get_login TO anon;
+
+
 
 -- Completed on 2023-04-14 15:42:38
 

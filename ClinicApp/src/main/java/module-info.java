@@ -6,6 +6,7 @@ module pl.edu.ur.pz.clinicapp {
     requires java.persistence;
     requires org.hibernate.orm.core;
     requires org.controlsfx.controls;
+    requires java.naming;
 
     exports pl.edu.ur.pz.clinicapp;
     exports pl.edu.ur.pz.clinicapp.models;
