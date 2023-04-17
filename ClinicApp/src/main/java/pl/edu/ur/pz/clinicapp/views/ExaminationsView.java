@@ -28,7 +28,7 @@ public class ExaminationsView extends ChildControllerBase<MainWindowController> 
 
     @Override
     public void populate(Object... context) {
-        if(ClinicApplication.user.role == User.Role.DOCTOR){
+        if(ClinicApplication.getUser().getRole() == User.Role.DOCTOR){
             addTestButton.setVisible(true);
         }
 
