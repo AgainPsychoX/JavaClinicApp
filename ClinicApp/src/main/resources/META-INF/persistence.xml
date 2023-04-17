@@ -12,18 +12,42 @@
 		<class>pl.edu.ur.pz.clinicapp.models.MedicalHistoryEntry</class>
 		<class>pl.edu.ur.pz.clinicapp.models.Notification</class>
 		<class>pl.edu.ur.pz.clinicapp.models.Patient</class>
+		<class>pl.edu.ur.pz.clinicapp.models.Prescription</class>
 		<class>pl.edu.ur.pz.clinicapp.models.Referral</class>
-		<class>pl.edu.ur.pz.clinicapp.models.Schedule.Entry</class>
-		<class>pl.edu.ur.pz.clinicapp.models.Schedule.AppointmentEntry</class>
+<!--		<class>pl.edu.ur.pz.clinicapp.models.Schedule.Entry</class>-->
+<!--		<class>pl.edu.ur.pz.clinicapp.models.Schedule.AppointmentEntry</class>-->
 		<class>pl.edu.ur.pz.clinicapp.models.User</class>
 		<properties>
 			<property name="hibernate.connection.url" value="jdbc:postgresql://localhost:5432/clinic"/>
 			<property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
-			<property name="hibernate.connection.username" value="admin"/>
-			<property name="hibernate.connection.password" value="AAbb33$$"/>
+			<property name="hibernate.connection.username" value="postgres"/>
+			<property name="hibernate.connection.password" value="zaq1@WSX"/>
 			<property name="hibernate.show_sql" value="true"/>
 <!--			<property name="hibernate.hbm2ddl.auto" value="update"/>-->
 			<property name="hibernate.hbm2ddl.auto" value="create"/>
+			<property name="hibernate.physical_naming_strategy" value="pl.edu.ur.pz.clinicapp.utils.HibernateCustomPhysicalNamingStrategy"/>
+		</properties>
+	</persistence-unit>
+	<persistence-unit name="anon">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+		<class>pl.edu.ur.pz.clinicapp.models.Appointment</class>
+		<class>pl.edu.ur.pz.clinicapp.models.Doctor</class>
+		<class>pl.edu.ur.pz.clinicapp.models.DoctorSchedule</class>
+		<class>pl.edu.ur.pz.clinicapp.models.DoctorSpecialty</class>
+		<class>pl.edu.ur.pz.clinicapp.models.MedicalHistoryEntry</class>
+		<class>pl.edu.ur.pz.clinicapp.models.Notification</class>
+		<class>pl.edu.ur.pz.clinicapp.models.Patient</class>
+		<class>pl.edu.ur.pz.clinicapp.models.Prescription</class>
+		<class>pl.edu.ur.pz.clinicapp.models.Referral</class>
+		<!--		<class>pl.edu.ur.pz.clinicapp.models.Schedule.Entry</class>-->
+		<!--		<class>pl.edu.ur.pz.clinicapp.models.Schedule.AppointmentEntry</class>-->
+		<class>pl.edu.ur.pz.clinicapp.models.User</class>
+		<properties>
+			<property name="hibernate.connection.url" value="jdbc:postgresql://localhost:5432/clinic"/>
+			<property name="hibernate.connection.driver_class" value="org.postgresql.Driver"/>
+			<property name="hibernate.connection.username" value="anon"/>
+			<property name="hibernate.connection.password" value="anon"/>
+			<property name="hibernate.show_sql" value="true"/>
 			<property name="hibernate.physical_naming_strategy" value="pl.edu.ur.pz.clinicapp.utils.HibernateCustomPhysicalNamingStrategy"/>
 		</properties>
 	</persistence-unit>

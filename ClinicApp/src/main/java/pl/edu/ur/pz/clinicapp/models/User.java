@@ -1,8 +1,26 @@
 package pl.edu.ur.pz.clinicapp.models;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.hibernate.jdbc.AbstractReturningWork;
+import org.hibernate.jdbc.ReturningWork;
+import org.hibernate.jdbc.Work;
+import org.hibernate.service.ServiceRegistry;
+import org.hibernate.type.StringNVarcharType;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
 import javax.persistence.*;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static pl.edu.ur.pz.clinicapp.models.Doctor.MockDoctor;
 import static pl.edu.ur.pz.clinicapp.models.Patient.MockPatient;
@@ -109,13 +127,29 @@ public class User {
     }
 
     static public String getDatabaseUsernameForInput(String emailOrPESEL) {
-        // Note: For now, email is required to log-in, as it's used as database account login
-        // TODO: Get database username from "gate" function working on database (anonymous connection).
-        //       It should return database-only (hidden from end-user) username for given email or PESEL.
-        //       If the account doesn't exist, it should return random but similarly looking username
-        //       (as some fancy hash of input; to prevent easy enumeration of/checking for existing accounts).
-        // Tips: The function security definer feature could be used to search users table from anonymous connection.
-        return emailOrPESEL;
+        if (emailOrPESEL.matches("^[a-zA-Z0-9.@]+$")) {
+
+            EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("anon");
+            EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+
+            entityManager.getTransaction().begin();
+
+            Query query = entityManager.createNativeQuery("SELECT public.get_login(:param)");
+            query.setParameter("param", emailOrPESEL.toLowerCase());
+            List<String> l = query.getResultList();
+
+
+            entityManager.getTransaction().commit();
+
+
+
+            entityManager.close();
+            return l.get(0);
+
+        }
+        //TODO error message caused by wrong input (prevent sql injection)
+        return "error";
     }
 
 
