@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.Text?>
 
-<VBox prefHeight="540.0" prefWidth="600.0" spacing="8.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.NotificationsView">
+<VBox fx:id="vBox" prefHeight="540.0" prefWidth="600.0" spacing="8.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.NotificationsView">
    <children>
       <HBox>
          <children>
@@ -21,12 +21,15 @@
             </HBox>
          </children>
       </HBox>
-      <TableView fx:id="table" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" >
+      <TableView fx:id="table" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+         <columnResizePolicy>
+            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+         </columnResizePolicy>
         <columns>
-          <TableColumn maxWidth="200.0" prefWidth="100.0" text="Data" />
-          <TableColumn maxWidth="200.0" prefWidth="100.0" text="Kategoria" />
-            <TableColumn maxWidth="200.0" prefWidth="100.0" text="Od" />
-            <TableColumn maxWidth="1000.0" minWidth="100.0" prefWidth="300.0" text="Treść" />
+          <TableColumn fx:id="dateCol" maxWidth="200.0" prefWidth="100.0" text="Data" />
+          <TableColumn fx:id="categoryCol" maxWidth="200.0" prefWidth="100.0" text="Kategoria" />
+            <TableColumn fx:id="fromCol" maxWidth="200.0" prefWidth="100.0" text="Od" />
+            <TableColumn fx:id="contentCol" maxWidth="1000.0" minWidth="100.0" prefWidth="300.0" text="Treść" />
         </columns>
       </TableView>
       <HBox alignment="CENTER_LEFT">
