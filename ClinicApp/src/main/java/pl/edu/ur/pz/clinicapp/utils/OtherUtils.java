@@ -3,17 +3,15 @@ package pl.edu.ur.pz.clinicapp.utils;
 import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.scene.Node;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.stage.Stage;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 
 public class OtherUtils {
+    public static boolean isStringNullOrEmpty(String string) {
+        return string == null || string.isEmpty();
+    }
+
     public static Stage getStageFromEvent(Event event) {
         return (Stage)((Node) event.getSource()).getScene().getWindow();
     }

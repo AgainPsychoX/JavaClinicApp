@@ -27,11 +27,11 @@ DROP ROLE IF EXISTS gp_patients;
 DROP ROLE IF EXISTS gp_receptionists;
 DROP ROLE IF EXISTS gp_nurses;
 
-CREATE ROLE gp_doctors CREATEDB NOINHERIT NOREPLICATION;
+CREATE ROLE gp_doctors NOINHERIT;
 CREATE ROLE gp_admins SUPERUSER CREATEDB CREATEROLE REPLICATION;
-CREATE ROLE gp_patients CREATEDB NOINHERIT NOREPLICATION;
-CREATE ROLE gp_receptionists CREATEDB NOINHERIT NOREPLICATION;
-CREATE ROLE gp_nurses CREATEDB NOINHERIT NOREPLICATION;
+CREATE ROLE gp_patients NOINHERIT;
+CREATE ROLE gp_receptionists NOINHERIT;
+CREATE ROLE gp_nurses NOINHERIT;
 
 
 --
@@ -75,7 +75,7 @@ INSERT INTO public.users (id, internal_name, email, name, phone, role, surname) 
 INSERT INTO public.users (id, internal_name, email, name, phone, role, surname) VALUES (16, 'uLB7340', 'lbaran@gmail.com', 'Luiza', '304945763', 'Lekarz', 'Baran');
 INSERT INTO public.users (id, internal_name, email, name, phone, role, surname) VALUES (17, 'uEB3850', 'ebaranowska@gmail.com', 'Eliza', '472801213', 'Lekarz', 'Baranowska');
 INSERT INTO public.users (id, internal_name, email, name, phone, role, surname) VALUES (18, 'uES8714', 'eszymanski@gmail.com', 'Eryk', '499187792', 'Lekarz', 'Szymański');
-INSERT INTO public.users (id, internal_name, email, name, phone, role, surname) VALUES (19, 'uDB1842', 'dblaszczyk@gmail.com', 'Dobromił', '224937011', 'Administrator', 'Błaszczyk');
+INSERT INTO public.users (id, internal_name, email, name, phone, role, surname) VALUES (19, 'udb1842', 'dblaszczyk@gmail.com', 'Dobromił', '224937011', 'Administrator', 'Błaszczyk');
 INSERT INTO public.users (id, internal_name, email, name, phone, role, surname) VALUES (20, 'uKT2931', 'ktomaszewska@gmail.com', 'Karolina', '706614047', 'Administrator', 'Tomaszewska');
 INSERT INTO public.users (id, internal_name, email, name, phone, role, surname) VALUES (21, 'uMB8806', 'mborkowski@gmail.com', 'Miłosz', '273162175', 'Pacjent', 'Borkowski');
 INSERT INTO public.users (id, internal_name, email, name, phone, role, surname) VALUES (22, 'uJC8219', 'jcieslak@gmail.com', 'Justyna', '295657686', 'Pacjent', 'Cieślak');
@@ -281,7 +281,7 @@ DROP USER IF EXISTS uAB1977;
 DROP USER IF EXISTS uLB7340;
 DROP USER IF EXISTS uEB3850;
 DROP USER IF EXISTS uES8714;
-DROP USER IF EXISTS uDB1842;
+DROP USER IF EXISTS udb1842;
 DROP USER IF EXISTS uKT2931;
 DROP USER IF EXISTS uMB8806;
 DROP USER IF EXISTS uJC8219;
@@ -484,7 +484,7 @@ CREATE USER uAB1977 LOGIN ENCRYPTED PASSWORD 'lekarz' IN ROLE gp_doctors;
 CREATE USER uLB7340 LOGIN ENCRYPTED PASSWORD 'lekarz' IN ROLE gp_doctors;
 CREATE USER uEB3850 LOGIN ENCRYPTED PASSWORD 'lekarz' IN ROLE gp_doctors;
 CREATE USER uES8714 LOGIN ENCRYPTED PASSWORD 'lekarz' IN ROLE gp_doctors;
-CREATE USER uDB1842 LOGIN ENCRYPTED PASSWORD 'administrator' IN ROLE gp_admins;
+CREATE USER udb1842 LOGIN ENCRYPTED PASSWORD 'administrator' IN ROLE gp_admins;
 CREATE USER uKT2931 LOGIN ENCRYPTED PASSWORD 'administrator' IN ROLE gp_admins;
 CREATE USER uMB8806 LOGIN ENCRYPTED PASSWORD 'pacjent' IN ROLE gp_patients;
 CREATE USER uJC8219 LOGIN ENCRYPTED PASSWORD 'pacjent' IN ROLE gp_patients;
@@ -1078,18 +1078,6 @@ SELECT pg_catalog.setval('public.schedule_entries_id_seq', 1, false);
 --
 
 SELECT pg_catalog.setval('public.users_id_seq', 1, false);
-
-DO $do$ BEGIN IF EXISTS(SELECT FROM pg_catalog.pg_roles WHERE rolname LIKE 'anon') THEN DROP OWNED BY anon; DROP ROLE IF EXISTS anon; END IF; END $do$;
-
-CREATE USER anon WITH PASSWORD 'anon';
-REVOKE ALL ON DATABASE clinic FROM anon;
-
-CREATE OR REPLACE FUNCTION public.get_login(input varchar) RETURNS varchar LANGUAGE 'plpgsql' SECURITY DEFINER AS $$ DECLARE result varchar; BEGIN SELECT users.internal_name INTO result FROM public.users INNER JOIN public.patients p on users.id = p.id WHERE users.email LIKE input OR p.pesel LIKE input; RETURN result; END; $$;
-
-
-
-GRANT EXECUTE ON FUNCTION public.get_login TO anon;
-
 
 
 -- Completed on 2023-04-14 15:42:38

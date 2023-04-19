@@ -2,28 +2,35 @@ package pl.edu.ur.pz.clinicapp;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import javafx.stage.WindowEvent;
 import org.hibernate.service.spi.ServiceException;
 import pl.edu.ur.pz.clinicapp.dialogs.LoginDialog;
-import pl.edu.ur.pz.clinicapp.models.Settings;
 import pl.edu.ur.pz.clinicapp.models.User;
+import pl.edu.ur.pz.clinicapp.utils.CustomImportSqlCommandExtractor;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashMap;
+import java.io.InputStream;
 import java.util.Map;
-import java.util.logging.*;
+import java.util.Properties;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
+
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
 
 public class ClinicApplication extends Application {
-    private Settings settings;
+    private static final Logger logger = Logger.getLogger(CustomImportSqlCommandExtractor.class.getName());
+
+    private Properties properties;
     private EntityManagerFactory entityManagerFactory;
     private EntityManager entityManager;
     private User user;
@@ -31,8 +38,8 @@ public class ClinicApplication extends Application {
 
     static private ClinicApplication instance;
 
-    public static Settings getSettings() {
-        return instance.settings;
+    public static String getProperty(String key) {
+        return instance.properties.getProperty(key);
     }
 
     public static EntityManager getEntityManager() {
@@ -47,13 +54,35 @@ public class ClinicApplication extends Application {
     public void start(Stage stage) throws Exception {
         instance = this;
 
-        settings = Settings.Defaults;
-        final var logger = Logger.getGlobal();
-        final var consoleHandler = new ConsoleHandler();
-        consoleHandler.setLevel(settings.loggingLevel);
-        logger.addHandler(consoleHandler);
-        logger.setLevel(settings.loggingLevel);
-        logger.config("Logging level set to " + settings.loggingLevel);
+        // Load logging custom properties if any
+        try (FileInputStream loggingPropertiesFile = new FileInputStream("logging.properties")) {
+            LogManager.getLogManager().readConfiguration(loggingPropertiesFile);
+        }
+        catch (FileNotFoundException e) {
+            // Ignore, system defaults will be used, most likely INFO level only to console.
+            LogManager.getLogManager().readConfiguration();
+        }
+        logger.finest("Hello!");
+
+        // Load app properties
+        try (InputStream inputStream = ClassLoader.getSystemResourceAsStream("app.default.properties")) {
+            final var defaults = new Properties() {{
+                load(inputStream);
+            }};
+            properties = new Properties(defaults);
+        }
+        try (FileInputStream appPropertiesFile = new FileInputStream("app.properties")) {
+            properties.load(appPropertiesFile);
+        }
+        catch (FileNotFoundException e) {
+            // Ignore, defaults will be used.
+        }
+
+        if (isSeedingAvailable()) {
+            if (showConfirmSeedingDialog()) {
+                seedDatabase();
+            }
+        }
 
         connectToDatabaseAnonymously();
         while (waitForLogin()) {
@@ -62,14 +91,23 @@ public class ClinicApplication extends Application {
     }
 
     private boolean waitForLogin() {
-//        final var dialog = new LoginDialog("anna.nowak.123@example.com", "asdf1234");
-        final var dialog = new LoginDialog();
+        final var dialog = new LoginDialog("dblaszczyk@gmail.com", "administrator");
+//        final var dialog = new LoginDialog();
         dialog.showAndWait();
         if (user == null) {
             Platform.exit();
             return false;
         }
         return true;
+    }
+
+    private void handleDatabaseConnectionError(ServiceException e) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setContentText("Wystąpił błąd w czasie łączenia do bazy danych.\n\nSprawdź, czy dla zadanych ustawień aplikacji baza danych jest poprawnie skonfigurowana i uruchomiona.\n\nSzczegóły:\n" + e.getLocalizedMessage());
+        alert.setTitle("Błąd w czasie łączenia do bazy danych");
+        alert.setHeaderText(null);
+        alert.showAndWait();
+        System.exit(1);
     }
 
     private void disconnectFromDatabase() {
@@ -79,6 +117,43 @@ public class ClinicApplication extends Application {
         }
         if (entityManagerFactory != null) {
             entityManagerFactory.close();
+        }
+    }
+
+    private boolean isSeedingAvailable() {
+        return !isStringNullOrEmpty(properties.getProperty("seeding.username"));
+    }
+
+    private boolean showConfirmSeedingDialog() {
+        final var dialog = new Alert(Alert.AlertType.CONFIRMATION);
+        dialog.setTitle("Reinitializacja bazy danych");
+        dialog.setHeaderText(null);
+        dialog.setContentText("Zmienna środowiskowa `SEED_USERNAME` istnieje. " +
+                "Czy chcesz reinitializować bazę danych? Wszystkie dane zostaną utracone, " +
+                "schemat zostanie utworzony na nowo i wypełniony przykładowymi danymi.");
+        dialog.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+        return dialog.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
+    }
+
+    private void seedDatabase() {
+        disconnectFromDatabase();
+        logger.fine("----------------------------------------------------------------");
+        logger.info("Seeding database...");
+        try {
+            // For seeding we need superuser and special setting, so we shadow default settings from `persistence.xml`.
+            entityManagerFactory = Persistence.createEntityManagerFactory("default", Map.ofEntries(
+                    Map.entry("hibernate.connection.username", properties.getProperty("seeding.username")),
+                    Map.entry("hibernate.connection.password", properties.getProperty("seeding.password")),
+                    Map.entry("hibernate.hbm2ddl.auto", "create")
+            ));
+            entityManager = entityManagerFactory.createEntityManager();
+            logger.info("Finished seeding!");
+        }
+        catch (ServiceException e) {
+            handleDatabaseConnectionError(e);
+        }
+        finally {
+            logger.fine("----------------------------------------------------------------");
         }
     }
 
@@ -93,35 +168,27 @@ public class ClinicApplication extends Application {
             entityManager = entityManagerFactory.createEntityManager();
         }
         catch (ServiceException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setContentText("Wystąpił błąd w czasie łączenia do bazy danych.\n\nSprawdź, czy dla zadanych ustawień aplikacji baza danych jest poprawnie skonfigurowana i uruchomiona.\n\nSzczegóły:\n" + e.getLocalizedMessage());
-            alert.setTitle("Błąd w czasie łączenia do bazy danych");
-            alert.setHeaderText(null);
-            alert.showAndWait();
-            System.exit(1);
+            handleDatabaseConnectionError(e);
         }
     }
 
     private void connectToDatabaseAsUser(String emailOrPESEL, String password) {
-        disconnectFromDatabase();
         try {
             // We shadow default (anonymous) login details from `persistence.xml` with user specific ones.
-//            TODO fix this facory
-            entityManagerFactory = Persistence.createEntityManagerFactory("default", Map.ofEntries(
+            final var emf = Persistence.createEntityManagerFactory("default", Map.ofEntries(
                     Map.entry("hibernate.connection.username", User.getDatabaseUsernameForInput(emailOrPESEL)),
                     Map.entry("hibernate.connection.password", password)
             ));
-            entityManager = entityManagerFactory.createEntityManager();
+            final var em = entityManagerFactory.createEntityManager();
 
+            // Late replace to prevent reconnecting as anonymous on login failures and allow database username fetching
+            disconnectFromDatabase();
+            entityManagerFactory = emf;
+            entityManager = em;
         }
         // TODO: catch security specific exceptions to show "bad password" message.
         catch (ServiceException e) {
-            Alert alert = new Alert(Alert.AlertType.ERROR);
-            alert.setContentText("Wystąpił błąd w czasie łączenia do bazy danych.\n\nSprawdź, czy dla zadanych ustawień aplikacji baza danych jest poprawnie skonfigurowana i uruchomiona.\n\nSzczegóły:\n" + e.getLocalizedMessage());
-            alert.setTitle("Błąd w czasie łączenia do bazy danych");
-            alert.setHeaderText(null);
-            alert.showAndWait();
-            System.exit(1);
+            handleDatabaseConnectionError(e);
         }
     }
 
@@ -145,12 +212,15 @@ public class ClinicApplication extends Application {
 
     static public void logOut() {
         instance.user = null;
-        // TODO: close database session
+        instance.connectToDatabaseAnonymously();
+        logger.info("Logged out");
     }
 
     static public void logIn(String emailOrPESEL, String password) {
+        logger.info("Logging in as `%s`".formatted(emailOrPESEL));
         instance.connectToDatabaseAsUser(emailOrPESEL, password);
         instance.user = User.getCurrent();
+        logger.info("Logged in");
     }
 
     public static void main(String[] args) {
