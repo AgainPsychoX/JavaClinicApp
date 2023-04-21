@@ -10,6 +10,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import org.hibernate.service.spi.ServiceException;
 import pl.edu.ur.pz.clinicapp.dialogs.LoginDialog;
+import pl.edu.ur.pz.clinicapp.localization.JavaFxBuiltInsLocalizationFix;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.CustomImportSqlCommandExtractor;
 
@@ -20,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.logging.LogManager;
@@ -38,8 +40,8 @@ public class ClinicApplication extends Application {
 
     static private ClinicApplication instance;
 
-    public static String getProperty(String key) {
-        return instance.properties.getProperty(key);
+    public static Properties getProperties() {
+        return instance.properties;
     }
 
     public static EntityManager getEntityManager() {
@@ -77,6 +79,10 @@ public class ClinicApplication extends Application {
         catch (FileNotFoundException e) {
             // Ignore, defaults will be used.
         }
+
+        final var locale = new Locale(properties.getProperty("locale"));
+        JavaFxBuiltInsLocalizationFix.injectLocalizationForJavaFxBuiltInControls(locale);
+        Locale.setDefault(locale);
 
         if (isSeedingAvailable()) {
             if (showConfirmSeedingDialog()) {
