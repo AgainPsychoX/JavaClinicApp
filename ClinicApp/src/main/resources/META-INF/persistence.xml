@@ -23,7 +23,8 @@
 			<property name="hibernate.connection.username" value="anonymous"/>
 			<property name="hibernate.connection.password" value="anonymous"/>
 			<property name="hibernate.physical_naming_strategy" value="pl.edu.ur.pz.clinicapp.utils.HibernateCustomPhysicalNamingStrategy"/>
-			<property name="hibernate.hbm2ddl.import_files" value="import.sql,login.sql"/>
+			<property name="hibernate.hbm2ddl.halt_on_error" value="true"/>
+			<property name="hibernate.hbm2ddl.import_files" value="security.sql,import.sql"/>
 			<property name="hibernate.hbm2ddl.import_files_sql_extractor" value="pl.edu.ur.pz.clinicapp.utils.CustomImportSqlCommandExtractor"/>
 			<property name="hibernate.show_sql" value="true"/>
 <!--			<property name="hibernate.hbm2ddl.auto" value="update"/>-->
