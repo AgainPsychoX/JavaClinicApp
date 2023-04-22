@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
@@ -160,8 +161,14 @@ public class ClinicApplication extends Application {
             entityManager = entityManagerFactory.createEntityManager();
             logger.info("Finished seeding!");
         }
-        catch (ServiceException e) {
-            handleDatabaseConnectionError(e);
+        catch (Exception e) {
+            logger.log(Level.SEVERE, "Error seeding database!", e);
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setContentText("Wystąpił błąd w trakcie reinicjalizacji bazy danych.");
+            alert.setTitle("Błąd w trakcie reinicjalizacji do bazy danych");
+            alert.setHeaderText(null);
+            alert.showAndWait();
+            System.exit(1);
         }
         finally {
             logger.fine("----------------------------------------------------------------");

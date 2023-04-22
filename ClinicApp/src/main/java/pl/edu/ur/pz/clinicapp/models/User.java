@@ -1,6 +1,8 @@
 package pl.edu.ur.pz.clinicapp.models;
 
+import org.hibernate.annotations.Type;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
+
 import javax.persistence.*;
 
 @Entity
@@ -16,22 +18,22 @@ public class User {
     public enum Role {
         ANONYMOUS,
         PATIENT,
-        RECEPTIONIST,
+        RECEPTION,
         NURSE,
         DOCTOR,
         ADMIN;
-    
+
         public boolean isGroupUser() {
-            return this == RECEPTIONIST || this == NURSE;
+            return this == RECEPTION || this == NURSE;
         }
 
         public String toString() {
             // TODO: when we have localization it will look much nicer
-            if (this == PATIENT)      return "Pacjent";
-            if (this == RECEPTIONIST) return "Recepcja";
-            if (this == NURSE)        return "Pielęgniarka";
-            if (this == DOCTOR)       return "Lekarz";
-            if (this == ADMIN)        return "Administrator";
+            if (this == PATIENT)   return "Pacjent";
+            if (this == RECEPTION) return "Recepcja";
+            if (this == NURSE)     return "Pielęgniarka";
+            if (this == DOCTOR)    return "Lekarz";
+            if (this == ADMIN)     return "Administrator";
             return this.name();
         }
     }
@@ -45,7 +47,8 @@ public class User {
     }
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "user_role") // custom enum type
+    @Type(type = "postgresql_enum")
     private Role role;
     public Role getRole() {
         return role;
