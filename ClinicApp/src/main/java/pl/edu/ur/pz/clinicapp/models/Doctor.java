@@ -22,17 +22,4 @@ public class Doctor extends User {
     }
 
     // TODO: get doctor schedule
-
-
-
-    /* * * * * * * * * * * * * * * * * * * * *
-     * Mocks for testing and development
-     */
-
-    public static Doctor MockDoctor = new Doctor() {{
-        setRole(Role.DOCTOR);
-        setEmail("k.malogrodzka@example.com");
-        setName("Katarzyna");
-        setSurname("Małogrodzka-Sylwester");
-    }};
 }

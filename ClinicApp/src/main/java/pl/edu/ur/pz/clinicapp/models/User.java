@@ -2,8 +2,6 @@ package pl.edu.ur.pz.clinicapp.models;
 
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import javax.persistence.*;
-import static pl.edu.ur.pz.clinicapp.models.Doctor.MockDoctor;
-import static pl.edu.ur.pz.clinicapp.models.Patient.MockPatient;
 
 @Entity
 @Table(name = "users")
@@ -121,39 +119,4 @@ public class User {
     static public User getCurrent() {
         return ClinicApplication.getEntityManager().createNamedQuery("users.current", User.class).getSingleResult();
     }
-
-    static public User getMockUser(String emailOrPESEL, String password) {
-        // TODO: actual authentication
-        if (password.equals("asdf1234")) {
-            if (emailOrPESEL.equals(MockPatient.getEmail()) || emailOrPESEL.equals(MockPatient.getPESEL())) return MockPatient;
-            if (emailOrPESEL.equals(MockReceptionist.email)) return MockReceptionist;
-            if (emailOrPESEL.equals(MockNurses.email)) return MockNurses;
-            if (emailOrPESEL.equals(MockDoctor.getEmail())) return MockDoctor;
-            if (emailOrPESEL.equals(MockAdmin.email)) return MockAdmin;
-        }
-        return null;
-    }
-
-
-
-    /* * * * * * * * * * * * * * * * * * * * *
-     * Mocks for testing and development
-     */
-
-    public static User MockReceptionist = new User() {{
-        setRole(Role.RECEPTIONIST);
-        setEmail("reception@example.com");
-        // No name as it's shared account (at least for now)
-    }};
-    public static User MockNurses = new User() {{
-        setRole(Role.NURSE);
-        setEmail("nurses@example.com");
-        // No name as it's shared account (at least for now)
-    }};
-    public static User MockAdmin = new User() {{
-        setRole(Role.ADMIN);
-        setEmail("admin@example.com");
-        setName("Jan");
-        setSurname("Kowalski");
-    }};
 }

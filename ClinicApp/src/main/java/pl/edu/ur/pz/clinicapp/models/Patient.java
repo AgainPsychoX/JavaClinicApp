@@ -62,18 +62,4 @@ public class Patient extends User {
     public void setPostCity(String postCity) {
         this.postCity = postCity;
     }
-
-
-
-    /* * * * * * * * * * * * * * * * * * * * *
-     * Mocks for testing and development
-     */
-
-    public static Patient MockPatient = new Patient() {{
-        setRole(Role.PATIENT);
-        setEmail("anna.nowak.123@example.com");
-        setPESEL("99032301234");
-        setName("Anna");
-        setSurname("Nowak");
-    }};
 }
