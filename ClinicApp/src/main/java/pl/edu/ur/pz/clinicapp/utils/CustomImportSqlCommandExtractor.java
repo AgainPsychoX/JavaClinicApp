@@ -7,7 +7,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.LinkedList;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -94,16 +93,7 @@ public class CustomImportSqlCommandExtractor implements ImportSqlCommandExtracto
                                 final var statement = multilineValue.toString().trim();
                                 statementList.add(statement);
                                 multilineValue.delete(0, multilineValue.length());
-
-                                // Debugging
                                 logger.fine("Statement: " + statement);
-                                if (logger.isLoggable(Level.FINEST)) {
-                                    try {
-                                        Thread.sleep(1000);
-                                    } catch (InterruptedException e) {
-                                        throw new RuntimeException(e);
-                                    }
-                                }
                             }
                             default -> {
                                 // Either single quote or dollar quoting
@@ -120,28 +110,18 @@ public class CustomImportSqlCommandExtractor implements ImportSqlCommandExtracto
                 }
             }
 
+            // Add last statement if any left unfinished (missing semicolon)
+            final var lastStatement = multilineValue.toString().trim();
+            if (!lastStatement.isEmpty()) {
+                statementList.add(lastStatement);
+                multilineValue.delete(0, multilineValue.length());
+                logger.fine("Last statement: " + lastStatement);
+            }
+
             return statementList.toArray(new String[0]);
         }
         catch (IOException e) {
             throw new ImportScriptException("Error during import script parsing.", e);
         }
-    }
-
-//    private record Quoting(String start, String end, String escape) {}
-//
-//    final Quoting[] quotings = {
-//            Quoting("/*", "*/", "\\");
-//    }
-//
-//    private record QuotingInstance(int index, QuotingType type) {}
-//
-//    private Quoting findQuoteStart(String line) {
-//        int index;
-//        index = line.indexOf("/*");
-//        if (index != -1) return index; // no, first indexOf's then search earilest
-//    }
-
-    private boolean isComment(final String line) {
-        return line.startsWith( "--" ) || line.startsWith( "//" ) || line.startsWith( "/*" );
     }
 }
