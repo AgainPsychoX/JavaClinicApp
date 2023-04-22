@@ -5,6 +5,7 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
@@ -12,7 +13,6 @@ import org.hibernate.service.spi.ServiceException;
 import pl.edu.ur.pz.clinicapp.dialogs.LoginDialog;
 import pl.edu.ur.pz.clinicapp.localization.JavaFxBuiltInsLocalizationFix;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.utils.CustomImportSqlCommandExtractor;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
 
 public class ClinicApplication extends Application {
-    private static final Logger logger = Logger.getLogger(CustomImportSqlCommandExtractor.class.getName());
+    private static final Logger logger = Logger.getLogger(ClinicApplication.class.getName());
 
     private Properties properties;
     private EntityManagerFactory entityManagerFactory;
@@ -138,6 +138,11 @@ public class ClinicApplication extends Application {
                 "Czy chcesz reinitializować bazę danych? Wszystkie dane zostaną utracone, " +
                 "schemat zostanie utworzony na nowo i wypełniony przykładowymi danymi.");
         dialog.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
+
+        // Avoid seeding (which resets data) being default option in the dialog
+        ((Button) dialog.getDialogPane().lookupButton(ButtonType.YES)).setDefaultButton((false));
+        ((Button) dialog.getDialogPane().lookupButton(ButtonType.NO)).setDefaultButton((true));
+
         return dialog.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
     }
 
@@ -180,12 +185,15 @@ public class ClinicApplication extends Application {
 
     private void connectToDatabaseAsUser(String emailOrPESEL, String password) {
         try {
+            final var username = User.getDatabaseUsernameForInput(emailOrPESEL);
+            logger.fine("Database username for '%s' is '%s'".formatted(emailOrPESEL, username));
+
             // We shadow default (anonymous) login details from `persistence.xml` with user specific ones.
             final var emf = Persistence.createEntityManagerFactory("default", Map.ofEntries(
-                    Map.entry("hibernate.connection.username", User.getDatabaseUsernameForInput(emailOrPESEL)),
+                    Map.entry("hibernate.connection.username", username),
                     Map.entry("hibernate.connection.password", password)
             ));
-            final var em = entityManagerFactory.createEntityManager();
+            final var em = emf.createEntityManager();
 
             // Late replace to prevent reconnecting as anonymous on login failures and allow database username fetching
             disconnectFromDatabase();
