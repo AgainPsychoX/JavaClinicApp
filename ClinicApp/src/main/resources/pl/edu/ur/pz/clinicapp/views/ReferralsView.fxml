@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<VBox fx:id="vBox" prefHeight="540.0" prefWidth="600.0" spacing="8.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.ReferralsView">
+<VBox fx:id="vBox" prefHeight="540.0" prefWidth="600.0" spacing="8.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.ReferralsView">
    <children>
       <HBox alignment="CENTER_LEFT">
          <children>
@@ -18,15 +18,15 @@
          </children>
       </HBox>
       <TableView fx:id="table" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
-         <columnResizePolicy>
-            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
-         </columnResizePolicy>
         <columns>
-          <TableColumn fx:id="patientCol" maxWidth="200.0" prefWidth="133.0" text="Pacjent" />
-            <TableColumn fx:id="specCol" maxWidth="200.0" prefWidth="111.0" text="Specjalność" />
-            <TableColumn fx:id="dateCol" maxWidth="200.0" prefWidth="123.0" text="Data skierowania" />
-            <TableColumn fx:id="doctorCol" maxWidth="200.0" prefWidth="126.0" text="Lekarz skierowujący" />
-            <TableColumn fx:id="commetsCol" maxWidth="200.0" prefWidth="74.0" text="Uwagi" />
+            <TableColumn fx:id="dateCol" maxWidth="200.0" minWidth="70.0" prefWidth="105.0" text="Data wystawienia" />
+            <TableColumn fx:id="fulDateCol" maxWidth="200.0" minWidth="15.399993896484375" prefWidth="105.0" text="Data realizacji" />
+            <TableColumn fx:id="interestCol" maxWidth="200.0" minWidth="4.399993896484375" prefWidth="70.0" text="Poradnia" />
+            <TableColumn fx:id="doctorCol" maxWidth="200.0" minWidth="26.4000244140625" prefWidth="120.0" text="Lekarz skierowujący" />
+            <TableColumn fx:id="notesCol" maxWidth="200.0" minWidth="70.0" prefWidth="-1.0" text="Notatki" />
+            <TableColumn fx:id="feedbackCol" maxWidth="200.0" minWidth="70.0" prefWidth="-1.0" text="Opinia" />
+            <TableColumn fx:id="tagsCol" maxWidth="200.0" minWidth="70.0" prefWidth="-1.0" text="Tagi" />
+            <TableColumn fx:id="codeCol" maxWidth="200.0" minWidth="70.0" prefWidth="-1.0" text="Kod" />
         </columns>
       </TableView>
       <HBox alignment="CENTER_LEFT">
