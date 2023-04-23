@@ -98,7 +98,7 @@ public class ClinicApplication extends Application {
     }
 
     private boolean waitForLogin() {
-        final var dialog = new LoginDialog("dblaszczyk@gmail.com", "administrator");
+        final var dialog = new LoginDialog("istepien@gmail.com", "pacjent");
 //        final var dialog = new LoginDialog();
         dialog.showAndWait();
         if (user == null) {
