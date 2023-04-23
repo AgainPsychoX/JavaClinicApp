@@ -13,6 +13,7 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
+import javax.security.auth.login.LoginException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -101,7 +102,7 @@ public class LoginDialog extends Stage {
             ClinicApplication.logIn(identity, password);
             super.close();
         }
-        catch (Exception e) {
+        catch (LoginException e) {
             pane.setCenter(logInForm);
             passwordField.clear();
             errorText.setText("Zapamiętane dane logowania są nieprawidłowe. Zaloguj się ponownie.");
@@ -124,7 +125,7 @@ public class LoginDialog extends Stage {
             ClinicApplication.logIn(identity, password);
             super.close();
         }
-        catch (Exception e) {
+        catch (LoginException e) {
             pane.setCenter(logInForm);
             passwordField.clear();
             errorText.setText("Nieprawidłowe dane logowania!");

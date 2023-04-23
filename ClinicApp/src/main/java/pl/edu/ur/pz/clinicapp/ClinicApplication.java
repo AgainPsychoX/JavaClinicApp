@@ -9,6 +9,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
+import org.hibernate.exception.GenericJDBCException;
 import org.hibernate.service.spi.ServiceException;
 import pl.edu.ur.pz.clinicapp.dialogs.LoginDialog;
 import pl.edu.ur.pz.clinicapp.localization.JavaFxBuiltInsLocalizationFix;
@@ -17,6 +18,7 @@ import pl.edu.ur.pz.clinicapp.models.User;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.security.auth.login.LoginException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -98,7 +100,7 @@ public class ClinicApplication extends Application {
     }
 
     private boolean waitForLogin() {
-        final var dialog = new LoginDialog("istepien@gmail.com", "pacjent");
+        final var dialog = new LoginDialog("lwojcik@gmail.com", "lekarz");
 //        final var dialog = new LoginDialog();
         dialog.showAndWait();
         if (user == null) {
@@ -108,9 +110,11 @@ public class ClinicApplication extends Application {
         return true;
     }
 
-    private void handleDatabaseConnectionError(ServiceException e) {
+    private void handleUnexpectedDatabaseConnectionError(Exception e, String extraMessage) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setContentText("Wystąpił błąd w czasie łączenia do bazy danych.\n\nSprawdź, czy dla zadanych ustawień aplikacji baza danych jest poprawnie skonfigurowana i uruchomiona.\n\nSzczegóły:\n" + e.getLocalizedMessage());
+        alert.setContentText("Wystąpił błąd w czasie łączenia do bazy danych.\n\n" +
+                (extraMessage == null ? "" : (extraMessage + "\n\n"))
+                + "Szczegóły:\n" + e.getLocalizedMessage());
         alert.setTitle("Błąd w czasie łączenia do bazy danych");
         alert.setHeaderText(null);
         alert.showAndWait();
@@ -135,8 +139,8 @@ public class ClinicApplication extends Application {
         final var dialog = new Alert(Alert.AlertType.CONFIRMATION);
         dialog.setTitle("Reinitializacja bazy danych");
         dialog.setHeaderText(null);
-        dialog.setContentText("Zmienna środowiskowa `SEED_USERNAME` istnieje. " +
-                "Czy chcesz reinitializować bazę danych? Wszystkie dane zostaną utracone, " +
+        dialog.setContentText("Podano parametry dla reinicjalizacji bazy danych.\n" +
+                "Czy chcesz kontynuować? Wszystkie dane zostaną utracone, " +
                 "schemat zostanie utworzony na nowo i wypełniony przykładowymi danymi.");
         dialog.getButtonTypes().setAll(ButtonType.YES, ButtonType.NO);
 
@@ -186,11 +190,12 @@ public class ClinicApplication extends Application {
             entityManager = entityManagerFactory.createEntityManager();
         }
         catch (ServiceException e) {
-            handleDatabaseConnectionError(e);
+            handleUnexpectedDatabaseConnectionError(e, "Sprawdź, czy dla zadanych ustawień aplikacji " +
+                    "baza danych jest poprawnie skonfigurowana, uruchomiona i dostępna.");
         }
     }
 
-    private void connectToDatabaseAsUser(String emailOrPESEL, String password) {
+    private void connectToDatabaseAsUser(String emailOrPESEL, String password) throws LoginException {
         try {
             final var username = User.getDatabaseUsernameForInput(emailOrPESEL);
             logger.fine("Database username for '%s' is '%s'".formatted(emailOrPESEL, username));
@@ -207,9 +212,14 @@ public class ClinicApplication extends Application {
             entityManagerFactory = emf;
             entityManager = em;
         }
-        // TODO: catch security specific exceptions to show "bad password" message.
         catch (ServiceException e) {
-            handleDatabaseConnectionError(e);
+            if (e.getCause() instanceof GenericJDBCException genericJDBCException) {
+                final var text = genericJDBCException.getSQLException().toString();
+                if (text.contains("password") && text.contains("fail")) {
+                    throw new LoginException("Authentication failed");
+                }
+            }
+            handleUnexpectedDatabaseConnectionError(e, null);
         }
     }
 
@@ -237,7 +247,7 @@ public class ClinicApplication extends Application {
         logger.info("Logged out");
     }
 
-    static public void logIn(String emailOrPESEL, String password) {
+    static public void logIn(String emailOrPESEL, String password) throws LoginException {
         logger.info("Logging in as `%s`".formatted(emailOrPESEL));
         instance.connectToDatabaseAsUser(emailOrPESEL, password);
         instance.user = User.getCurrent();
