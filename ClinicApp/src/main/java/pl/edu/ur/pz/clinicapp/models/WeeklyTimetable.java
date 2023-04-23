@@ -5,7 +5,7 @@ import javax.persistence.*;
 @Embeddable
 public class WeeklyTimetable {
     @Column(name = "MondayStart", nullable = true)
-    private int mondayStart;
+    private Integer mondayStart;
     public int getMondayStart() {
         return mondayStart;
     }
@@ -14,7 +14,7 @@ public class WeeklyTimetable {
     }
 
     @Column(name = "MondayEnd", nullable = true)
-    private int mondayEnd;
+    private Integer mondayEnd;
     public int getMondayEnd() {
         return mondayEnd;
     }
@@ -23,7 +23,7 @@ public class WeeklyTimetable {
     }
 
     @Column(name = "TuesdayStart", nullable = true)
-    private int tuesdayStart;
+    private Integer tuesdayStart;
     public int getTuesdayStart() {
         return tuesdayStart;
     }
@@ -32,7 +32,7 @@ public class WeeklyTimetable {
     }
 
     @Column(name = "TuesdayEnd", nullable = true)
-    private int tuesdayEnd;
+    private Integer tuesdayEnd;
     public int getTuesdayEnd() {
         return tuesdayEnd;
     }
@@ -41,7 +41,7 @@ public class WeeklyTimetable {
     }
 
     @Column(name = "WednesdayStart", nullable = true)
-    private int wednesdayStart;
+    private Integer wednesdayStart;
     public int getWednesdayStart() {
         return wednesdayStart;
     }
@@ -50,7 +50,7 @@ public class WeeklyTimetable {
     }
 
     @Column(name = "WednesdayEnd", nullable = true)
-    private int wednesdayEnd;
+    private Integer wednesdayEnd;
     public int getWednesdayEnd() {
         return wednesdayEnd;
     }
@@ -59,7 +59,7 @@ public class WeeklyTimetable {
     }
 
     @Column(name = "ThursdayStart", nullable = true)
-    private int thursdayStart;
+    private Integer thursdayStart;
     public int getThursdayStart() {
         return thursdayStart;
     }
@@ -68,7 +68,7 @@ public class WeeklyTimetable {
     }
 
     @Column(name = "ThursdayEnd", nullable = true)
-    private int thursdayEnd;
+    private Integer thursdayEnd;
     public int getThursdayEnd() {
         return thursdayEnd;
     }
@@ -77,7 +77,7 @@ public class WeeklyTimetable {
     }
 
     @Column(name = "FridayStart", nullable = true)
-    private int fridayStart;
+    private Integer fridayStart;
     public int getFridayStart() {
         return fridayStart;
     }
@@ -86,7 +86,7 @@ public class WeeklyTimetable {
     }
 
     @Column(name = "FridayEnd", nullable = true)
-    private int fridayEnd;
+    private Integer fridayEnd;
     public int getFridayEnd() {
         return fridayEnd;
     }
@@ -95,7 +95,7 @@ public class WeeklyTimetable {
     }
 
     @Column(name = "SaturdayStart", nullable = true)
-    private int saturdayStart;
+    private Integer saturdayStart;
     public int getSaturdayStart() {
         return saturdayStart;
     }
@@ -104,7 +104,7 @@ public class WeeklyTimetable {
     }
 
     @Column(name = "SaturdayEnd", nullable = true)
-    private int saturdayEnd;
+    private Integer saturdayEnd;
     public int getSaturdayEnd() {
         return saturdayEnd;
     }
@@ -113,7 +113,7 @@ public class WeeklyTimetable {
     }
 
     @Column(name = "SundayStart", nullable = true)
-    private int sundayStart;
+    private Integer sundayStart;
     public int getSundayStart() {
         return sundayStart;
     }
@@ -122,7 +122,7 @@ public class WeeklyTimetable {
     }
 
     @Column(name = "SundayEnd", nullable = true)
-    private int sundayEnd;
+    private Integer sundayEnd;
     public int getSundayEnd() {
         return sundayEnd;
     }

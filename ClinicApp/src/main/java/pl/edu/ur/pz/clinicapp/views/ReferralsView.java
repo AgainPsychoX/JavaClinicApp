@@ -3,18 +3,34 @@ package pl.edu.ur.pz.clinicapp.views;
 import javafx.fxml.FXML;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
+import org.hibernate.Session;
+import org.hibernate.query.Query;
+import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
+import java.sql.Timestamp;
+import java.util.List;
+
 public class ReferralsView extends ChildControllerBase<MainWindowController> {
+
     @FXML protected VBox vBox;
-    @FXML protected TableView table;
-    @FXML protected TableColumn patientCol;
-    @FXML protected TableColumn specCol;
-    @FXML protected TableColumn commentsCol;
-    @FXML protected TableColumn dateCol;
-    @FXML protected TableColumn doctorCol;
+    @FXML protected TableView<Referral> table;
+    @FXML protected TableColumn<Referral, Timestamp> fulDateCol;
+    @FXML protected TableColumn<Referral, String> interestCol;
+    @FXML protected TableColumn<Referral, List<String>> tagsCol;
+    @FXML protected TableColumn<Referral, String> notesCol;
+    @FXML protected TableColumn<Referral, String> feedbackCol;
+    @FXML protected TableColumn<Referral, String> codeCol;
+    @FXML protected TableColumn<Referral, Timestamp> dateCol;
+    @FXML protected TableColumn<Referral, String> doctorCol;
+
+    Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
+    Query query = session.getNamedQuery("findUsersReferrals").setParameter("uname", ClinicApplication.getUser().getDatabaseUsername());
+
 
     @Override
     public void dispose() {
@@ -23,19 +39,21 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
     @Override
     public void populate(Object... context) {
-        vBox.widthProperty().addListener((obs, oldVal, newVal) -> {
-            double tableWidth = newVal.doubleValue() - 50;
-            patientCol.setPrefWidth(tableWidth * 0.2);
-            commentsCol.setPrefWidth(tableWidth * 0.2);
-            dateCol.setPrefWidth(tableWidth * 0.2);
-            specCol.setPrefWidth(tableWidth * 0.2);
-            doctorCol.setPrefWidth(tableWidth * 0.2);
-            commentsCol.setPrefWidth(commentsCol.getPrefWidth() + tableWidth - (patientCol.getPrefWidth() + dateCol.getPrefWidth() + doctorCol.getPrefWidth() + specCol.getPrefWidth()));
-        });
+        dateCol.setCellValueFactory(new PropertyValueFactory<>("addedDate"));
+        fulDateCol.setCellValueFactory(new PropertyValueFactory<>("fulfilmentDate"));
+        interestCol.setCellValueFactory(new PropertyValueFactory<>("pointOfInterest"));
+        doctorCol.setCellValueFactory(new PropertyValueFactory<>("doctorName"));
+        notesCol.setCellValueFactory(new PropertyValueFactory<>("notes"));
+        feedbackCol.setCellValueFactory(new PropertyValueFactory<>("feedback"));
+        tagsCol.setCellValueFactory(new PropertyValueFactory<>("tags"));
+        codeCol.setCellValueFactory(new PropertyValueFactory<>("governmentId"));
+
+        refresh();
     }
 
     @Override
     public void refresh() {
-
+        List<Referral> referralList = query.getResultList();
+        table.getItems().setAll(referralList);
     }
 }
