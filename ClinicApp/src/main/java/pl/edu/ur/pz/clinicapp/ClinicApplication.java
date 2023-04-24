@@ -99,9 +99,14 @@ public class ClinicApplication extends Application {
         }
     }
 
+    private boolean tryRememberedLogin = true;
+
     private boolean waitForLogin() {
-        final var dialog = new LoginDialog("lwojcik@gmail.com", "lekarz");
-//        final var dialog = new LoginDialog();
+        final var dialog = tryRememberedLogin
+                ? new LoginDialog(
+                    properties.getProperty("login.remember.identity"),
+                    properties.getProperty("login.remember.password"))
+                : new LoginDialog(); // without prefill with remembered stuff
         dialog.showAndWait();
         if (user == null) {
             Platform.exit();
@@ -245,6 +250,7 @@ public class ClinicApplication extends Application {
         instance.user = null;
         instance.connectToDatabaseAnonymously();
         logger.info("Logged out");
+        instance.tryRememberedLogin = false;
     }
 
     static public void logIn(String emailOrPESEL, String password) throws LoginException {
