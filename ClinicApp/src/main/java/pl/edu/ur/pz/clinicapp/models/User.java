@@ -122,4 +122,6 @@ public class User {
     static public User getCurrent() {
         return ClinicApplication.getEntityManager().createNamedQuery("users.current", User.class).getSingleResult();
     }
+
+
 }
