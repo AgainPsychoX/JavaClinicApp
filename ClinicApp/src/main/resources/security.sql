@@ -3,6 +3,7 @@ SET client_min_messages = warning; -- prevent notices about things not existing 
 
 --------------------------------------------------------------------------------
 -- Login
+--------------------------------------------------------------------------------
 
 -- Anonymous user
 DO $$
@@ -38,8 +39,11 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.get_user_internal_name TO anonymous;
 
+
+
 --------------------------------------------------------------------------------
 -- Roles
+--------------------------------------------------------------------------------
 
 DROP ROLE IF EXISTS gp_patients;
 DROP ROLE IF EXISTS gp_receptionists;
@@ -60,144 +64,372 @@ CREATE ROLE gp_admins SUPERUSER CREATEDB CREATEROLE REPLICATION BYPASSRLS;
 -- > &mdash; <cite>https://www.postgresql.org/docs/current/role-membership.html</cite>
 -- so those need to be explicitly added.
 
+
+
 --------------------------------------------------------------------------------
 -- Row Level Security
+--------------------------------------------------------------------------------
 
 -- Make sure current user (superuser creating database) has RLS bypass enabled
 ALTER ROLE CURRENT_USER WITH BYPASSRLS;
 
--- Enable RLS for tables
-ALTER TABLE public.appointments         ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.doctor_specialities  ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.doctors              ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.notifications        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.patients             ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.prescriptions        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.referrals            ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.schedule_entries     ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.users                ENABLE ROW LEVEL SECURITY;
+
+--------------------------------------------------------------------------------
+-- `appointments`
+
+ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
+
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.appointments TO gp_admins;
+
+DROP POLICY IF EXISTS admin ON public.appointments;
+CREATE POLICY admin ON public.appointments FOR ALL TO gp_admins;
 
 ----------------------------------------
--- `appointments` table policies and rules
+-- INSERT
 
-DROP POLICY IF EXISTS allow_select_own ON public.appointments;
-CREATE POLICY allow_select_own ON public.appointments FOR SELECT TO gp_patients
+GRANT INSERT ON TABLE public.appointments TO gp_patients, gp_receptionists, gp_doctors;
+
+DROP POLICY IF EXISTS insert_own_as_patient ON public.appointments;
+CREATE POLICY insert_own_as_patient ON public.appointments FOR INSERT TO gp_patients
+    WITH CHECK (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+DROP POLICY IF EXISTS insert_as_reception ON public.appointments;
+CREATE POLICY insert_as_reception ON public.appointments FOR INSERT TO gp_receptionists;
+
+DROP POLICY IF EXISTS insert_own_as_doctor ON public.appointments;
+CREATE POLICY insert_own_as_doctor ON public.appointments FOR INSERT TO gp_doctors
+    WITH CHECK (doctor_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+----------------------------------------
+-- SELECT
+
+GRANT SELECT ON TABLE public.appointments TO gp_patients, gp_receptionists, gp_doctors, gp_admins;
+
+DROP POLICY IF EXISTS select_own_as_patient ON public.appointments;
+CREATE POLICY select_own_as_patient ON public.appointments FOR SELECT TO gp_patients
     USING (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
-GRANT SELECT ON TABLE public.appointments TO gp_nurses;
-GRANT SELECT, UPDATE, INSERT ON TABLE public.appointments TO gp_receptionists, gp_doctors;
+DROP POLICY IF EXISTS select_as_staff ON public.appointments;
+CREATE POLICY select_as_staff ON public.appointments FOR SELECT TO gp_receptionists, gp_nurses, gp_doctors;
 
 ----------------------------------------
--- `doctor_specialities` table policies and rules
+-- UPDATE
 
+GRANT UPDATE ON TABLE public.appointments TO gp_patients, gp_receptionists, gp_doctors;
+
+DROP POLICY IF EXISTS update_own_as_patient ON public.appointments;
+CREATE POLICY update_own_as_patient ON public.appointments FOR UPDATE TO gp_patients
+    USING (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER))
+    WITH CHECK (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+DROP POLICY IF EXISTS update_as_reception ON public.appointments;
+CREATE POLICY update_as_reception ON public.appointments FOR UPDATE TO gp_receptionists;
+
+DROP POLICY IF EXISTS update_own_as_doctor ON public.appointments;
+CREATE POLICY update_own_as_doctor ON public.appointments FOR UPDATE TO gp_doctors
+    USING (doctor_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER))
+    WITH CHECK (doctor_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+----------------------------------------
+-- DELETE
+
+DROP POLICY IF EXISTS delete_own_as_patient ON public.appointments;
+CREATE POLICY delete_own_as_patient ON public.appointments FOR DELETE TO gp_patients
+    USING (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+DROP POLICY IF EXISTS delete_as_reception ON public.appointments;
+CREATE POLICY delete_as_reception ON public.appointments FOR DELETE TO gp_receptionists;
+
+DROP POLICY IF EXISTS delete_own_as_doctor ON public.appointments;
+CREATE POLICY delete_own_as_doctor ON public.appointments FOR DELETE TO gp_doctors
+    USING (doctor_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+-- TODO: rules to validate update/inserts (dates, etc.)
+-- TODO: policy to allow patients to add appointments only if they fit in schedule properly
+-- TODO: trigger to generate notifications (if configured) on insert/update/delete
+
+
+--------------------------------------------------------------------------------
+-- `doctor_specialities`
+
+--ALTER TABLE public.doctor_specialities ENABLE ROW LEVEL SECURITY;
+GRANT ALL ON TABLE public.doctor_specialities TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
 -- TODO: rethink if we want to keep it separate or move to doctors table
 
-GRANT SELECT ON TABLE public.doctor_specialities TO gp_patients, gp_receptionists, gp_nurses, gp_doctors;
+--------------------------------------------------------------------------------
+-- `doctors`
+
+ALTER TABLE public.doctors ENABLE ROW LEVEL SECURITY;
+
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.doctors TO gp_admins;
+
+DROP POLICY IF EXISTS admin ON public.doctors;
+CREATE POLICY admin ON public.doctors FOR ALL TO gp_admins;
 
 ----------------------------------------
--- `doctors` table policies and rules
-
-DROP POLICY IF EXISTS allow_update_own ON public.doctors;
-CREATE POLICY allow_update_own ON public.doctors FOR UPDATE TO gp_doctors
-    USING (id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+-- SELECT
 
 GRANT SELECT ON TABLE public.doctors TO gp_patients, gp_receptionists, gp_nurses, gp_doctors;
 
-----------------------------------------
--- `notifications` table policies and rules
+DROP POLICY IF EXISTS select_as_anyone ON public.doctors;
+CREATE POLICY select_as_anyone ON public.doctors FOR SELECT TO PUBLIC;
 
-DROP POLICY IF EXISTS allow_select_sent ON public.notifications;
-CREATE POLICY allow_select_sent ON public.notifications FOR SELECT TO PUBLIC
+----------------------------------------
+-- UPDATE
+
+GRANT UPDATE ON TABLE public.doctors TO gp_doctors;
+
+DROP POLICY IF EXISTS update_own_as_doctor ON public.doctors;
+CREATE POLICY update_own_as_doctor ON public.doctors FOR UPDATE TO gp_doctors
+    USING (id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER))
+    WITH CHECK (id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+--------------------------------------------------------------------------------
+-- `notifications`
+
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.notifications TO gp_admins;
+
+DROP POLICY IF EXISTS admin ON public.notifications;
+CREATE POLICY admin ON public.notifications FOR ALL TO gp_admins;
+
+----------------------------------------
+-- INSERT
+
+GRANT INSERT ON TABLE public.notifications TO PUBLIC;
+
+DROP POLICY IF EXISTS insert_as_source ON public.notifications;
+CREATE POLICY insert_as_source ON public.notifications FOR INSERT TO PUBLIC
+    WITH CHECK (source_user_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+----------------------------------------
+-- SELECT
+
+GRANT SELECT ON TABLE public.notifications TO PUBLIC;
+
+DROP POLICY IF EXISTS select_as_source ON public.notifications;
+CREATE POLICY select_as_source ON public.notifications FOR SELECT TO PUBLIC
     USING (source_user_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
-DROP POLICY IF EXISTS allow_select_received ON public.notifications;
-CREATE POLICY allow_select_received ON public.notifications FOR SELECT TO PUBLIC
+DROP POLICY IF EXISTS select_as_destination ON public.notifications;
+CREATE POLICY select_as_destination ON public.notifications FOR SELECT TO PUBLIC
     USING (destination_user_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
--- TODO: rule to protect from sending as someone else
+----------------------------------------
+-- UPDATE
 
-GRANT SELECT ON TABLE public.notifications TO gp_receptionists;
-GRANT INSERT ON TABLE public.notifications TO gp_patients, gp_receptionists, gp_nurses, gp_doctors;
+GRANT UPDATE ON TABLE public.notifications TO PUBLIC;
+
+DROP POLICY IF EXISTS update_on_read ON public.notifications;
+CREATE POLICY update_on_read ON public.notifications FOR UPDATE TO PUBLIC
+    USING (destination_user_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+-- TODO: rule (or check?) to validate dates on insert
+
+--------------------------------------------------------------------------------
+-- `patients`
+
+ALTER TABLE public.patients ENABLE ROW LEVEL SECURITY;
+
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.patients TO gp_admins;
+
+DROP POLICY IF EXISTS admin ON public.patients;
+CREATE POLICY admin ON public.patients FOR ALL TO gp_admins;
 
 ----------------------------------------
--- `patients` table policies and rules
+-- INSERT
 
-DROP POLICY IF EXISTS allow_select_own ON public.patients;
-CREATE POLICY allow_select_own ON public.patients FOR SELECT TO PUBLIC
+GRANT INSERT ON TABLE public.patients TO gp_receptionists, gp_doctors;
+
+DROP POLICY IF EXISTS insert_asdf ON public.patients;
+CREATE POLICY insert_asdf ON public.patients FOR INSERT TO gp_receptionists, gp_doctors;
+
+----------------------------------------
+-- SELECT
+
+GRANT SELECT ON TABLE public.patients TO gp_patients, gp_receptionists, gp_nurses, gp_doctors;
+
+DROP POLICY IF EXISTS select_own_as_patient ON public.patients;
+CREATE POLICY select_own_as_patient ON public.patients FOR SELECT TO gp_patients
     USING (id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
-DROP POLICY IF EXISTS allow_update_own ON public.patients;
-CREATE POLICY allow_update_own ON public.patients FOR UPDATE TO PUBLIC
-    USING (id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+DROP POLICY IF EXISTS select_as_staff ON public.patients;
+CREATE POLICY select_as_staff ON public.patients FOR SELECT TO gp_receptionists, gp_nurses, gp_doctors;
+
+----------------------------------------
+-- UPDATE
+
+GRANT UPDATE ON TABLE public.patients TO gp_patients, gp_receptionists, gp_nurses, gp_doctors;
+
+DROP POLICY IF EXISTS update_own_as_patient ON public.patients;
+CREATE POLICY update_own_as_patient ON public.patients FOR UPDATE TO gp_patients
+    USING (id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER))
+    WITH CHECK (id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+DROP POLICY IF EXISTS update_as_receptionists ON public.patients;
+CREATE POLICY update_as_receptionists ON public.patients FOR UPDATE TO gp_receptionists;
+-- TODO: rules for receptionists to be able to change only non-health details
+
+DROP POLICY IF EXISTS update_as_nurse ON public.patients;
+CREATE POLICY update_as_nurse ON public.patients FOR UPDATE TO gp_nurses;
+-- TODO: rules for nurses to be able to change only health details
+
+DROP POLICY IF EXISTS update_as_doctor ON public.patients;
+CREATE POLICY update_as_doctor ON public.patients FOR UPDATE TO gp_doctors;
 
 -- TODO: rules to validate update/inserts
 
-GRANT SELECT, UPDATE ON TABLE public.patients TO gp_nurses;
-GRANT SELECT, UPDATE, INSERT ON TABLE public.patients TO gp_receptionists, gp_doctors;
+--------------------------------------------------------------------------------
+-- `prescriptions`
+
+ALTER TABLE public.prescriptions ENABLE ROW LEVEL SECURITY;
+
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.prescriptions TO gp_admins;
+
+DROP POLICY IF EXISTS admin ON public.prescriptions;
+CREATE POLICY admin ON public.prescriptions FOR ALL TO gp_admins;
 
 ----------------------------------------
--- `prescriptions` table policies and rules
+-- INSERT
 
-DROP POLICY IF EXISTS allow_select_own ON public.prescriptions;
-CREATE POLICY allow_select_own ON public.prescriptions FOR SELECT TO gp_patients
+GRANT INSERT ON TABLE public.prescriptions TO gp_doctors;
+
+DROP POLICY IF EXISTS insert_own_as_doctor ON public.prescriptions;
+CREATE POLICY insert_own_as_doctor ON public.prescriptions FOR INSERT TO gp_doctors
+    WITH CHECK (added_by_user_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+----------------------------------------
+-- SELECT
+
+GRANT SELECT ON TABLE public.prescriptions TO gp_patients, gp_nurses;
+
+DROP POLICY IF EXISTS select_own_as_patient ON public.prescriptions;
+CREATE POLICY select_own_as_patient ON public.prescriptions FOR SELECT TO gp_patients
     USING (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
-DROP POLICY IF EXISTS allow_update_added ON public.prescriptions;
-CREATE POLICY allow_update_added ON public.prescriptions FOR UPDATE TO gp_doctors
-    USING (added_by_user_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
-
--- TODO: rules to prevent doctors adding prescriptions as other doctor
--- TODO: rules to validate update/inserts
-
-GRANT SELECT ON TABLE public.prescriptions TO gp_receptionists, gp_nurses;
-GRANT SELECT, INSERT ON TABLE public.prescriptions TO gp_doctors;
+DROP POLICY IF EXISTS select_as_doctor ON public.prescriptions;
+CREATE POLICY select_as_doctor ON public.prescriptions FOR SELECT TO gp_doctors;
 
 ----------------------------------------
--- `referrals` table policies and rules
+-- UPDATE
 
-DROP POLICY IF EXISTS allow_select_own ON public.referrals;
-CREATE POLICY allow_select_own ON public.referrals FOR SELECT TO gp_patients
+GRANT UPDATE ON TABLE public.prescriptions TO gp_doctors;
+
+DROP POLICY IF EXISTS update_own_as_doctor ON public.prescriptions;
+CREATE POLICY update_own_as_doctor ON public.prescriptions FOR UPDATE TO gp_doctors
+    USING (added_by_user_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+-- TODO: rules to validate update/inserts
+-- TODO: should doctors be able to delete?
+
+--------------------------------------------------------------------------------
+-- `referrals`
+
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.referrals TO gp_admins;
+
+DROP POLICY IF EXISTS admin ON public.referrals;
+CREATE POLICY admin ON public.referrals FOR ALL TO gp_admins;
+
+----------------------------------------
+-- INSERT
+
+GRANT INSERT ON TABLE public.referrals TO gp_doctors;
+
+DROP POLICY IF EXISTS insert_own_as_doctor ON public.referrals;
+CREATE POLICY insert_own_as_doctor ON public.referrals FOR INSERT TO gp_doctors
+    WITH CHECK (added_by_user_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+----------------------------------------
+-- SELECT
+
+GRANT SELECT ON TABLE public.referrals TO gp_patients, gp_nurses;
+
+DROP POLICY IF EXISTS select_own_as_patient ON public.referrals;
+CREATE POLICY select_own_as_patient ON public.referrals FOR SELECT TO gp_patients
     USING (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
-DROP POLICY IF EXISTS allow_update_added ON public.referrals;
-CREATE POLICY allow_update_added ON public.referrals FOR UPDATE TO gp_doctors
-    USING (added_by_user_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
-
-DROP POLICY IF EXISTS allow_update_by_nurses ON public.referrals;
-CREATE POLICY allow_update_by_nurses ON public.referrals FOR UPDATE TO gp_nurses
-    USING (point_of_interest = '^^^INTERNAL NURSES^^^');
-
--- TODO: rules to prevent doctors adding referrals as other doctor
--- TODO: rules to validate update/inserts
-
-GRANT SELECT ON TABLE public.referrals TO gp_receptionists, gp_nurses;
-GRANT SELECT, INSERT ON TABLE public.referrals TO gp_doctors;
+DROP POLICY IF EXISTS select_as_doctor ON public.referrals;
+CREATE POLICY select_as_doctor ON public.referrals FOR SELECT TO gp_doctors;
 
 ----------------------------------------
--- `schedule_entries` table policies and rules
+-- UPDATE
 
+GRANT UPDATE ON TABLE public.referrals TO gp_doctors;
+
+DROP POLICY IF EXISTS update_own_as_doctor ON public.referrals;
+CREATE POLICY update_own_as_doctor ON public.referrals FOR UPDATE TO gp_doctors
+    USING (added_by_user_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+-- TODO: rules to validate update/inserts
+-- TODO: should doctors be able to delete?
+
+--------------------------------------------------------------------------------
+-- `schedule_entries`
+
+--ALTER TABLE public.schedule_entries ENABLE ROW LEVEL SECURITY;
+GRANT ALL ON TABLE public.schedule_entries TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
 -- TODO: rethink whole schedule/timetable systems
 
+--------------------------------------------------------------------------------
+-- `users`
+
+ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
+
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.users TO gp_admins;
+
+DROP POLICY IF EXISTS admin ON public.users;
+CREATE POLICY admin ON public.users FOR ALL TO gp_admins;
+
 ----------------------------------------
--- `users` table policies and rules
+-- INSERT
 
-DROP POLICY IF EXISTS allow_select_own ON public.users;
-CREATE POLICY allow_select_own ON public.users FOR SELECT TO PUBLIC
+GRANT INSERT ON TABLE public.users TO gp_receptionists, gp_doctors;
+
+DROP POLICY IF EXISTS insert_asdf ON public.users;
+CREATE POLICY insert_asdf ON public.users FOR INSERT TO gp_receptionists, gp_doctors
+    WITH CHECK (role = 'PATIENT' AND LENGTH(internal_name) = 0);
+
+----------------------------------------
+-- SELECT
+
+GRANT SELECT ON TABLE public.users TO gp_patients, gp_receptionists, gp_nurses, gp_doctors;
+
+DROP POLICY IF EXISTS select_own ON public.users;
+CREATE POLICY select_own ON public.users FOR SELECT TO PUBLIC
     USING (internal_name = CURRENT_USER);
 
-DROP POLICY IF EXISTS allow_update_own ON public.users;
-CREATE POLICY allow_update_own ON public.users FOR UPDATE TO PUBLIC
+DROP POLICY IF EXISTS select_as_staff ON public.users;
+CREATE POLICY select_as_staff ON public.users FOR ALL TO gp_receptionists, gp_nurses, gp_doctors;
+
+----------------------------------------
+-- UPDATE
+
+GRANT UPDATE ON TABLE public.users TO gp_patients, gp_receptionists, gp_nurses, gp_doctors;
+
+DROP POLICY IF EXISTS update_own_as_patient ON public.users;
+CREATE POLICY update_own_as_patient ON public.users FOR UPDATE TO gp_patients
     USING (internal_name = CURRENT_USER);
+
+DROP POLICY IF EXISTS select_asdf ON public.users;
+CREATE POLICY select_asdf ON public.users FOR UPDATE TO gp_receptionists, gp_doctors
+    USING (role = 'PATIENT')
+    WITH CHECK (role = 'PATIENT');
 
 DROP RULE IF EXISTS validate ON public.users;
 CREATE RULE validate AS ON UPDATE TO public.users
     WHERE NEW.id <> OLD.id OR NEW.internal_name <> OLD.internal_name
     DO INSTEAD NOTHING;
 
-GRANT SELECT ON TABLE public.users TO gp_nurses;
-GRANT SELECT, UPDATE, INSERT ON TABLE public.users TO gp_receptionists, gp_doctors;
+-- TODO: rules to validate update/inserts
+-- TODO: use trigger to create database account (and fill internal_name)
+-- TODO: test receptionist/doctor being unable change role of patient
+-- TODO: think how receptionist/doctor could give new patient password. default = pesel + current date?
+
+
 
 --------------------------------------------------------------------------------
 -- Audit
+--------------------------------------------------------------------------------
 
 -- TODO: think about audit/log tables, maintained by triggers?

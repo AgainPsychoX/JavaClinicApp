@@ -2,8 +2,19 @@ package pl.edu.ur.pz.clinicapp.models;
 
 import javax.persistence.*;
 
+
+
 @Entity
+
 @Table(name = "patients")
+@NamedQueries(
+        {
+                @NamedQuery(
+                        name = "findAllPatients",
+                        query = "SELECT p FROM Patient p "
+                )
+        }
+)
 public class Patient extends User {
     @Column(nullable = false, length = 11, unique = true)
     private String pesel;
@@ -29,7 +40,7 @@ public class Patient extends User {
 
     @Column(length = 40)
     private String street;
-    public String setStreet() {
+    public String getStreet() {
         return street;
     }
     public void setStreet(String street) {
@@ -38,7 +49,7 @@ public class Patient extends User {
 
     @Column(length = 16)
     private String building;
-    public String setBuilding() {
+    public String getBuilding() {
         return building;
     }
     public void setBuilding(String building) {
@@ -56,7 +67,7 @@ public class Patient extends User {
 
     @Column(length = 40)
     private String postCity;
-    public String setPostCity() {
+    public String getPostCity() {
         return postCity;
     }
     public void setPostCity(String postCity) {
