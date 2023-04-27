@@ -82,7 +82,8 @@ ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.appointments TO gp_admins;
 
 DROP POLICY IF EXISTS admin ON public.appointments;
-CREATE POLICY admin ON public.appointments FOR ALL TO gp_admins;
+CREATE POLICY admin ON public.appointments FOR ALL TO gp_admins
+    USING (TRUE);
 
 ----------------------------------------
 -- INSERT
@@ -110,7 +111,8 @@ CREATE POLICY select_own_as_patient ON public.appointments FOR SELECT TO gp_pati
     USING (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
 DROP POLICY IF EXISTS select_as_staff ON public.appointments;
-CREATE POLICY select_as_staff ON public.appointments FOR SELECT TO gp_receptionists, gp_nurses, gp_doctors;
+CREATE POLICY select_as_staff ON public.appointments FOR SELECT TO gp_receptionists, gp_nurses, gp_doctors
+    USING (TRUE);
 
 ----------------------------------------
 -- UPDATE
@@ -123,7 +125,8 @@ CREATE POLICY update_own_as_patient ON public.appointments FOR UPDATE TO gp_pati
     WITH CHECK (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
 DROP POLICY IF EXISTS update_as_reception ON public.appointments;
-CREATE POLICY update_as_reception ON public.appointments FOR UPDATE TO gp_receptionists;
+CREATE POLICY update_as_reception ON public.appointments FOR UPDATE TO gp_receptionists
+    USING (TRUE);
 
 DROP POLICY IF EXISTS update_own_as_doctor ON public.appointments;
 CREATE POLICY update_own_as_doctor ON public.appointments FOR UPDATE TO gp_doctors
@@ -138,7 +141,8 @@ CREATE POLICY delete_own_as_patient ON public.appointments FOR DELETE TO gp_pati
     USING (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
 DROP POLICY IF EXISTS delete_as_reception ON public.appointments;
-CREATE POLICY delete_as_reception ON public.appointments FOR DELETE TO gp_receptionists;
+CREATE POLICY delete_as_reception ON public.appointments FOR DELETE TO gp_receptionists
+    USING (TRUE);
 
 DROP POLICY IF EXISTS delete_own_as_doctor ON public.appointments;
 CREATE POLICY delete_own_as_doctor ON public.appointments FOR DELETE TO gp_doctors
@@ -164,7 +168,8 @@ ALTER TABLE public.doctors ENABLE ROW LEVEL SECURITY;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.doctors TO gp_admins;
 
 DROP POLICY IF EXISTS admin ON public.doctors;
-CREATE POLICY admin ON public.doctors FOR ALL TO gp_admins;
+CREATE POLICY admin ON public.doctors FOR ALL TO gp_admins
+    USING (TRUE);
 
 ----------------------------------------
 -- SELECT
@@ -172,7 +177,8 @@ CREATE POLICY admin ON public.doctors FOR ALL TO gp_admins;
 GRANT SELECT ON TABLE public.doctors TO gp_patients, gp_receptionists, gp_nurses, gp_doctors;
 
 DROP POLICY IF EXISTS select_as_anyone ON public.doctors;
-CREATE POLICY select_as_anyone ON public.doctors FOR SELECT TO PUBLIC;
+CREATE POLICY select_as_anyone ON public.doctors FOR SELECT TO PUBLIC
+    USING (TRUE);
 
 ----------------------------------------
 -- UPDATE
@@ -192,7 +198,8 @@ ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.notifications TO gp_admins;
 
 DROP POLICY IF EXISTS admin ON public.notifications;
-CREATE POLICY admin ON public.notifications FOR ALL TO gp_admins;
+CREATE POLICY admin ON public.notifications FOR ALL TO gp_admins
+    USING (TRUE);
 
 ----------------------------------------
 -- INSERT
@@ -235,7 +242,8 @@ ALTER TABLE public.patients ENABLE ROW LEVEL SECURITY;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.patients TO gp_admins;
 
 DROP POLICY IF EXISTS admin ON public.patients;
-CREATE POLICY admin ON public.patients FOR ALL TO gp_admins;
+CREATE POLICY admin ON public.patients FOR ALL TO gp_admins
+    USING (TRUE);
 
 ----------------------------------------
 -- INSERT
@@ -255,7 +263,8 @@ CREATE POLICY select_own_as_patient ON public.patients FOR SELECT TO gp_patients
     USING (id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
 DROP POLICY IF EXISTS select_as_staff ON public.patients;
-CREATE POLICY select_as_staff ON public.patients FOR SELECT TO gp_receptionists, gp_nurses, gp_doctors;
+CREATE POLICY select_as_staff ON public.patients FOR SELECT TO gp_receptionists, gp_nurses, gp_doctors
+    USING (TRUE);
 
 ----------------------------------------
 -- UPDATE
@@ -268,15 +277,18 @@ CREATE POLICY update_own_as_patient ON public.patients FOR UPDATE TO gp_patients
     WITH CHECK (id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
 DROP POLICY IF EXISTS update_as_receptionists ON public.patients;
-CREATE POLICY update_as_receptionists ON public.patients FOR UPDATE TO gp_receptionists;
+CREATE POLICY update_as_receptionists ON public.patients FOR UPDATE TO gp_receptionists
+    USING (TRUE);
 -- TODO: rules for receptionists to be able to change only non-health details
 
 DROP POLICY IF EXISTS update_as_nurse ON public.patients;
-CREATE POLICY update_as_nurse ON public.patients FOR UPDATE TO gp_nurses;
+CREATE POLICY update_as_nurse ON public.patients FOR UPDATE TO gp_nurses
+    USING (TRUE);
 -- TODO: rules for nurses to be able to change only health details
 
 DROP POLICY IF EXISTS update_as_doctor ON public.patients;
-CREATE POLICY update_as_doctor ON public.patients FOR UPDATE TO gp_doctors;
+CREATE POLICY update_as_doctor ON public.patients FOR UPDATE TO gp_doctors
+    USING (TRUE);
 
 -- TODO: rules to validate update/inserts
 
@@ -288,7 +300,8 @@ ALTER TABLE public.prescriptions ENABLE ROW LEVEL SECURITY;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.prescriptions TO gp_admins;
 
 DROP POLICY IF EXISTS admin ON public.prescriptions;
-CREATE POLICY admin ON public.prescriptions FOR ALL TO gp_admins;
+CREATE POLICY admin ON public.prescriptions FOR ALL TO gp_admins
+    USING (TRUE);
 
 ----------------------------------------
 -- INSERT
@@ -302,14 +315,15 @@ CREATE POLICY insert_own_as_doctor ON public.prescriptions FOR INSERT TO gp_doct
 ----------------------------------------
 -- SELECT
 
-GRANT SELECT ON TABLE public.prescriptions TO gp_patients, gp_nurses;
+GRANT SELECT ON TABLE public.prescriptions TO gp_patients, gp_nurses, gp_doctors;
 
 DROP POLICY IF EXISTS select_own_as_patient ON public.prescriptions;
 CREATE POLICY select_own_as_patient ON public.prescriptions FOR SELECT TO gp_patients
     USING (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
 DROP POLICY IF EXISTS select_as_doctor ON public.prescriptions;
-CREATE POLICY select_as_doctor ON public.prescriptions FOR SELECT TO gp_doctors;
+CREATE POLICY select_as_doctor ON public.prescriptions FOR SELECT TO gp_doctors
+    USING (TRUE);
 
 ----------------------------------------
 -- UPDATE
@@ -329,7 +343,8 @@ CREATE POLICY update_own_as_doctor ON public.prescriptions FOR UPDATE TO gp_doct
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.referrals TO gp_admins;
 
 DROP POLICY IF EXISTS admin ON public.referrals;
-CREATE POLICY admin ON public.referrals FOR ALL TO gp_admins;
+CREATE POLICY admin ON public.referrals FOR ALL TO gp_admins
+    USING (TRUE);
 
 ----------------------------------------
 -- INSERT
@@ -343,14 +358,15 @@ CREATE POLICY insert_own_as_doctor ON public.referrals FOR INSERT TO gp_doctors
 ----------------------------------------
 -- SELECT
 
-GRANT SELECT ON TABLE public.referrals TO gp_patients, gp_nurses;
+GRANT SELECT ON TABLE public.referrals TO gp_patients, gp_nurses, gp_doctors;
 
 DROP POLICY IF EXISTS select_own_as_patient ON public.referrals;
 CREATE POLICY select_own_as_patient ON public.referrals FOR SELECT TO gp_patients
     USING (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
 DROP POLICY IF EXISTS select_as_doctor ON public.referrals;
-CREATE POLICY select_as_doctor ON public.referrals FOR SELECT TO gp_doctors;
+CREATE POLICY select_as_doctor ON public.referrals FOR SELECT TO gp_doctors
+    USING (TRUE);
 
 ----------------------------------------
 -- UPDATE
@@ -379,7 +395,8 @@ ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.users TO gp_admins;
 
 DROP POLICY IF EXISTS admin ON public.users;
-CREATE POLICY admin ON public.users FOR ALL TO gp_admins;
+CREATE POLICY admin ON public.users FOR ALL TO gp_admins
+    USING (TRUE);
 
 ----------------------------------------
 -- INSERT
@@ -399,8 +416,13 @@ DROP POLICY IF EXISTS select_own ON public.users;
 CREATE POLICY select_own ON public.users FOR SELECT TO PUBLIC
     USING (internal_name = CURRENT_USER);
 
+CREATE POLICY select_doctors_as_anyone ON public.users FOR SELECT TO PUBLIC
+    USING (EXISTS (SELECT 1 FROM doctors WHERE doctors.id = users.id));
+-- TODO: how to protect doctors email/phone? actually do we need to protect it? 
+
 DROP POLICY IF EXISTS select_as_staff ON public.users;
-CREATE POLICY select_as_staff ON public.users FOR ALL TO gp_receptionists, gp_nurses, gp_doctors;
+CREATE POLICY select_as_staff ON public.users FOR SELECT TO gp_receptionists, gp_nurses, gp_doctors
+    USING (TRUE);
 
 ----------------------------------------
 -- UPDATE
