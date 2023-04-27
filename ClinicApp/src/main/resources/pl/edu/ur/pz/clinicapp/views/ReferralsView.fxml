@@ -17,12 +17,12 @@
             </HBox>
          </children>
       </HBox>
-      <TableView fx:id="table" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308">
+      <TableView fx:id="table" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onMouseClicked="#checkSelection" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="dateCol" maxWidth="200.0" minWidth="70.0" prefWidth="105.0" text="Data wystawienia" />
             <TableColumn fx:id="fulDateCol" maxWidth="200.0" minWidth="15.399993896484375" prefWidth="105.0" text="Data realizacji" />
-            <TableColumn fx:id="interestCol" maxWidth="200.0" minWidth="4.399993896484375" prefWidth="70.0" text="Poradnia" />
             <TableColumn fx:id="doctorCol" maxWidth="200.0" minWidth="26.4000244140625" prefWidth="120.0" text="Lekarz skierowujący" />
+            <TableColumn fx:id="interestCol" maxWidth="200.0" minWidth="4.399993896484375" prefWidth="70.0" text="Poradnia" />
             <TableColumn fx:id="notesCol" maxWidth="200.0" minWidth="70.0" prefWidth="-1.0" text="Notatki" />
             <TableColumn fx:id="feedbackCol" maxWidth="200.0" minWidth="70.0" prefWidth="-1.0" text="Opinia" />
             <TableColumn fx:id="tagsCol" maxWidth="200.0" minWidth="70.0" prefWidth="-1.0" text="Tagi" />
@@ -31,19 +31,9 @@
       </TableView>
       <HBox alignment="CENTER_LEFT">
          <children>
-            <HBox alignment="CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
+            <HBox alignment="BOTTOM_CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
                <children>
-                  <Button fx:id="markUnreadButton11" mnemonicParsing="false" prefWidth="200.0" text="Dodaj skierowanie">
-                     <padding>
-                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                     </padding>
-                  </Button>
-                  <Button fx:id="markUnreadButton" disable="true" mnemonicParsing="false" prefWidth="200.0" text="Edytuj lub anuluj">
-                     <padding>
-                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                     </padding>
-                  </Button>
-                  <Button fx:id="markUnreadButton1" disable="true" mnemonicParsing="false" prefWidth="200.0" text="Przejdź do e-skierowania (IKP)">
+                  <Button fx:id="detailsButton" disable="true" mnemonicParsing="false" onAction="#displayDetails" prefWidth="200.0" text="Szczegóły">
                      <padding>
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>

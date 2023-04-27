@@ -11,20 +11,22 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
-import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
-
 import java.sql.Timestamp;
-import java.util.List;
 
 public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
+    @FXML
+    protected Button ikpButton;
+    @FXML
+    protected Button detailsButton;
     @FXML
     protected TextField searchTextField;
     @FXML
@@ -100,12 +102,16 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         });
 
         SortedList<Referral> sortedReferrals = new SortedList<>(filteredReferrals);
-
         sortedReferrals.comparatorProperty().bind(table.comparatorProperty());
-
         table.setItems(sortedReferrals);
-
         table.refresh();
+    }
 
+    public void displayDetails(ActionEvent actionEvent) {
+        this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS, table.getSelectionModel().getSelectedItem());
+    }
+
+    public void checkSelection(MouseEvent mouseEvent) {
+        detailsButton.setDisable(table.getSelectionModel().getSelectedItem() == null);
     }
 }

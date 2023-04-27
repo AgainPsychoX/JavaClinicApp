@@ -50,6 +50,7 @@ public class MainWindowController implements Initializable {
         put(Views.VISITS, ClinicApplication.class.getResource("views/VisitsView.fxml"));
         put(Views.PATIENTS, ClinicApplication.class.getResource("views/PatientsView.fxml"));
         put(Views.REFERRALS, ClinicApplication.class.getResource("views/ReferralsView.fxml"));
+        put(Views.REFERRAL_DETAILS, ClinicApplication.class.getResource("views/ReferralDetailsView.fxml"));
         put(Views.PRESCRIPTIONS, ClinicApplication.class.getResource("views/PrescriptionsView.fxml"));
     }};
 
