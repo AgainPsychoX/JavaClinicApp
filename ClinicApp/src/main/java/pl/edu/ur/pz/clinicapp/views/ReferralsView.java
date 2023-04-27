@@ -21,7 +21,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
     @FXML protected TableView<Referral> table;
     @FXML protected TableColumn<Referral, Timestamp> fulDateCol;
     @FXML protected TableColumn<Referral, String> interestCol;
-    @FXML protected TableColumn<Referral, List<String>> tagsCol;
+    @FXML protected TableColumn<Referral, String> tagsCol;
     @FXML protected TableColumn<Referral, String> notesCol;
     @FXML protected TableColumn<Referral, String> feedbackCol;
     @FXML protected TableColumn<Referral, String> codeCol;
@@ -45,7 +45,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         doctorCol.setCellValueFactory(new PropertyValueFactory<>("doctorName"));
         notesCol.setCellValueFactory(new PropertyValueFactory<>("notes"));
         feedbackCol.setCellValueFactory(new PropertyValueFactory<>("feedback"));
-        tagsCol.setCellValueFactory(new PropertyValueFactory<>("tags"));
+        tagsCol.setCellValueFactory(new PropertyValueFactory<>("StringTags"));
         codeCol.setCellValueFactory(new PropertyValueFactory<>("governmentId"));
 
         refresh();

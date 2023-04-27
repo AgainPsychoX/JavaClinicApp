@@ -35,6 +35,7 @@ public abstract class MedicalHistoryEntry {
      */
     @Column(nullable = false, length = 255)
     private String tags;
+    public String getStringTags(){return tags;}
     private List<String> getTags() {
         return List.of(tags.split(","));
     }
