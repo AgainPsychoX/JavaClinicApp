@@ -152,12 +152,14 @@ public class MainWindowController implements Initializable {
 
             if (role == User.Role.PATIENT) {
                 c.add(buttonForNavigationMenu("Wizyty", (e) -> goToView(Views.VISITS, ClinicApplication.getUser())));
+                c.add(buttonForNavigationMenu("Recepty", (e) -> goToView(Views.PRESCRIPTIONS)));
+                c.add(buttonForNavigationMenu("Skierowania", (e) -> goToView(Views.REFERRALS)));
             }
             else {
                 c.add(buttonForNavigationMenu("Wizyty", (e) -> goToView(Views.VISITS)));
-                c.add(buttonForNavigationMenu("Pacjenci", (e) -> goToView(Views.PATIENTS)));
                 c.add(buttonForNavigationMenu("Recepty", (e) -> goToView(Views.PRESCRIPTIONS)));
                 c.add(buttonForNavigationMenu("Skierowania", (e) -> goToView(Views.REFERRALS)));
+                c.add(buttonForNavigationMenu("Pacjenci", (e) -> goToView(Views.PATIENTS)));
             }
 
             if (role == User.Role.ADMIN) {

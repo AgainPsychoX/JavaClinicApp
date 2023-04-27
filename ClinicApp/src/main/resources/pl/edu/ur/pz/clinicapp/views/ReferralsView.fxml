@@ -12,7 +12,7 @@
             <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
                <children>
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Szukaj: " />
-                  <TextField fx:id="searchTextField" />
+                  <TextField fx:id="searchTextField" onAction="#searchAction" />
                </children>
             </HBox>
          </children>
