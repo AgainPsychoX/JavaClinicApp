@@ -4,14 +4,12 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -62,6 +60,8 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
     @Override
     public void populate(Object... context) {
+        table.getSelectionModel().clearSelection();
+
         dateCol.setCellValueFactory(new PropertyValueFactory<>("addedDate"));
         fulDateCol.setCellValueFactory(new PropertyValueFactory<>("fulfilmentDate"));
         interestCol.setCellValueFactory(new PropertyValueFactory<>("pointOfInterest"));
@@ -71,17 +71,23 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         tagsCol.setCellValueFactory(new PropertyValueFactory<>("StringTags"));
         codeCol.setCellValueFactory(new PropertyValueFactory<>("governmentId"));
 
+        table.getSelectionModel().selectedItemProperty().addListener(observable -> {
+            detailsButton.setDisable(table.getSelectionModel().getSelectedItem() == null);
+        });
+
         refresh();
     }
 
     @Override
     public void refresh() {
+        table.getSelectionModel().clearSelection();
         referrals.setAll(query.getResultList());
-        table.getItems().setAll(referrals);
+        table.setItems(referrals);
     }
 
-    public void searchAction(ActionEvent event) {
+    public void searchAction() {
 
+        table.getSelectionModel().clearSelection();
         var newValue = searchTextField.getText();
         filteredReferrals.setPredicate(referral -> {
 
@@ -96,7 +102,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
             if (referral.getPointOfInterest().toLowerCase().contains(lowerCaseFilter)) return true;
             if (referral.getDoctorName().toLowerCase().contains(lowerCaseFilter)) return true;
             if (referral.getNotes().toLowerCase().contains(lowerCaseFilter)) return true;
-            if (referral.getFeedback() != null && referral.getFeedback().contains(lowerCaseFilter)) return true;
+            if (referral.getFeedback() != null && referral.getFeedback().toLowerCase().contains(lowerCaseFilter)) return true;
             if (referral.getStringTags().toLowerCase().contains(lowerCaseFilter)) return true;
             return referral.getGovernmentId() != null && referral.getGovernmentId().contains(lowerCaseFilter);
         });
@@ -104,14 +110,9 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         SortedList<Referral> sortedReferrals = new SortedList<>(filteredReferrals);
         sortedReferrals.comparatorProperty().bind(table.comparatorProperty());
         table.setItems(sortedReferrals);
-        table.refresh();
     }
 
-    public void displayDetails(ActionEvent actionEvent) {
+    public void displayDetails() {
         this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS, table.getSelectionModel().getSelectedItem());
-    }
-
-    public void checkSelection(MouseEvent mouseEvent) {
-        detailsButton.setDisable(table.getSelectionModel().getSelectedItem() == null);
     }
 }

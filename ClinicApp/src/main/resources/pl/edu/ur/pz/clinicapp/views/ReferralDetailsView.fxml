@@ -37,7 +37,7 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Data wystawienia">
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Data i godzina wystawienia">
                <GridPane.margin>
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                </GridPane.margin>
@@ -47,16 +47,28 @@
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                </GridPane.margin>
             </TextField>
-            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Data realizacji" GridPane.columnIndex="1">
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Data i godzina realizacji" GridPane.columnIndex="1">
                <GridPane.margin>
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                </GridPane.margin>
             </Text>
-            <TextField fx:id="fulDateField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1">
+            <HBox GridPane.columnIndex="1" GridPane.rowIndex="1">
                <GridPane.margin>
-                  <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                  <Insets bottom="4.0" top="4.0" />
                </GridPane.margin>
-            </TextField>
+               <children>
+                  <DatePicker fx:id="fulDatePicker" disable="true" editable="false">
+                     <HBox.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </HBox.margin>
+                  </DatePicker>
+                  <TextField fx:id="fulDateTimeField" editable="false" prefHeight="26.0">
+                     <HBox.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </HBox.margin>
+                  </TextField>
+               </children>
+            </HBox>
             <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Lekarz skierowujący" GridPane.rowIndex="2">
                <GridPane.margin>
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
@@ -67,11 +79,23 @@
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                </GridPane.margin>
             </Text>
-            <TextField fx:id="dateField" editable="false" GridPane.rowIndex="1">
+            <HBox GridPane.rowIndex="1">
+               <children>
+                  <DatePicker fx:id="datePicker" disable="true" editable="false">
+                     <HBox.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </HBox.margin>
+                  </DatePicker>
+                  <TextField fx:id="dateTimeField" editable="false" prefHeight="26.0">
+                     <HBox.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </HBox.margin>
+                  </TextField>
+               </children>
                <GridPane.margin>
-                  <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                  <Insets bottom="4.0" top="4.0" />
                </GridPane.margin>
-            </TextField>
+            </HBox>
             <TextField fx:id="interestField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="3">
                <GridPane.margin>
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
@@ -124,19 +148,27 @@
       </GridPane>
         <HBox alignment="BOTTOM_CENTER" maxHeight="100.0" maxWidth="1000.0" VBox.vgrow="ALWAYS">
             <children>
-                <HBox alignment="CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
+                <HBox fx:id="buttonBox" alignment="CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
                     <children>
                         <Button fx:id="editButton" mnemonicParsing="false" onAction="#editSave" prefWidth="200.0" text="Edytuj">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
+                  <Button fx:id="deleteButton" layoutX="106.0" layoutY="44.0" mnemonicParsing="false" onAction="#delete" prefWidth="200.0" text="Usuń">
+                     <padding>
+                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                     </padding>
+                  </Button>
                         <Button fx:id="IKPButton" mnemonicParsing="false" onAction="#sendToIKP" prefWidth="200.0" text="Przejdź do e-skierowania (IKP)">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
                     </children>
+               <HBox.margin>
+                  <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+               </HBox.margin>
                 </HBox>
             </children>
         </HBox>

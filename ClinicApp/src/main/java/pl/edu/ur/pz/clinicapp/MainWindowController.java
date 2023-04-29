@@ -15,6 +15,7 @@ import javafx.stage.Window;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildController;
 import pl.edu.ur.pz.clinicapp.utils.HistoryTracker;
+import pl.edu.ur.pz.clinicapp.views.ReferralDetailsView;
 
 import java.io.IOException;
 import java.net.URL;
@@ -173,6 +174,7 @@ public class MainWindowController implements Initializable {
                 this.setOnAction((e) -> {
                     // Log-out is necessary here, even tho there already is `setOnCloseRequest` for the stage,
                     // as it just catches window event.
+                    if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
                     ClinicApplication.logOut();
                     getStage().close();
                 });
@@ -201,6 +203,9 @@ public class MainWindowController implements Initializable {
     public void goToViewRaw(Views which, Object... context) {
         final var newView = getView(which);
         final var oldView = getPreviousView();
+
+        if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
+
         if (oldView != null && oldView.controller != null) {
             oldView.controller.dispose();
         }

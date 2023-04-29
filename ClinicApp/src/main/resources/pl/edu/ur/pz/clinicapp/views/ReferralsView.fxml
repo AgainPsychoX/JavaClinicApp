@@ -17,7 +17,7 @@
             </HBox>
          </children>
       </HBox>
-      <TableView fx:id="table" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" onMouseClicked="#checkSelection" VBox.vgrow="ALWAYS">
+      <TableView fx:id="table" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
         <columns>
             <TableColumn fx:id="dateCol" maxWidth="200.0" minWidth="70.0" prefWidth="105.0" text="Data wystawienia" />
             <TableColumn fx:id="fulDateCol" maxWidth="200.0" minWidth="15.399993896484375" prefWidth="105.0" text="Data realizacji" />
