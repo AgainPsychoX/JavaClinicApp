@@ -1,5 +1,6 @@
 package pl.edu.ur.pz.clinicapp.views;
 
+import javafx.animation.PauseTransition;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -11,21 +12,17 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
-import javax.persistence.Query;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
 public class PatientsView extends ChildControllerBase<MainWindowController> implements Initializable {
-    @FXML
-    protected VBox vBox;
     @FXML
     protected TableView<Patient> table;
     @FXML
@@ -46,18 +43,32 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
     protected ObservableList<Patient> patients = FXCollections.observableArrayList();
     protected FilteredList<Patient> filteredPatients = new FilteredList<>(patients, b -> true);
 
+    protected PauseTransition searchDebounce;
 
     @Override
-    public void dispose() {
-        super.dispose();
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        nameCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getName()));
+        surnameCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSurname()));
+        peselCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPESEL()));
+        phoneCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPhone()));
+        emailCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getEmail()));
+        addressCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddressDisplayShort()));
+
+        // Debounce for search action on key typed to avoid lag
+        searchDebounce = new PauseTransition(Duration.millis(250));
+        searchDebounce.setOnFinished(this::searchAction);
+
+        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> searchDebounce.playFromStart());
+    }
+
+    private List<Patient> getAllPatients() {
+        return ClinicApplication.getEntityManager().createNamedQuery("patients", Patient.class).getResultList();
     }
 
     @Override
     public void populate(Object... context) {
-        Query query = ClinicApplication.getEntityManager().createNamedQuery("findAllPatients", Patient.class);
-        patients.setAll(query.getResultList());
+        patients.setAll(getAllPatients());
         table.getItems().setAll(patients);
-
     }
 
     @Override
@@ -65,47 +76,24 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
         populate();
     }
 
-    @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
+    @FXML
+    protected void searchAction(ActionEvent event) {
+        searchDebounce.stop();
 
-        nameCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getName()));
-        surnameCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSurname()));
-        peselCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPESEL()));
-        phoneCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPhone()));
-        emailCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getEmail()));
-        addressCol.setCellValueFactory(features -> {
-
-            String address =  features.getValue().getCity() + " ul." + features.getValue().getStreet() + " " + features.getValue().getBuilding();
-            return new ReadOnlyObjectWrapper<>(address);
-        });
-
-    }
-
-    public void searchAction(ActionEvent event) {
-
-        var newValue = searchTextField.getText();
+        final var text = searchTextField.getText().toLowerCase();
         filteredPatients.setPredicate(patients -> {
-
-            if (newValue == null || newValue.isEmpty()) {
-                return true;
-            }
-            String lowerCaseFilter = newValue.toLowerCase();
-
-            if (patients.getName().toLowerCase().contains(lowerCaseFilter)) return true;
-            if (patients.getSurname().toLowerCase().contains(lowerCaseFilter)) return true;
-            if (patients.getPhone() != null && patients.getPhone().toLowerCase().contains(lowerCaseFilter)) return true;
-            if (patients.getPESEL().toLowerCase().contains(lowerCaseFilter)) return true;
-            if (patients.getEmail() != null && patients.getEmail().toLowerCase().contains(lowerCaseFilter)) return true;
+            if (text.isBlank()) return true;
+            if (patients.getName().toLowerCase().contains(text)) return true;
+            if (patients.getSurname().toLowerCase().contains(text)) return true;
+            if (patients.getPhone() != null && patients.getPhone().toLowerCase().contains(text)) return true;
+            if (patients.getPESEL().toLowerCase().contains(text)) return true;
+            if (patients.getEmail() != null && patients.getEmail().toLowerCase().contains(text)) return true;
             return false;
         });
 
         SortedList<Patient> sortedPatients = new SortedList<>(filteredPatients);
-
         sortedPatients.comparatorProperty().bind(table.comparatorProperty());
-
         table.setItems(sortedPatients);
-
         table.refresh();
-
     }
 }
