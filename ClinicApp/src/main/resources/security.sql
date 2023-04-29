@@ -45,6 +45,8 @@ GRANT EXECUTE ON FUNCTION public.get_user_internal_name TO anonymous;
 -- Roles
 --------------------------------------------------------------------------------
 
+GRANT USAGE ON schema public TO PUBLIC;
+
 DROP ROLE IF EXISTS gp_patients;
 DROP ROLE IF EXISTS gp_receptionists;
 DROP ROLE IF EXISTS gp_nurses;
@@ -151,14 +153,6 @@ CREATE POLICY delete_own_as_doctor ON public.appointments FOR DELETE TO gp_docto
 -- TODO: rules to validate update/inserts (dates, etc.)
 -- TODO: policy to allow patients to add appointments only if they fit in schedule properly
 -- TODO: trigger to generate notifications (if configured) on insert/update/delete
-
-
---------------------------------------------------------------------------------
--- `doctor_specialities`
-
---ALTER TABLE public.doctor_specialities ENABLE ROW LEVEL SECURITY;
-GRANT ALL ON TABLE public.doctor_specialities TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
--- TODO: rethink if we want to keep it separate or move to doctors table
 
 --------------------------------------------------------------------------------
 -- `doctors`

@@ -20,24 +20,6 @@ SET client_min_messages = warning;
 SET row_security = on;
 
 
-
---
--- TOC entry 3395 (class 0 OID 17205)
--- Dependencies: 217
--- Data for Name: doctor_specialities; Type: TABLE DATA; Schema: public; Owner: admin
---
-
-INSERT INTO public.doctor_specialities (id, default_visit_time, name) VALUES (1, 15, 'lekarz ogólny');
-INSERT INTO public.doctor_specialities (id, default_visit_time, name) VALUES (2, 15, 'pediatra');
-INSERT INTO public.doctor_specialities (id, default_visit_time, name) VALUES (3, 15, 'dermatolog');
-INSERT INTO public.doctor_specialities (id, default_visit_time, name) VALUES (4, 45, 'kardiolog');
-INSERT INTO public.doctor_specialities (id, default_visit_time, name) VALUES (5, 30, 'okulista');
-INSERT INTO public.doctor_specialities (id, default_visit_time, name) VALUES (6, 15, 'laryngolog');
-INSERT INTO public.doctor_specialities (id, default_visit_time, name) VALUES (7, 20, 'neurolog');
-INSERT INTO public.doctor_specialities (id, default_visit_time, name) VALUES (8, 60, 'psycholog');
-INSERT INTO public.doctor_specialities (id, default_visit_time, name) VALUES (9, 60, 'stomatolog');
-
-
 --
 -- TOC entry 3407 (class 0 OID 17252)
 -- Dependencies: 229
@@ -871,24 +853,24 @@ INSERT INTO public.patients (building, city, pesel, post_city, post_code, street
 -- Data for Name: doctors; Type: TABLE DATA; Schema: public; Owner: admin
 --
 
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (780, 480, 960, 480, NULL, NULL, NULL, NULL, 960, 480, 960, 480, 960, 480, 1, 1);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (780, 480, 1080, 480, NULL, NULL, NULL, NULL, 1080, 480, 720, 540, 1080, 480, 2, 1);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1140, 900, 3, 2);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1080, 900, NULL, NULL, 4, 2);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (1170, 780, 1140, 1020, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1170, 870, 5, 3);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (960, 810, NULL, NULL, NULL, NULL, NULL, NULL, 750, 540, 780, 540, NULL, NULL, 6, 3);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (NULL, NULL, 960, 480, NULL, NULL, NULL, NULL, 960, 480, NULL, NULL, 960, 480, 7, 4);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (960, 480, NULL, NULL, NULL, NULL, NULL, NULL, 960, 480, 960, 480, NULL, NULL, 8, 4);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (750, 480, 960, 810, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 750, 480, 9, 5);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 750, 480, 960, 810, 750, 480, 10, 5);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (NULL, NULL, 960, 810, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 960, 810, 11, 6);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 960, 810, 750, 480, 12, 6);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (NULL, NULL, 1020, 840, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 13, 7);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 1020, 780, NULL, NULL, 1020, 840, 14, 7);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (NULL, NULL, 840, 480, NULL, NULL, NULL, NULL, 1080, 780, 1080, 780, 840, 480, 15, 8);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (1080, 780, NULL, NULL, NULL, NULL, NULL, NULL, 840, 480, 840, 480, 1080, 780, 16, 8);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (960, 480, 960, 480, NULL, NULL, NULL, NULL, 960, 480, 960, 480, 960, 480, 17, 9);
-INSERT INTO public.doctors (friday_end, friday_start, monday_end, monday_start, saturday_end, saturday_start, sunday_end, sunday_start, thursday_end, thursday_start, tuesday_end, tuesday_start, wednesday_end, wednesday_start, id, speciality_id) VALUES (1080, 600, 1080, 600, NULL, NULL, NULL, NULL, 1080, 600, 1080, 600, 1080, 600, 18, 9);
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (1, 15, 'lekarz ogólny');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (2, 15, 'lekarz ogólny');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (3, 15, 'pediatra');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (4, 15, 'pediatra');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (5, 15, 'dermatolog');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (6, 15, 'dermatolog');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (7, 45, 'kardiolog');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (8, 45, 'kardiolog');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (9, 30, 'okulista');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (10, 30, 'okulista');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (11, 15, 'laryngolog');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (12, 15, 'laryngolog');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (13, 20, 'neurolog');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (14, 20, 'neurolog');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (15, 60, 'psycholog');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (16, 60, 'psycholog');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (17, 60, 'stomatolog');
+INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (18, 60, 'stomatolog');
 
 
 --
@@ -1012,15 +994,6 @@ INSERT INTO public.schedule_entries (id, date_begin, date_end, type, user_id) VA
 --
 
 SELECT pg_catalog.setval('public.appointments_id_seq', 1, false);
-
-
---
--- TOC entry 3414 (class 0 OID 0)
--- Dependencies: 216
--- Name: doctor_specialities_id_seq; Type: SEQUENCE SET; Schema: public; Owner: admin
---
-
-SELECT pg_catalog.setval('public.doctor_specialities_id_seq', 1, false);
 
 
 --
