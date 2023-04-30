@@ -4,7 +4,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "doctors")
-public class Doctor extends User {
+public class Doctor extends Patient {
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "speciality_id", referencedColumnName = "id", nullable = false)
     public DoctorSpecialty speciality;

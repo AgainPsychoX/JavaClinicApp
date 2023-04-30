@@ -2,19 +2,14 @@ package pl.edu.ur.pz.clinicapp.models;
 
 import javax.persistence.*;
 
-
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
 
 @Entity
-
 @Table(name = "patients")
-@NamedQueries(
-        {
-                @NamedQuery(
-                        name = "findAllPatients",
-                        query = "SELECT p FROM Patient p "
-                )
-        }
-)
+@Inheritance(strategy = InheritanceType.JOINED)
+@NamedQueries({
+        @NamedQuery(name = "patients",  query = "FROM Patient")
+})
 public class Patient extends User {
     @Column(nullable = false, length = 11, unique = true)
     private String pesel;
@@ -72,5 +67,41 @@ public class Patient extends User {
     }
     public void setPostCity(String postCity) {
         this.postCity = postCity;
+    }
+
+    /**
+     * Returns address for displaying in short form (without post code or post city).
+     * Example: Some city ul. Some street 123a
+     */
+    public String getAddressDisplayShort() {
+        final var builder = new StringBuilder(80);
+        builder.append(city);
+        if (!isStringNullOrEmpty(street)) {
+            builder.append(" ul. ");
+            builder.append(street);
+        }
+        builder.append(' ');
+        builder.append(building);
+        return builder.toString();
+    }
+
+    /**
+     * Returns address for displaying in long form (with post code or post city).
+     * Example: Some city ul. Some street 123a\n12-345 Some city
+     */
+    public String getAddressDisplayLong() {
+        final var builder = new StringBuilder(80);
+        builder.append(city);
+        if (!isStringNullOrEmpty(street)) {
+            builder.append(" ul. ");
+            builder.append(street);
+        }
+        builder.append(' ');
+        builder.append(building);
+        builder.append('\n');
+        builder.append(postCode);
+        builder.append(' ');
+        builder.append(postCity);
+        return builder.toString();
     }
 }
