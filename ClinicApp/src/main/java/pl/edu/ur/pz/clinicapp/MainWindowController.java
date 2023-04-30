@@ -205,6 +205,7 @@ public class MainWindowController implements Initializable {
         final var oldView = getPreviousView();
 
         if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
+        ReferralDetailsView.setEditState(false);
 
         if (oldView != null && oldView.controller != null) {
             oldView.controller.dispose();

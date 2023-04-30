@@ -8,17 +8,40 @@
 
 <VBox fx:id="vBox" prefHeight="540.0" prefWidth="600.0" spacing="8.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.ReferralDetailsView">
     <children>
-      <Text fx:id="backText" fill="#4d89ff" layoutX="18.0" layoutY="35.0" onMouseClicked="#onBackClick" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="back-text" text="&lt;  Powrót do skierowań">
-         <font>
-            <Font name="System Bold" size="16.0" />
-         </font>
+      <HBox>
          <VBox.margin>
             <Insets left="4.0" top="15.0" />
          </VBox.margin>
-         <cursor>
-            <Cursor fx:constant="HAND" />
-         </cursor>
-      </Text>
+         <children>
+            <HBox>
+               <children>
+                  <Text fx:id="backText" fill="#4d89ff" onMouseClicked="#onBackClick" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="back-text" text="&lt;  Powrót do skierowań" HBox.hgrow="ALWAYS">
+                     <font>
+                        <Font name="System Bold" size="16.0" />
+                     </font>
+                     <cursor>
+                        <Cursor fx:constant="HAND" />
+                     </cursor>
+                     <HBox.margin>
+                        <Insets bottom="4.0" top="4.0" />
+                     </HBox.margin>
+                  </Text>
+               </children>
+            </HBox>
+            <HBox alignment="TOP_RIGHT" HBox.hgrow="ALWAYS">
+               <HBox.margin>
+                  <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+               </HBox.margin>
+               <children>
+                  <Text fx:id="patientField" strokeType="OUTSIDE" strokeWidth="0.0" text="Pacjent: Adam Nowak" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </HBox.margin>
+                  </Text>
+               </children>
+            </HBox>
+         </children>
+      </HBox>
       <GridPane VBox.vgrow="ALWAYS">
         <columnConstraints>
           <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" percentWidth="50.0" />
@@ -37,7 +60,7 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Data i godzina wystawienia">
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Data* i godzina wystawienia">
                <GridPane.margin>
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                </GridPane.margin>
@@ -101,7 +124,7 @@
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                </GridPane.margin>
             </TextField>
-            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Notatki" GridPane.rowIndex="4">
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Notatki*" GridPane.rowIndex="4">
                <GridPane.margin>
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                </GridPane.margin>
@@ -124,7 +147,7 @@
                   <Insets top="1.0" />
                </padding>
             </TextArea>
-            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Tagi" GridPane.rowIndex="8">
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Tagi*" GridPane.rowIndex="8">
                <GridPane.margin>
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                </GridPane.margin>

@@ -340,7 +340,7 @@ CREATE POLICY update_own_as_doctor ON public.prescriptions FOR UPDATE TO gp_doct
 --------------------------------------------------------------------------------
 -- `referrals`
 
-GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.referrals TO gp_admins, gp_patients; -- TEST ONLY
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.referrals TO gp_admins, gp_doctors; -- TEST ONLY
 
 DROP POLICY IF EXISTS admin ON public.referrals;
 CREATE POLICY admin ON public.referrals FOR ALL TO gp_admins

@@ -16,9 +16,12 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.jpa.TypedParameterValue;
 import org.hibernate.query.Query;
+import org.hibernate.type.StandardBasicTypes;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
@@ -32,8 +35,17 @@ import java.util.Optional;
 
 public class ReferralDetailsView extends ChildControllerBase<MainWindowController> {
 
-    private Referral ref;
-    private static BooleanProperty editState = new SimpleBooleanProperty(false);
+
+
+    /**
+     * Available window modes (details of existing referral or creation of a new one).
+     */
+    public enum RefMode {DETAILS, CREATE};
+
+    /**
+     * Current view mode.
+     */
+    private RefMode currMode;
     @FXML
     protected HBox buttonBox;
     @FXML
@@ -66,66 +78,78 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
     protected Button IKPButton;
     @FXML
     protected VBox vBox;
-
+    @FXML
+    protected Text patientField;
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
     Query editQuery = session.getNamedQuery("editReferral");
     Query deleteQuery = session.getNamedQuery("deleteReferral");
+    private Referral ref;
 
-    public static boolean getEditState(){
+    private static BooleanProperty editState = new SimpleBooleanProperty(false);
+    private Patient targetPatient;
+
+    /**
+     * Get current edit state (fields editable or non-editable).
+     */
+    public static boolean getEditState() {
         return editState.getValue();
     }
 
+    /**
+     * Set current edit state (fields editable or non-editable).
+     */
+    public static void setEditState(boolean editState) {
+        ReferralDetailsView.editState.set(editState);
+    }
+
+    /**
+     * Default dispose method.
+     */
     @Override
     public void dispose() {
         super.dispose();
     }
 
-    public static Boolean exitConfirm (){
+    /**
+     * Displays alert about unsaved changes and returns whether user wants to discard them or not.
+     */
+    public static Boolean exitConfirm() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Niezapisane zmiany");
         alert.setHeaderText("Widok w trybie edycji");
-        alert.setContentText("Wszystkie niezapisane zmiany zostaną utracone.");
+        alert.setContentText("Czy na pewno chcesz opuścić ten widok? Wszystkie niezapisane zmiany zostaną utracone.");
         Optional<ButtonType> result = alert.showAndWait();
 
         return result.get() == ButtonType.OK;
     }
 
+    /**
+     * Checks if window is in edit state and accordingly displays alert and/or changes view to previous one.
+     */
     public void onBackClick() {
-        if(editState.getValue()){
-            if (exitConfirm()){
+        if (editState.getValue()) {
+            if (exitConfirm()) {
                 editState.setValue(!editState.getValue());
                 this.getParentController().goBack();
             }
-        }else{
+        } else {
             this.getParentController().goBack();
         }
     }
 
+    /**
+     * Adds listener to the editState which accordingly sets fields to editable or non-editable.
+     * Checks current window mode and user's identity and accordingly removes forbidden activities (edit and deletion
+     * for non-creators of the referral or deletion if mode is set to CREATE).
+     * Sets editState to true if mode is set to CREATE.
+     */
     @Override
     public void populate(Object... context) {
-        ref = (Referral) context[0];
-        User.Role role = ClinicApplication.getUser().getRole();
-
-//        TEST ONLY
-//
-//        if(role != User.Role.ADMIN && ref.getAddedBy() != ClinicApplication.getUser()){
-//            buttonBox.getChildren().remove(editButton);
-//            buttonBox.getChildren().remove(deleteButton);
-//        }
-
-        fulDatePicker.setStyle("-fx-opacity: 1.0;");
-        fulDatePicker.getEditor().setStyle("-fx-opacity: 1.0;");
-        datePicker.setStyle("-fx-opacity: 1.0;");
-        datePicker.getEditor().setStyle("-fx-opacity: 1.0;");
-        refresh();
-
         editState.addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observableValue, Boolean before, Boolean after) {
                 if (after) {
                     editButton.setText("Zapisz");
-
-                    doctorField.setEditable(true);
                     fulDatePicker.setEditable(true);
                     fulDatePicker.setDisable(false);
                     fulDateTimeField.setEditable(true);
@@ -139,7 +163,6 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
                     tagsField.setEditable(true);
                 } else {
                     editButton.setText("Edytuj");
-                    doctorField.setEditable(false);
                     fulDatePicker.setEditable(false);
                     fulDatePicker.setDisable(true);
                     fulDateTimeField.setEditable(false);
@@ -154,8 +177,60 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
                 }
             }
         });
+
+        User.Role role = ClinicApplication.getUser().getRole();
+        currMode = (RefMode) context[0];
+
+        fulDatePicker.setStyle("-fx-opacity: 1.0;");
+        fulDatePicker.getEditor().setStyle("-fx-opacity: 1.0;");
+        datePicker.setStyle("-fx-opacity: 1.0;");
+        datePicker.getEditor().setStyle("-fx-opacity: 1.0;");
+
+        if (currMode == RefMode.DETAILS) {
+            ref = (Referral) context[1];
+
+            // in case the referral was edited while app is running
+            ClinicApplication.getEntityManager().refresh(ref);
+
+            if (role != User.Role.ADMIN && ref.getAddedBy() != ClinicApplication.getUser()) {
+                buttonBox.getChildren().remove(editButton);
+                buttonBox.getChildren().remove(deleteButton);
+                patientField.setText(null);
+            } else {
+                buttonBox.getChildren().remove(IKPButton);
+                if(!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
+                if(!buttonBox.getChildren().contains(deleteButton)) buttonBox.getChildren().add(deleteButton);
+                buttonBox.getChildren().add(IKPButton);
+                patientField.setText("Pacjent: " + ref.getPatient().getDisplayName());
+            }
+            refresh();
+        } else {
+
+            buttonBox.getChildren().remove(deleteButton);
+            buttonBox.getChildren().remove(IKPButton);
+            if(!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
+            buttonBox.getChildren().add(IKPButton);
+
+            doctorField.setText(ClinicApplication.getUser().getDisplayName());
+            fulDatePicker.setValue(null);
+            fulDateTimeField.setText(null);
+            datePicker.setValue(null);
+            dateTimeField.setText(null);
+            interestField.setText(null);
+            notesArea.setText(null);
+            feedbackArea.setText(null);
+            codeField.setText(null);
+            tagsField.setText(null);
+            targetPatient = (Patient) context[1];
+            editState.setValue(true);
+
+            patientField.setText("Pacjent: " + targetPatient.getDisplayName());
+        }
     }
 
+    /**
+     * Sets values of table cells.
+     */
     @Override
     public void refresh() {
         doctorField.setText(ref.getDoctorName());
@@ -178,27 +253,107 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
         tagsField.setText(ref.getStringTags());
     }
 
+    /**
+     * According to current edit state sets fields editable or saves entered data (edits chosen referral or creates
+     * a new one).
+     */
     public void editSave() {
+        Transaction transaction;
         try {
-            if (editState.getValue()) {
-                String newAddedDate = datePicker.getValue().toString().trim() + " " + dateTimeField.getText().trim();
-                editQuery.setParameter("addedDate", Timestamp.valueOf((dateTimeField.getText().length() != 8) ? newAddedDate + ":00" : newAddedDate));
-                String newFulDate = fulDatePicker.getValue().toString().trim() + " " + fulDateTimeField.getText().trim();
-                editQuery.setParameter("fulfilmentDate", Timestamp.valueOf((fulDateTimeField.getText().length() != 8) ? newFulDate + ":00" : newFulDate));
-                editQuery.setParameter("pointOfInterest", interestField.getText().trim());
-                editQuery.setParameter("notes", notesArea.getText().trim());
-                editQuery.setParameter("feedback", feedbackArea.getText().trim());
-                editQuery.setParameter("tags", tagsField.getText().trim());
-                editQuery.setParameter("governmentId", codeField.getText().trim());
-                editQuery.setParameter("refId", ref.getId());
+            String dateVal = (datePicker.getValue() == null) ? null : datePicker.getValue().toString();
+            String dateTimeVal = (dateTimeField.getText() == null) ? "00:00:00" : dateTimeField.getText();
+            String fulDateVal = (fulDatePicker.getValue() == null) ? null : fulDatePicker.getValue().toString();
+            String fulDateTimeVal = (fulDateTimeField.getText() == null) ? "00:00:00" : fulDateTimeField.getText();
+            if (currMode == RefMode.DETAILS) {
+                if (editState.getValue()) {
+                    if (dateVal == null || notesArea.getText() == null || notesArea.getText().trim().equals("")
+                            || tagsField.getText() == null ||tagsField.getText().trim().equals("")) {
+                        Alert alert = new Alert(Alert.AlertType.ERROR);
+                        alert.setTitle("Błąd zapisu");
+                        alert.setHeaderText("Nie wypełniono wymaganych pól");
+                        alert.setContentText("Pola daty wystawienia, notatek i tagów są wymagane.");
+                        alert.showAndWait();
+                        editState.setValue(!editState.getValue());
+                    } else {
+                        String newAddedDate = dateVal + " " + dateTimeVal;
+                        String newFulDate = fulDateVal + " " + fulDateTimeVal;
+                        editQuery.setParameter("addedDate", Timestamp.valueOf((dateTimeVal.length() != 8)
+                                ? newAddedDate + ":00" : newAddedDate));
+                        if (fulDateVal == null) {
+                            editQuery.setParameter("fulfilmentDate",
+                                    new TypedParameterValue(StandardBasicTypes.CALENDAR_DATE, null));
+                        } else {
+                            editQuery.setParameter("fulfilmentDate", Timestamp.valueOf((fulDateTimeVal.length() != 8)
+                                    ? newFulDate + ":00" : newFulDate));
+                        }
+                        editQuery.setParameter("pointOfInterest", (interestField.getText() == null)
+                                ? new TypedParameterValue(StandardBasicTypes.STRING, null)
+                                : interestField.getText().trim());
+                        editQuery.setParameter("notes", (notesArea.getText() == null)
+                                ? new TypedParameterValue(StandardBasicTypes.STRING, null)
+                                : notesArea.getText().trim());
+                        editQuery.setParameter("feedback", (feedbackArea.getText() == null)
+                                ? new TypedParameterValue(StandardBasicTypes.STRING, null)
+                                : feedbackArea.getText().trim());
+                        editQuery.setParameter("tags", (tagsField.getText() == null)
+                                ? new TypedParameterValue(StandardBasicTypes.STRING, null)
+                                : tagsField.getText().trim());
+                        editQuery.setParameter("governmentId", (codeField.getText() == null)
+                                ? new TypedParameterValue(StandardBasicTypes.STRING, null)
+                                : codeField.getText().trim());
+                        editQuery.setParameter("refId", ref.getId());
 
-                Transaction transaction = session.beginTransaction();
-                editQuery.executeUpdate();
-                transaction.commit();
-                ClinicApplication.getEntityManager().refresh(ref);
+                        transaction = session.beginTransaction();
+                        editQuery.executeUpdate();
+                        transaction.commit();
+                        ClinicApplication.getEntityManager().refresh(ref);
+                    }
+                }
+            } else {
+                if (dateVal == null || notesArea.getText() == null || notesArea.getText().trim().equals("")
+                        || tagsField.getText() == null ||tagsField.getText().trim().equals("")) {
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Błąd zapisu");
+                    alert.setHeaderText("Nie wypełniono wymaganych pól");
+                    alert.setContentText("Pola daty wystawienia, notatek i tagów są wymagane.");
+                    alert.showAndWait();
+                    editState.setValue(!editState.getValue());
+                } else {
+                    transaction = session.beginTransaction();
+                    Referral newRef = new Referral();
+                    newRef.setAddedBy(ClinicApplication.getUser());
+                    String newAddedDate = dateVal + " " + dateTimeVal;
+                    String newFulDate = fulDateVal + " " + fulDateTimeVal;
+                    newRef.setAddedDate(Timestamp.valueOf((dateTimeVal.length() != 8)
+                            ? newAddedDate + ":00" : newAddedDate));
+                    if (fulDateVal == null) {
+                        newRef.setFulfilmentDate(null);
+                    } else {
+                        newRef.setFulfilmentDate(Timestamp.valueOf((fulDateTimeVal.length() != 8)
+                                ? newFulDate + ":00" : newFulDate));
+                    }
+                    newRef.setPointOfInterest((interestField.getText() == null)
+                            ? null : interestField.getText().trim());
+                    newRef.setNotes((notesArea.getText() == null)
+                            ? null : notesArea.getText().trim());
+                    newRef.setFeedback((feedbackArea.getText() == null)
+                            ? null : feedbackArea.getText().trim());
+                    newRef.setStringTags((tagsField.getText() == null)
+                            ? null : tagsField.getText().trim());
+                    newRef.setGovernmentId((codeField.getText() == null)
+                            ? null : codeField.getText().trim());
+                    newRef.setPatient(targetPatient);
+                    session.persist(newRef);
+                    transaction.commit();
+                    editState.setValue(!editState.getValue());
+                    this.getParentController().goBack();
+                    return;
+                }
             }
             editState.setValue(!editState.getValue());
-        }catch (IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
+            transaction = session.getTransaction();
+            if (transaction.isActive()) transaction.rollback();
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Błąd zapisu");
             alert.setHeaderText("Niepoprawny format godziny.");
@@ -207,14 +362,17 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
         }
     }
 
+    /**
+     * Deletes current referral.
+     */
     public void delete() {
-        Alert alert  = new Alert(Alert.AlertType.CONFIRMATION);
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Usuwanie skierowania");
         alert.setHeaderText("Czy na pewno chcesz usunąć to skierowanie?");
         alert.setContentText("Tej operacji nie można cofnąć.");
 
         Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == ButtonType.OK){
+        if (result.get() == ButtonType.OK) {
             deleteQuery.setParameter("refId", ref.getId());
             Transaction transaction = session.beginTransaction();
             deleteQuery.executeUpdate();
@@ -225,6 +383,9 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
         }
     }
 
+    /**
+     * Opens government's website for patients.
+     */
     public void sendToIKP() {
         try {
             Desktop desktop = Desktop.getDesktop();

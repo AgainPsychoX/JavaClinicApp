@@ -1,26 +1,34 @@
 package pl.edu.ur.pz.clinicapp.views;
 
+import javafx.animation.PauseTransition;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+
 import java.sql.Timestamp;
+import java.util.List;
 
 public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
+    @FXML
+    protected Button addButton;
     @FXML
     protected Button ikpButton;
     @FXML
@@ -51,13 +59,21 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
     protected ObservableList<Referral> referrals = FXCollections.observableArrayList();
     protected FilteredList<Referral> filteredReferrals = new FilteredList<>(referrals, b -> true);
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
-    Query query = session.getNamedQuery("findUsersReferrals").setParameter("uname", ClinicApplication.getUser().getDatabaseUsername());
+    protected PauseTransition searchDebounce;
+    Query query = session.getNamedQuery("findUsersReferrals").setParameter("uname",
+            ClinicApplication.getUser().getDatabaseUsername());
 
+    /**
+     * Default dispose method.
+     */
     @Override
     public void dispose() {
         super.dispose();
     }
 
+    /**
+     * Initializes table cells and adds listener which enables or disables the edit/save button.
+     */
     @Override
     public void populate(Object... context) {
         table.getSelectionModel().clearSelection();
@@ -75,36 +91,54 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
             detailsButton.setDisable(table.getSelectionModel().getSelectedItem() == null);
         });
 
+        searchDebounce = new PauseTransition(Duration.millis(250));
+        searchDebounce.setOnFinished(this::searchAction);
+        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> searchDebounce.playFromStart());
+
         refresh();
+
+        // if search field is not empty, perform search again - for user's convenience (no need to hit enter/type again)
+        if (searchTextField.getText() != null && !searchTextField.getText().trim().equals("")) {
+            searchAction(new ActionEvent());
+        }
     }
 
+    /**
+     * Sets values of table cells.
+     */
     @Override
     public void refresh() {
         table.getSelectionModel().clearSelection();
+        List results = query.getResultList();
+
+        //in case some element gets edited while app is running
+        for (Object refElem : results) {
+            ClinicApplication.getEntityManager().refresh(refElem);
+        }
         referrals.setAll(query.getResultList());
         table.setItems(referrals);
     }
 
-    public void searchAction() {
-
+    /**
+     * Filters table rows according to text typed in the search field.
+     */
+    public void searchAction(ActionEvent event) {
+        searchDebounce.stop();
         table.getSelectionModel().clearSelection();
-        var newValue = searchTextField.getText();
+        final var text = searchTextField.getText().toLowerCase();
         filteredReferrals.setPredicate(referral -> {
-
-            if (newValue == null || newValue.isEmpty()) {
+            if (text.isBlank()) return true;
+            if (referral.getAddedDate().toString().contains(text.trim())) return true;
+            if (referral.getFulfilmentDate() != null && referral.getFulfilmentDate().toString().contains(text.trim()))
                 return true;
-            }
-            String lowerCaseFilter = newValue.toLowerCase();
-
-            if (referral.getAddedDate().toString().contains(lowerCaseFilter)) return true;
-            if (referral.getFulfilmentDate() != null && referral.getFulfilmentDate().toString().contains(lowerCaseFilter))
+            if (referral.getPointOfInterest() != null && referral.getPointOfInterest().toLowerCase().contains(text.trim()))
                 return true;
-            if (referral.getPointOfInterest().toLowerCase().contains(lowerCaseFilter)) return true;
-            if (referral.getDoctorName().toLowerCase().contains(lowerCaseFilter)) return true;
-            if (referral.getNotes().toLowerCase().contains(lowerCaseFilter)) return true;
-            if (referral.getFeedback() != null && referral.getFeedback().toLowerCase().contains(lowerCaseFilter)) return true;
-            if (referral.getStringTags().toLowerCase().contains(lowerCaseFilter)) return true;
-            return referral.getGovernmentId() != null && referral.getGovernmentId().contains(lowerCaseFilter);
+            if (referral.getDoctorName().toLowerCase().contains(text.trim())) return true;
+            if (referral.getNotes().toLowerCase().contains(text.trim())) return true;
+            if (referral.getFeedback() != null && referral.getFeedback().toLowerCase().contains(text.trim()))
+                return true;
+            if (referral.getStringTags().toLowerCase().contains(text.trim())) return true;
+            return referral.getGovernmentId() != null && referral.getGovernmentId().contains(text.trim());
         });
 
         SortedList<Referral> sortedReferrals = new SortedList<>(filteredReferrals);
@@ -112,7 +146,17 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         table.setItems(sortedReferrals);
     }
 
+    /**
+     * Opens details view of the chosen referral in DETAILS mode.
+     */
     public void displayDetails() {
-        this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS, table.getSelectionModel().getSelectedItem());
+        this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS,
+                ReferralDetailsView.RefMode.DETAILS, table.getSelectionModel().getSelectedItem());
+    }
+
+    // TEST ONLY - last param should be a patient, for now it's current user
+    public void addReferral() {
+        this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS,
+                ReferralDetailsView.RefMode.CREATE, ClinicApplication.getUser());
     }
 }

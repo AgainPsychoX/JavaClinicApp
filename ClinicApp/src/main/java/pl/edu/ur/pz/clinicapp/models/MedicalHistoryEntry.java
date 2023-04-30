@@ -39,6 +39,9 @@ public abstract class MedicalHistoryEntry {
     private List<String> getTags() {
         return List.of(tags.split(","));
     }
+    public void setStringTags(String tags){
+        this.tags = tags;
+    }
     private void setTags(List<String> tags) {
         // TODO: Internally should be using some smart class acting like `List`, but assuring max length of underlying string.
         //       Would be nice to use converter `AttributeConverter` to avoid duplicate memory usage.
