@@ -7,8 +7,26 @@ import java.sql.Timestamp;
         {
                 @NamedNativeQuery(
                         name = "findUsersReferrals",
-                        query = "SELECT * FROM referrals R INNER JOIN patients P ON R.patient_id=P.id " +
-                                "INNER JOIN users U on U.id = P.id WHERE U.internal_name = :uname",
+                        query = "SELECT * FROM referrals R INNER JOIN patients P ON R.patient_id=P.id "
+                                + "INNER JOIN users U on U.id = P.id WHERE U.internal_name = :uname",
+                        resultClass = Referral.class
+                ),
+                @NamedNativeQuery(
+                        name = "editReferral",
+                        query = "UPDATE referrals "
+                                + "SET added_date = :addedDate, "
+                                + "fulfilment_date = :fulfilmentDate, "
+                                + "point_of_interest = :pointOfInterest, "
+                                + "notes = :notes, "
+                                + "feedback = :feedback, "
+                                + "tags = :tags, "
+                                + "government_id = :governmentId "
+                                + "WHERE id = :refId",
+                        resultClass = Referral.class
+                ),
+                @NamedNativeQuery(
+                        name = "deleteReferral",
+                        query = "DELETE FROM referrals WHERE id = :refId",
                         resultClass = Referral.class
                 )
         }
