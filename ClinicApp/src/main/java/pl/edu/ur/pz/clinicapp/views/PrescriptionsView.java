@@ -161,7 +161,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
             if (referral.getAddedDate().toString().contains(text.trim())) return true;
             if (referral.getDoctorName().toLowerCase().contains(text.trim())) return true;
             if (referral.getNotes().toLowerCase().contains(text.trim())) return true;
-            if (referral.getStringTags().toLowerCase().contains(text.trim())) return true;
+//            if (referral.getStringTags().toLowerCase().contains(text.trim())) return true;
             return referral.getGovernmentId() != null && referral.getGovernmentId().contains(text.trim());
         });
 

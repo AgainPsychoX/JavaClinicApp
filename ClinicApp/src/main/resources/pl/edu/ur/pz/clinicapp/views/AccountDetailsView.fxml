@@ -35,7 +35,7 @@
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField text="Adam" GridPane.rowIndex="1">
+                <TextField fx:id="name" text="Adam" GridPane.rowIndex="1">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
@@ -45,7 +45,7 @@
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField text="Kwaśniewski" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <TextField fx:id="surname" text="Kwaśniewski" GridPane.columnIndex="1" GridPane.rowIndex="1">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
@@ -55,7 +55,7 @@
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField text="88080808088" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                <TextField fx:id="pesel" text="88080808088" GridPane.columnIndex="2" GridPane.rowIndex="1">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
@@ -65,7 +65,7 @@
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField text="Rzeszów, ul. Nieistniejąca 17/6 " GridPane.columnSpan="2" GridPane.rowIndex="3">
+                <TextField fx:id="address" text="Rzeszów, ul. Nieistniejąca 17/6 " GridPane.columnSpan="2" GridPane.rowIndex="3">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
@@ -75,7 +75,7 @@
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField text="Rzeszów 35-123" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                <TextField fx:id="post" text="Rzeszów 35-123" GridPane.columnIndex="2" GridPane.rowIndex="3">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
@@ -85,7 +85,7 @@
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField text="+48 731 731 731" GridPane.rowIndex="5">
+                <TextField fx:id="phone" text="+48 731 731 731" GridPane.rowIndex="5">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
@@ -95,7 +95,7 @@
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField text="adam.kwasniewski@example.com" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                <TextField fx:id="email" text="adam.kwasniewski@example.com" GridPane.columnIndex="1" GridPane.rowIndex="5">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>

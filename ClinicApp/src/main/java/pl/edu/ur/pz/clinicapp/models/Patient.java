@@ -1,5 +1,7 @@
 package pl.edu.ur.pz.clinicapp.models;
 
+import pl.edu.ur.pz.clinicapp.ClinicApplication;
+
 import javax.persistence.*;
 
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
@@ -8,8 +10,10 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
 @Table(name = "patients")
 @Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries({
-        @NamedQuery(name = "patients",  query = "FROM Patient")
+        @NamedQuery(name = "patients",  query = "FROM Patient"),
+        @NamedQuery(name = "patients.current", query = "SELECT patient FROM Patient patient WHERE patient.databaseUsername = FUNCTION('CURRENT_USER')")
 })
+
 public class Patient extends User {
     @Column(nullable = false, length = 11, unique = true)
     private String pesel;
@@ -103,5 +107,9 @@ public class Patient extends User {
         builder.append(' ');
         builder.append(postCity);
         return builder.toString();
+    }
+
+    static public Patient getCurrent() {
+        return ClinicApplication.getEntityManager().createNamedQuery("patients.current", Patient.class).getSingleResult();
     }
 }
