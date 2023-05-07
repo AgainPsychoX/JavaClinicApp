@@ -13,6 +13,15 @@ import javax.persistence.*;
 })
 @NamedNativeQueries({
         @NamedNativeQuery(name = "login", query = "SELECT get_user_internal_name(:input) AS internal_name"),
+        @NamedNativeQuery(name = "createUser", query = "INSERT INTO users "
+                +"(internal_name, email, name, phone, role, surname) VALUES "
+                +"(:internalName, :email, :name, :phone, :role, :surname)",
+                resultClass = User.class),
+        @NamedNativeQuery(name = "createDatabaseUser", query = "CREATE USER :userName LOGIN ENCRYPTED "
+                +"PASSWORD :password IN ROLE gp_patients",
+                resultClass = User.class),
+        @NamedNativeQuery(name = "findDatabaseUser", query = "SELECT FROM pg_catalog.pg_roles WHERE rolname = :rolname",
+                resultClass = User.class),
 })
 public class User {
     public enum Role {
@@ -29,7 +38,7 @@ public class User {
 
         public String toString() {
             // TODO: when we have localization it will look much nicer
-            if (this == PATIENT)   return "Pacjent";
+            if (this == PATIENT)   return "PATIENT";
             if (this == RECEPTION) return "Recepcja";
             if (this == NURSE)     return "Pielęgniarka";
             if (this == DOCTOR)    return "Lekarz";
@@ -108,6 +117,9 @@ public class User {
     private String databaseUsername;
     public String getDatabaseUsername() {
         return databaseUsername;
+    }
+    public void setDatabaseUsername(String databaseUsername) {
+        this.databaseUsername = databaseUsername;
     }
 
     static public String getDatabaseUsernameForInput(String emailOrPESEL) {
