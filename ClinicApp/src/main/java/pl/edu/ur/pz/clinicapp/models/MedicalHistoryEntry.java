@@ -35,12 +35,16 @@ public abstract class MedicalHistoryEntry {
      */
     @Column(nullable = false, length = 255)
     private String tags;
-    private List<String> getTags() {
+    public String getStringTags(){return tags;}
+    public List<String> getTags() {
         return List.of(tags.split(","));
     }
     private void setTags(List<String> tags) {
         // TODO: Internally should be using some smart class acting like `List`, but assuring max length of underlying string.
         //       Would be nice to use converter `AttributeConverter` to avoid duplicate memory usage.
+    }
+    public void setStringTags(String tags){
+        this.tags = tags;
     }
 
     /**
