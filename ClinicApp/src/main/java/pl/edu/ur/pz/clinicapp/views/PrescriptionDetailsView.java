@@ -182,7 +182,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
     public void refresh() {
         doctorTextField.setText(prescription.getDoctorName());
         notesTextField.setText(prescription.getNotes());
-//        tagsTextField.setText(prescription.getStringTags());
+        tagsTextField.setText(prescription.getStringTags());
         codeTextField.setText(prescription.getGovernmentId());
         patientTextField.setText(prescription.getPatientName());
     }
@@ -233,8 +233,8 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                     newPr.setAddedBy(ClinicApplication.getUser());
                     newPr.setNotes((notesTextField.getText() == null)
                             ? null : notesTextField.getText().trim());
-//                    newPr.setStringTags((tagsTextField.getText() == null)
-//                            ? null : tagsTextField.getText().trim());
+                    newPr.setStringTags((tagsTextField.getText() == null)
+                            ? null : tagsTextField.getText().trim());
                     newPr.setGovernmentId((codeTextField.getText() == null)
                             ? null : codeTextField.getText().trim());
                     newPr.setPatient(targetPatient);

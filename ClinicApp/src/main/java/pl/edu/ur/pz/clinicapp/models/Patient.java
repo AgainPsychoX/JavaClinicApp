@@ -13,7 +13,6 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
         @NamedQuery(name = "patients",  query = "FROM Patient"),
         @NamedQuery(name = "patients.current", query = "SELECT patient FROM Patient patient WHERE patient.databaseUsername = FUNCTION('CURRENT_USER')")
 })
-
 public class Patient extends User {
     @Column(nullable = false, length = 11, unique = true)
     private String pesel;
