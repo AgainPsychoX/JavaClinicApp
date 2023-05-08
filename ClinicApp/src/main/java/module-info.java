@@ -7,6 +7,7 @@ module pl.edu.ur.pz.clinicapp {
     requires org.hibernate.orm.core;
     requires org.controlsfx.controls;
     requires java.naming;
+    requires java.desktop;
 
     exports pl.edu.ur.pz.clinicapp;
     exports pl.edu.ur.pz.clinicapp.models;
