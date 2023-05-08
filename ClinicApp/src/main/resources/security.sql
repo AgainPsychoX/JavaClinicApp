@@ -48,6 +48,8 @@ GRANT EXECUTE ON FUNCTION public.get_user_internal_name TO anonymous;
 -- Roles
 --------------------------------------------------------------------------------
 
+GRANT USAGE ON schema public TO PUBLIC;
+
 DROP ROLE IF EXISTS gp_patients;
 DROP ROLE IF EXISTS gp_receptionists;
 DROP ROLE IF EXISTS gp_nurses;
