@@ -853,24 +853,24 @@ INSERT INTO public.patients (building, city, pesel, post_city, post_code, street
 -- Data for Name: doctors; Type: TABLE DATA; Schema: public; Owner: admin
 --
 
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (1, 15, 'lekarz ogólny');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (2, 15, 'lekarz ogólny');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (3, 15, 'pediatra');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (4, 15, 'pediatra');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (5, 15, 'dermatolog');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (6, 15, 'dermatolog');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (7, 45, 'kardiolog');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (8, 45, 'kardiolog');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (9, 30, 'okulista');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (10, 30, 'okulista');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (11, 15, 'laryngolog');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (12, 15, 'laryngolog');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (13, 20, 'neurolog');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (14, 20, 'neurolog');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (15, 60, 'psycholog');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (16, 60, 'psycholog');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (17, 60, 'stomatolog');
-INSERT INTO public.doctors (id, default_visit_time, speciality) VALUES (18, 60, 'stomatolog');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (1, 15, 'lekarz ogólny');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (2, 15, 'lekarz ogólny');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (3, 15, 'pediatra');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (4, 15, 'pediatra');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (5, 15, 'dermatolog');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (6, 15, 'dermatolog');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (7, 45, 'kardiolog');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (8, 45, 'kardiolog');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (9, 30, 'okulista');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (10, 30, 'okulista');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (11, 15, 'laryngolog');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (12, 15, 'laryngolog');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (13, 20, 'neurolog');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (14, 20, 'neurolog');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (15, 60, 'psycholog');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (16, 60, 'psycholog');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (17, 60, 'stomatolog');
+INSERT INTO public.doctors (id, default_visit_duration, speciality) VALUES (18, 60, 'stomatolog');
 
 
 --
@@ -983,8 +983,8 @@ INSERT INTO public.referrals (id, added_date, notes, tags, feedback, fulfilment_
 -- Data for Name: schedule_entries; Type: TABLE DATA; Schema: public; Owner: admin
 --
 
-INSERT INTO public.schedule_entries (id, date_begin, date_end, type, user_id) VALUES (1, '2023-08-07 00:00:00', '2023-08-21 00:00:00', 'urlop', 5);
-INSERT INTO public.schedule_entries (id, date_begin, date_end, type, user_id) VALUES (2, '2023-08-21 00:00:00', '2023-09-04 00:00:00', 'urlop', 2);
+--INSERT INTO public.schedule_entries (id, date_begin, date_end, type, user_id) VALUES (1, '2023-08-07 00:00:00', '2023-08-21 00:00:00', 'urlop', 5);
+--INSERT INTO public.schedule_entries (id, date_begin, date_end, type, user_id) VALUES (2, '2023-08-21 00:00:00', '2023-09-04 00:00:00', 'urlop', 2);
 
 
 --
@@ -1029,7 +1029,7 @@ SELECT pg_catalog.setval('public.referrals_id_seq', 1, false);
 -- Name: schedule_entries_id_seq; Type: SEQUENCE SET; Schema: public; Owner: admin
 --
 
-SELECT pg_catalog.setval('public.schedule_entries_id_seq', 1, false);
+--SELECT pg_catalog.setval('public.schedule_entries_id_seq', 1, false);
 
 
 --

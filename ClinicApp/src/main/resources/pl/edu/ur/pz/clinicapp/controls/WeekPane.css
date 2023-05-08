@@ -1,0 +1,31 @@
+
+.week-pane .scroll-pane {
+    -fx-background-color: transparent;
+}
+.week-pane .header.grid {
+    -fx-border-style: solid;
+    -fx-border-color: gray;
+    -fx-border-width: 0 0 1 0;
+
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.2));
+    -fx-background-position: top;
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: 100% 16px;
+}
+.week-pane .rows.grid .row {
+    -fx-border-color: #333;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-style: solid;
+}
+.week-pane .rows.grid .column.day {
+    -fx-border-color: #333;
+    -fx-border-width: 0 0 0 1;
+    -fx-border-style: solid;
+}
+.week-pane .rows.grid .entry {
+    -fx-background-color: #A4C2FD;
+
+    -fx-border-color: #333;
+    -fx-border-width: 0 0 1 1;
+    -fx-border-style: solid;
+}

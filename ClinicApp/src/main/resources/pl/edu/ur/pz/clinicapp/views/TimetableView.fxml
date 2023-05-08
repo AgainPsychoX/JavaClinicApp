@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import pl.edu.ur.pz.clinicapp.controls.WeekPane?>
+
+<VBox fx:id="content" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefHeight="540.0" prefWidth="600.0" spacing="8.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.TimetableView">
+   <padding>
+      <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+   </padding>
+   <children>
+      <HBox alignment="CENTER_LEFT">
+         <children>
+            <Text fx:id="headerText" strokeType="OUTSIDE" strokeWidth="0.0" text="Terminarz: Maciej Dąbrowski" />
+            <HBox alignment="CENTER_RIGHT" spacing="8.0" HBox.hgrow="ALWAYS">
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Efektywny:" />
+                  <Button fx:id="previousWeekButton" mnemonicParsing="false" onAction="#goPreviousWeekAction" text="&lt;" />
+                  <DatePicker fx:id="datePicker" onAction="#datePickerAction" promptText="od YYYY-MM-DD i dalej" />
+                  <Button fx:id="nextWeekButton" mnemonicParsing="false" onAction="#goNextWeekAction" text="&gt;" />
+               </children>
+            </HBox>
+         </children>
+      </HBox>
+      <WeekPane fx:id="weekPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
+   </children>
+</VBox>

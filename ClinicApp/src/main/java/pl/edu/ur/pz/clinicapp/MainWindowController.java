@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.getStageFromEvent;
-
 public class MainWindowController implements Initializable {
     public enum Views {
         WELCOME,
@@ -41,6 +39,7 @@ public class MainWindowController implements Initializable {
         PRESCRIPTIONS,
         PRESCRIPTION_DETAILS,
         REPORTS,
+        TIMETABLE,
     }
 
     private static final EnumMap<Views, URL> viewToResource = new EnumMap<>(Views.class) {{
@@ -51,6 +50,7 @@ public class MainWindowController implements Initializable {
         put(Views.PATIENTS, ClinicApplication.class.getResource("views/PatientsView.fxml"));
         put(Views.REFERRALS, ClinicApplication.class.getResource("views/ReferralsView.fxml"));
         put(Views.PRESCRIPTIONS, ClinicApplication.class.getResource("views/PrescriptionsView.fxml"));
+        put(Views.TIMETABLE, ClinicApplication.class.getResource("views/TimetableView.fxml"));
     }};
 
     static class ViewDefinition {
@@ -161,6 +161,7 @@ public class MainWindowController implements Initializable {
             }
 
             if (role == User.Role.ADMIN) {
+                c.add(buttonForNavigationMenu("WIP: WeekPane", (e) -> goToView(Views.TIMETABLE)));
                 c.add(buttonForNavigationMenu("Zarządzanie kontami", (e) -> goToView(Views.ACCOUNTS)));
                 c.add(buttonForNavigationMenu("Raporty", (e) -> goToView(Views.REPORTS)));
             }

@@ -375,10 +375,10 @@ CREATE POLICY update_own_as_doctor ON public.referrals FOR UPDATE TO gp_doctors
 -- TODO: should doctors be able to delete?
 
 --------------------------------------------------------------------------------
--- `schedule_entries`
+-- `schedule_simple_entries`
 
---ALTER TABLE public.schedule_entries ENABLE ROW LEVEL SECURITY;
-GRANT ALL ON TABLE public.schedule_entries TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
+--ALTER TABLE public.schedule_simple_entries ENABLE ROW LEVEL SECURITY;
+GRANT ALL ON TABLE public.schedule_simple_entries TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
 -- TODO: rethink whole schedule/timetable systems
 
 --------------------------------------------------------------------------------

@@ -12,20 +12,20 @@ import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
     @FXML protected VBox vBox;
     @FXML protected TableView<Referral> table;
-    @FXML protected TableColumn<Referral, Timestamp> fulDateCol;
+    @FXML protected TableColumn<Referral, Instant> fulDateCol;
     @FXML protected TableColumn<Referral, String> interestCol;
     @FXML protected TableColumn<Referral, List<String>> tagsCol;
     @FXML protected TableColumn<Referral, String> notesCol;
     @FXML protected TableColumn<Referral, String> feedbackCol;
     @FXML protected TableColumn<Referral, String> codeCol;
-    @FXML protected TableColumn<Referral, Timestamp> dateCol;
+    @FXML protected TableColumn<Referral, Instant> dateCol;
     @FXML protected TableColumn<Referral, String> doctorCol;
 
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);

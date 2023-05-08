@@ -4,6 +4,7 @@ import org.hibernate.annotations.Type;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
 import javax.persistence.*;
+import java.util.Collection;
 
 @Entity
 @Table(name = "users")
@@ -75,7 +76,6 @@ public class User {
         this.phone = phone;
     }
 
-
     @Column(nullable = false, length = 40)
     private String name;
     public String getName() {
@@ -124,4 +124,20 @@ public class User {
     }
 
 
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @OrderBy("effective_date DESC")
+    private Collection<Timetable> timetables;
+
+    /**
+     * @return Collection of all timetables objects related to the user,
+     * the latest effective date first.
+     */
+    public Collection<Timetable> getTimetables() {
+        return timetables;
+    }
+
+    public Schedule getSchedule() {
+        return Schedule.of(this);
+    }
 }
