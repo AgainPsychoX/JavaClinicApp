@@ -320,7 +320,7 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             hideColumn(7);
         } else {
             showColumn(6);
-            hideColumn(7);
+            showColumn(7);
         }
     }
 }

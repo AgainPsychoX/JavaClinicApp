@@ -106,7 +106,7 @@
             </HBox>
             <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0" GridPane.columnIndex="6">
                <children>
-                  <Label alignment="CENTER" contentDisplay="CENTER" text="%header.saturday" textAlignment="CENTER" />
+                  <Label alignment="CENTER" contentDisplay="CENTER" ellipsisString="" text="%header.saturday" textAlignment="CENTER" />
                </children>
                <styleClass>
                   <String fx:value="header" />
@@ -119,7 +119,7 @@
             </HBox>
             <HBox alignment="CENTER" layoutX="10.0" layoutY="10.0" GridPane.columnIndex="7">
                <children>
-                  <Label alignment="CENTER" contentDisplay="CENTER" text="%header.sunday" textAlignment="CENTER" />
+                  <Label alignment="CENTER" contentDisplay="CENTER" ellipsisString="" text="%header.sunday" textAlignment="CENTER" />
                </children>
                <styleClass>
                   <String fx:value="header" />
