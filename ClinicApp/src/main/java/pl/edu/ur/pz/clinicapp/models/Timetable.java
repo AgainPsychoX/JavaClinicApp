@@ -7,8 +7,8 @@ import java.io.Serializable;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "timetables")
@@ -46,11 +46,15 @@ public class Timetable {
         this.effectiveDate = effectiveDate;
     }
 
-    @OneToMany(mappedBy = "timetable", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "timetable", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @OrderBy("weekday, start_minute")
-    private Collection<Entry> entries;
-    public Collection<Entry> getEntries() {
+    private Set<Entry> entries;
+    public Set<Entry> getEntries() {
         return entries;
+    }
+
+    public void add(Timetable.Entry entry) {
+        entries.add(entry);
     }
 
     public Timetable() {
@@ -58,10 +62,10 @@ public class Timetable {
     }
 
     public Timetable(ZonedDateTime effectiveDate) {
-        this(effectiveDate, new ArrayList<>(7));
+        this(effectiveDate, new HashSet<>(7));
     }
 
-    public Timetable(ZonedDateTime effectiveDate, Collection<Entry> entries) {
+    public Timetable(ZonedDateTime effectiveDate, Set<Entry> entries) {
         this.effectiveDate = effectiveDate;
         this.entries = entries;
     }

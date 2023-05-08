@@ -14,6 +14,7 @@ import org.hibernate.service.spi.ServiceException;
 import pl.edu.ur.pz.clinicapp.dialogs.LoginDialog;
 import pl.edu.ur.pz.clinicapp.localization.JavaFxBuiltInsLocalizationFix;
 import pl.edu.ur.pz.clinicapp.models.User;
+import pl.edu.ur.pz.clinicapp.utils.ExampleDataSeeder;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -26,6 +27,7 @@ import java.io.InputStream;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -157,6 +159,7 @@ public class ClinicApplication extends Application {
     }
 
     private void seedDatabase() {
+        // TODO: allow migration only (minimalist/structure only seeding - no example data)
         disconnectFromDatabase();
         logger.fine("----------------------------------------------------------------");
         logger.info("Seeding database...");
@@ -168,6 +171,25 @@ public class ClinicApplication extends Application {
                     Map.entry("hibernate.hbm2ddl.auto", "create")
             ));
             entityManager = entityManagerFactory.createEntityManager();
+
+            // Reconnect after running HBM2DDL & SQLs; required as Hibernate is blind after permissions changes
+            logger.finer("Reconnecting (planned)");
+            entityManager.close();
+            entityManagerFactory.close();
+            entityManagerFactory = Persistence.createEntityManagerFactory("default", Map.ofEntries(
+                    Map.entry("hibernate.connection.username", properties.getProperty("seeding.username")),
+                    Map.entry("hibernate.connection.password", properties.getProperty("seeding.password"))
+            ));
+            entityManager = entityManagerFactory.createEntityManager();
+
+            // Invoke example data seeder
+            long seed = new Random().nextLong();
+            final var seedString = properties.getProperty("seeding.seed");
+            if (!isStringNullOrEmpty(seedString)) {
+                seed = Long.parseLong(seedString);
+            }
+            new ExampleDataSeeder(entityManager, seed).run();
+
             logger.info("Finished seeding!");
         }
         catch (Exception e) {

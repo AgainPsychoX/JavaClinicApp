@@ -11,6 +11,7 @@ import java.util.Collection;
 @Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries({
         @NamedQuery(name = "users.current", query = "SELECT user FROM User user WHERE user.databaseUsername = FUNCTION('CURRENT_USER')"),
+        @NamedQuery(name = "users.get_by_login", query = "SELECT user FROM User user WHERE user.databaseUsername = FUNCTION('get_user_internal_name', :input)"),
 })
 @NamedNativeQueries({
         @NamedNativeQuery(name = "login", query = "SELECT get_user_internal_name(:input) AS internal_name"),
@@ -112,7 +113,7 @@ public class User {
 
     static public String getDatabaseUsernameForInput(String emailOrPESEL) {
         final var em = ClinicApplication.getEntityManager();
-        Query query = em.createNamedQuery("login");
+        final var query = em.createNamedQuery("login");
         query.setParameter("input", emailOrPESEL.toLowerCase());
         return (String) query.getSingleResult();
     }
@@ -121,6 +122,13 @@ public class User {
 
     static public User getCurrent() {
         return ClinicApplication.getEntityManager().createNamedQuery("users.current", User.class).getSingleResult();
+    }
+
+    static public User getByLogin(String emailOrPESEL) {
+        final var em = ClinicApplication.getEntityManager();
+        final var query = em.createNamedQuery("users.get_by_login", User.class);
+        query.setParameter("input", emailOrPESEL.toLowerCase());
+        return query.getSingleResult();
     }
 
 
