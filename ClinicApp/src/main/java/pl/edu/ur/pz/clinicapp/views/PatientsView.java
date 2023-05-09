@@ -67,6 +67,11 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
 
     @Override
     public void populate(Object... context) {
+        // Testing
+        final var q = ClinicApplication.getEntityManager().createNamedQuery("patient34", Patient.class);
+        final var r = q.getSingleResult();
+        System.out.println(r);
+
         patients.setAll(getAllPatients());
         table.getItems().setAll(patients);
     }

@@ -8,7 +8,12 @@ import javax.persistence.*;
 @Entity
 @Table(name = "users")
 @NamedQueries({
-        @NamedQuery(name = "users.current", query = "SELECT user FROM User user WHERE user.databaseUsername = FUNCTION('CURRENT_USER')"),
+        @NamedQuery(name = "users.current", query = """
+            FROM User user
+                LEFT JOIN FETCH user.patient
+                LEFT JOIN FETCH user.doctor
+            WHERE user.databaseUsername = FUNCTION('CURRENT_USER')
+        """),
 })
 @NamedNativeQueries({
         @NamedNativeQuery(name = "login", query = "SELECT get_user_internal_name(:input) AS internal_name"),
@@ -131,7 +136,7 @@ public final class User {
      * everything by having some one-to-one relations and proxy accessors.
      */
 
-    @OneToOne(mappedBy = "user", optional = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "user", optional = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Patient patient;
 
     /**
@@ -154,9 +159,17 @@ public final class User {
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Users might be doctors
+     *
+     * Problems when using parent-side association with lazy loading,
+     * causing N+1 queries problem. Two solutions:
+     * 1) compile time instrumentation, or
+     * 2) a bit stupid (but working) find on demand.
+     * See {@link https://stackoverflow.com/questions/1444227/how-can-i-make-a-jpa-onetoone-relation-lazy}.
+     *
+     * TODO: decide and solve it...
      */
 
-    @OneToOne(mappedBy = "user", optional = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "user", optional = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Doctor doctor;
 
     /**
