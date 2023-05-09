@@ -28,11 +28,14 @@ CREATE OR REPLACE FUNCTION public.get_user_internal_name(email_or_pesel VARCHAR)
     SECURITY DEFINER
 AS $$
     DECLARE
-        result VARCHAR := CONCAT('u_', LOWER(MD5(email_or_pesel))); -- if not found return anything to prevent scanning
+        result VARCHAR := NULL;
     BEGIN
         SELECT users.internal_name INTO result
             FROM public.users LEFT JOIN public.patients p ON users.id = p.id
             WHERE users.email LIKE email_or_pesel OR p.pesel LIKE email_or_pesel;
+        IF result IS NULL THEN
+            RETURN CONCAT('u_', LOWER(MD5(email_or_pesel))); -- if not found return anything to prevent scanning
+        END IF;
         RETURN result;
     END;
 $$;
@@ -44,6 +47,8 @@ GRANT EXECUTE ON FUNCTION public.get_user_internal_name TO anonymous;
 --------------------------------------------------------------------------------
 -- Roles
 --------------------------------------------------------------------------------
+
+GRANT USAGE ON schema public TO PUBLIC;
 
 DROP ROLE IF EXISTS gp_patients;
 DROP ROLE IF EXISTS gp_receptionists;

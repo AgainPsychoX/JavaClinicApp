@@ -1,6 +1,7 @@
 package pl.edu.ur.pz.clinicapp.views;
 
 import javafx.animation.PauseTransition;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -76,12 +77,12 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     @Override
     public void populate(Object... context) {
         table.getSelectionModel().clearSelection();
-        doctorCol.setCellValueFactory(new PropertyValueFactory<>("doctorName"));
-        patientCol.setCellValueFactory(new PropertyValueFactory<>("patientName"));
-        codeCol.setCellValueFactory(new PropertyValueFactory<>("id"));
-        tagsCol.setCellValueFactory(new PropertyValueFactory<>("tags"));
 
-        dateCol.setCellValueFactory(new PropertyValueFactory<>("addedDate"));
+        doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getDoctorName()));
+        patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatientName()));
+        codeCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getId()));
+        tagsCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getStringTags()));
+        dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddedDate().toString()));
 
         table.getSelectionModel().selectedItemProperty().addListener(observable ->
                 detailsButton.setDisable(table.getSelectionModel().getSelectedItem() == null));
