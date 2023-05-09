@@ -1,6 +1,5 @@
 package pl.edu.ur.pz.clinicapp.utils;
 
-import pl.edu.ur.pz.clinicapp.models.Doctor;
 import pl.edu.ur.pz.clinicapp.models.Timetable;
 import pl.edu.ur.pz.clinicapp.models.User;
 
@@ -33,9 +32,9 @@ public class ExampleDataSeeder
         // TODO: imo move all seeding here, and make example data seeding optional (minimalist/structure only mode)
         // TODO: generate N doctors, each with random speciality, timetable
 
-        final var doctor = (Doctor) User.getByLogin("lwojcik@gmail.com");
-        doctor.getTimetables().clear();
-        doctor.getTimetables().add(generateBasicTimetable());
+        final var user = User.getByLogin("lwojcik@gmail.com");
+        user.getTimetables().clear();
+        user.getTimetables().add(generateBasicTimetable());
 
         // TODO: generate K patients, each selecting one or more doctors, and have appointments generated for them
         // TODO: ...

@@ -1036,8 +1036,8 @@ INSERT INTO public.referrals (added_date, notes, tags, feedback, fulfilment_date
 -- Data for Name: schedule_entries; Type: TABLE DATA; Schema: public; Owner: admin
 --
 
-INSERT INTO public.schedule_entries (date_begin, date_end, type, user_id) VALUES ('2023-08-07 00:00:00', '2023-08-21 00:00:00', 'urlop', 5);
-INSERT INTO public.schedule_entries (date_begin, date_end, type, user_id) VALUES ('2023-08-21 00:00:00', '2023-09-04 00:00:00', 'urlop', 2);
+--INSERT INTO public.schedule_entries (date_begin, date_end, type, user_id) VALUES ('2023-08-07 00:00:00', '2023-08-21 00:00:00', 'urlop', 5);
+--INSERT INTO public.schedule_entries (date_begin, date_end, type, user_id) VALUES ('2023-08-21 00:00:00', '2023-09-04 00:00:00', 'urlop', 2);
 
 
 -- Completed on 2023-04-14 15:42:38

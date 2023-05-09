@@ -12,7 +12,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import org.hibernate.Session;
@@ -33,13 +32,13 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
     @FXML protected TextField searchTextField;
     @FXML protected VBox vBox;
     @FXML protected TableView<Referral> table;
-    @FXML protected TableColumn<Referral, Timestamp> fulDateCol;
+    @FXML protected TableColumn<Referral, Instant> fulDateCol;
     @FXML protected TableColumn<Referral, String> interestCol;
     @FXML protected TableColumn<Referral, String> tagsCol;
     @FXML protected TableColumn<Referral, String> notesCol;
     @FXML protected TableColumn<Referral, String> feedbackCol;
     @FXML protected TableColumn<Referral, String> codeCol;
-    @FXML protected TableColumn<Referral, Timestamp> dateCol;
+    @FXML protected TableColumn<Referral, Instant> dateCol;
     @FXML protected TableColumn<Referral, String> doctorCol;
 
     protected ObservableList<Referral> referrals = FXCollections.observableArrayList();

@@ -8,7 +8,7 @@ import java.time.ZonedDateTime;
  */
 public class DoctorSchedule extends Schedule {
     protected Doctor getDoctor() {
-        return (Doctor) user;
+        return user.asDoctor();
     }
 
     protected DoctorSchedule() {}

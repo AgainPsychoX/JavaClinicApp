@@ -26,7 +26,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 
 
@@ -238,7 +238,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                     newPr.setGovernmentId((codeTextField.getText() == null)
                             ? null : codeTextField.getText().trim());
                     newPr.setPatient(targetPatient);
-                    newPr.setAddedDate(new Timestamp(System.currentTimeMillis()));
+                    newPr.setAddedDate(Instant.now());
                     session.persist(newPr);
                     transaction.commit();
                     editState.setValue(!editState.getValue());

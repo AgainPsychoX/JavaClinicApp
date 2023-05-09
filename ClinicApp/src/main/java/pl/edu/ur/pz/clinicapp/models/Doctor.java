@@ -2,10 +2,7 @@ package pl.edu.ur.pz.clinicapp.models;
 
 import pl.edu.ur.pz.clinicapp.utils.DurationMinutesConverter;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.Duration;
 
 @Entity
