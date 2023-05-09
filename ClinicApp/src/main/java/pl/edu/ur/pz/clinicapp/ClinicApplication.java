@@ -15,6 +15,7 @@ import pl.edu.ur.pz.clinicapp.dialogs.LoginDialog;
 import pl.edu.ur.pz.clinicapp.localization.JavaFxBuiltInsLocalizationFix;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ExampleDataSeeder;
+import pl.edu.ur.pz.clinicapp.views.ReferralDetailsView;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -264,7 +265,13 @@ public class ClinicApplication extends Application {
         mainWindowController = loader.getController();
 //        stage.setWidth(pane.getMinWidth());
 //        stage.setHeight(pane.getMinHeight());
-        stage.setOnCloseRequest(we -> logOut());
+        stage.setOnCloseRequest(we -> {
+            if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()){
+                we.consume();
+            }else {
+                logOut();
+            }
+        });
         stage.showAndWait();
     }
 

@@ -4,15 +4,22 @@
     -fx-padding: 8px;
     -fx-pref-width: 200px;
     -fx-text-fill: white;
+    -fx-cursor: hand;
 }
 
+.button:hover {
+    -fx-background-color: #2a72ff;
+}
+
+.back-text:hover {
+    -fx-fill: #2a72ff;
+}
 
 
 /* Fix for scroll panes always having gray background */
 .scroll-pane > .viewport {
    -fx-background-color: transparent;
 }
-
 
 
 /* Navigation background color: #A4C2FD */
@@ -23,13 +30,19 @@
     -fx-background-color: transparent;
     -fx-font-size: 16px;
 }
+
 .navigation-menu-button:hover {
     -fx-background-color: #9fb6e3;
 }
+
 .navigation-menu-button.active {
     -fx-background-color: #284C92;
 }
+
 .navigation-menu-button.log-out {
     -fx-text-fill: #ec0000;
 }
 
+.text-input:readonly, .text-area:readonly .content {
+    -fx-background-color: #d3d3d3;
+}

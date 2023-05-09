@@ -8,15 +8,14 @@ import java.util.Collection;
 
 @Entity
 @Table(name = "users")
-@Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries({
-        @NamedQuery(name = "users.current", query = "SELECT user FROM User user WHERE user.databaseUsername = FUNCTION('CURRENT_USER')"),
-        @NamedQuery(name = "users.get_by_login", query = "SELECT user FROM User user WHERE user.databaseUsername = FUNCTION('get_user_internal_name', :input)"),
+        @NamedQuery(name = "users.current", query = "FROM User u WHERE u.databaseUsername = FUNCTION('CURRENT_USER')"),
+        @NamedQuery(name = "users.get_by_login", query = "FROM User u WHERE u.databaseUsername = FUNCTION('get_user_internal_name', :input)"),
 })
 @NamedNativeQueries({
         @NamedNativeQuery(name = "login", query = "SELECT get_user_internal_name(:input) AS internal_name"),
 })
-public class User {
+public final class User {
     public enum Role {
         ANONYMOUS,
         PATIENT,
@@ -44,9 +43,6 @@ public class User {
     @Column(nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    public Integer getId() {
-        return id;
-    }
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "user_role") // custom enum type
@@ -129,6 +125,74 @@ public class User {
         final var query = em.createNamedQuery("users.get_by_login", User.class);
         query.setParameter("input", emailOrPESEL.toLowerCase());
         return query.getSingleResult();
+    }
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Users might be patients
+     *
+     * Why not use inheritance? Hibernate handles it *not-that-well*,
+     * requiring large tables or unnecessarily joining tables for each query,
+     * and on top of that, it seems impossible to user SQL permissions
+     * and rules/policies system without custom queries... So, we simplify
+     * everything by having some one-to-one relations and proxy accessors.
+     *
+     * Problems when using parent-side association with lazy loading,
+     * causing N+1 queries problem. Two solutions:
+     * 1) compile time instrumentation, or
+     * 2) a bit stupid (but working) find on demand.
+     * See {@link https://stackoverflow.com/questions/1444227/how-can-i-make-a-jpa-onetoone-relation-lazy}.
+     */
+
+    @Transient
+    private Patient patient;
+
+    /**
+     * Provides access to the patient details of the user.
+     * @return patient model or null if the user isn't a patient
+     */
+    public Patient asPatient() {
+        if (patient == null) {
+            patient = ClinicApplication.getEntityManager().find(Patient.class, id);
+        }
+        return patient;
+    }
+
+    /**
+     * Checks whenever the user is a patient.
+     * @return true if the user is a patient, false otherwise.
+     */
+    public boolean isPatient() {
+        return asPatient() != null;
+    }
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Users might be doctors
+     */
+
+    @Transient
+    private Doctor doctor;
+
+    /**
+     * Provides access to the doctor details of the user.
+     * @return doctor model or null if the user isn't a doctor
+     */
+    public Doctor asDoctor() {
+        if (doctor == null) {
+            doctor = ClinicApplication.getEntityManager().find(Doctor.class, id);
+        }
+        return doctor;
+    }
+
+    /**
+     * Checks whenever the user is a doctor.
+     * @return true if the user is a doctor, false otherwise.
+     */
+    public boolean isDoctor() {
+        return asDoctor() != null;
     }
 
 

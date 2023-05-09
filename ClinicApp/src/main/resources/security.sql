@@ -28,11 +28,14 @@ CREATE OR REPLACE FUNCTION public.get_user_internal_name(email_or_pesel VARCHAR)
     SECURITY DEFINER
 AS $$
     DECLARE
-        result VARCHAR := CONCAT('u_', LOWER(MD5(email_or_pesel))); -- if not found return anything to prevent scanning
+        result VARCHAR := NULL;
     BEGIN
         SELECT users.internal_name INTO result
             FROM public.users LEFT JOIN public.patients p ON users.id = p.id
             WHERE users.email LIKE email_or_pesel OR p.pesel LIKE email_or_pesel;
+        IF result IS NULL THEN
+            RETURN CONCAT('u_', LOWER(MD5(email_or_pesel))); -- if not found return anything to prevent scanning
+        END IF;
         RETURN result;
     END;
 $$;
@@ -184,6 +187,9 @@ CREATE POLICY update_own_as_doctor ON public.doctors FOR UPDATE TO gp_doctors
     USING (id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER))
     WITH CHECK (id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
+-- TODO: make sure names are the same as related user (yes, redundant by design)
+-- TODO: test if setter in Java is coordinated (first user, then doctors table
+
 --------------------------------------------------------------------------------
 -- `notifications`
 
@@ -203,6 +209,8 @@ GRANT INSERT ON TABLE public.notifications TO PUBLIC;
 DROP POLICY IF EXISTS insert_as_source ON public.notifications;
 CREATE POLICY insert_as_source ON public.notifications FOR INSERT TO PUBLIC
     WITH CHECK (source_user_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+-- TODO: check if names are the same as related user (yes, redundant by design)
 
 ----------------------------------------
 -- SELECT
@@ -334,7 +342,7 @@ CREATE POLICY update_own_as_doctor ON public.prescriptions FOR UPDATE TO gp_doct
 --------------------------------------------------------------------------------
 -- `referrals`
 
-GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.referrals TO gp_admins;
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.referrals TO gp_admins, gp_doctors; -- TEST ONLY
 
 DROP POLICY IF EXISTS admin ON public.referrals;
 CREATE POLICY admin ON public.referrals FOR ALL TO gp_admins

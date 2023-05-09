@@ -6,11 +6,66 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
 
 @Entity
 @Table(name = "patients")
-@Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries({
-        @NamedQuery(name = "patients",  query = "FROM Patient")
+        @NamedQuery(name = "patients",  query = "FROM Patient p LEFT JOIN FETCH p.user")
 })
-public class Patient extends User {
+public class Patient {
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Patients are users
+     */
+
+    @Id
+    private Integer id;
+
+    @OneToOne(optional = false, orphanRemoval = true, cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
+    @MapsId // same ID as user
+    @JoinColumn(name = "id")
+    private User user;
+    public User asUser() {
+        return user;
+    }
+
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Patient data
+     */
+
+    public String getEmail() {
+        return asUser().getEmail();
+    }
+    public void setEmail(String email) {
+        asUser().setEmail(email);
+    }
+
+    public String getPhone() {
+        return asUser().getPhone();
+    }
+    public void setPhone(String phone) {
+        asUser().setPhone(phone);
+    }
+
+
+    public String getName() {
+        return asUser().getName();
+    }
+    public void setName(String name) {
+        asUser().setName(name);
+    }
+
+    public String getSurname() {
+        return asUser().getSurname();
+    }
+    public void setSurname(String surname) {
+        asUser().setSurname(surname);
+    }
+
+    public String getDisplayName() {
+        return asUser().getDisplayName();
+    }
+
+
     @Column(nullable = false, length = 11, unique = true)
     private String pesel;
     public String getPESEL() {
@@ -20,8 +75,12 @@ public class Patient extends User {
         this.pesel = pesel;
     }
 
-    /* * * * * * * * * * * * * * * * * * * * *
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Address
+     *
+     * TODO: Separate it out, even if it's the only place we use it.
      */
 
     @Column(length = 40)

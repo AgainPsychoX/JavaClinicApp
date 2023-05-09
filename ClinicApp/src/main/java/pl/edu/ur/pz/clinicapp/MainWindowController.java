@@ -15,6 +15,7 @@ import javafx.stage.Window;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildController;
 import pl.edu.ur.pz.clinicapp.utils.HistoryTracker;
+import pl.edu.ur.pz.clinicapp.views.ReferralDetailsView;
 
 import java.io.IOException;
 import java.net.URL;
@@ -49,8 +50,10 @@ public class MainWindowController implements Initializable {
         put(Views.VISITS, ClinicApplication.class.getResource("views/VisitsView.fxml"));
         put(Views.PATIENTS, ClinicApplication.class.getResource("views/PatientsView.fxml"));
         put(Views.REFERRALS, ClinicApplication.class.getResource("views/ReferralsView.fxml"));
+        put(Views.REFERRAL_DETAILS, ClinicApplication.class.getResource("views/ReferralDetailsView.fxml"));
         put(Views.PRESCRIPTIONS, ClinicApplication.class.getResource("views/PrescriptionsView.fxml"));
         put(Views.TIMETABLE, ClinicApplication.class.getResource("views/TimetableView.fxml"));
+        put(Views.PRESCRIPTION_DETAILS, ClinicApplication.class.getResource("views/PrescriptionDetailsView.fxml"));
     }};
 
     static class ViewDefinition {
@@ -152,12 +155,14 @@ public class MainWindowController implements Initializable {
 
             if (role == User.Role.PATIENT) {
                 c.add(buttonForNavigationMenu("Wizyty", (e) -> goToView(Views.VISITS, ClinicApplication.getUser())));
+                c.add(buttonForNavigationMenu("Recepty", (e) -> goToView(Views.PRESCRIPTIONS)));
+                c.add(buttonForNavigationMenu("Skierowania", (e) -> goToView(Views.REFERRALS)));
             }
             else {
                 c.add(buttonForNavigationMenu("Wizyty", (e) -> goToView(Views.VISITS)));
-                c.add(buttonForNavigationMenu("Pacjenci", (e) -> goToView(Views.PATIENTS)));
                 c.add(buttonForNavigationMenu("Recepty", (e) -> goToView(Views.PRESCRIPTIONS)));
                 c.add(buttonForNavigationMenu("Skierowania", (e) -> goToView(Views.REFERRALS)));
+                c.add(buttonForNavigationMenu("Pacjenci", (e) -> goToView(Views.PATIENTS)));
             }
 
             if (role == User.Role.ADMIN) {
@@ -171,6 +176,7 @@ public class MainWindowController implements Initializable {
                 this.setOnAction((e) -> {
                     // Log-out is necessary here, even tho there already is `setOnCloseRequest` for the stage,
                     // as it just catches window event.
+                    if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
                     ClinicApplication.logOut();
                     getStage().close();
                 });
@@ -199,6 +205,10 @@ public class MainWindowController implements Initializable {
     public void goToViewRaw(Views which, Object... context) {
         final var newView = getView(which);
         final var oldView = getPreviousView();
+
+        if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
+        ReferralDetailsView.setEditState(false);
+
         if (oldView != null && oldView.controller != null) {
             oldView.controller.dispose();
         }
