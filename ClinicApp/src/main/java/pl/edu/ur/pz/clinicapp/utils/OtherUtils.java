@@ -8,8 +8,8 @@ import javafx.stage.Stage;
 import java.io.IOException;
 
 public class OtherUtils {
-    public static boolean isStringNullOrEmpty(String string) {
-        return string == null || string.isEmpty();
+    public static boolean isStringNullOrBlank(String string) {
+        return string == null || string.isBlank();
     }
 
     public static Stage getStageFromEvent(Event event) {
