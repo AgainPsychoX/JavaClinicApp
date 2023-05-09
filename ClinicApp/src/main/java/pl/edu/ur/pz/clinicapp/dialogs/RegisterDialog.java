@@ -2,13 +2,16 @@ package pl.edu.ur.pz.clinicapp.dialogs;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -16,17 +19,20 @@ import org.hibernate.jpa.TypedParameterValue;
 import org.hibernate.query.Query;
 import org.hibernate.type.StandardBasicTypes;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
+import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.User;
+import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-public class RegisterDialog extends Stage {
+public class RegisterDialog extends ChildControllerBase<MainWindowController> {
 
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
     Query createPatientQuery = session.getNamedQuery("createPatient");
     Query createDatabaseUserQuery = session.getNamedQuery("createDatabaseUser");
     Query findDatabaseUserQuery = session.getNamedQuery("findDatabaseUser");
-    private static String registeredCredentials;
+    @FXML
+    protected HBox banner;
     @FXML
     protected PasswordField passwordField;
     @FXML
@@ -57,6 +63,8 @@ public class RegisterDialog extends Stage {
     protected TextField streetField;
     @FXML
     protected TextField surnameField;
+
+    private static String registeredCredentials;
 
     public static String getRegisteredCredentials() {
         return registeredCredentials;
@@ -148,5 +156,23 @@ public class RegisterDialog extends Stage {
 //                alert.showAndWait();
             }
         }
+    }
+
+    @Override
+    public void dispose() {
+        super.dispose();
+    }
+
+    @Override
+    public void populate(Object... context) {
+        if(context.length != 0){
+            BPane.getChildren().remove(banner);
+            registerButton.setText("Zarejestruj");
+        }
+    }
+
+    @Override
+    public void refresh() {
+
     }
 }

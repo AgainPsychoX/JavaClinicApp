@@ -42,6 +42,7 @@ public class MainWindowController implements Initializable {
         PRESCRIPTIONS,
         PRESCRIPTION_DETAILS,
         REPORTS,
+        REGISTER
     }
 
     private static final EnumMap<Views, URL> viewToResource = new EnumMap<>(Views.class) {{
@@ -54,6 +55,7 @@ public class MainWindowController implements Initializable {
         put(Views.REFERRAL_DETAILS, ClinicApplication.class.getResource("views/ReferralDetailsView.fxml"));
         put(Views.PRESCRIPTIONS, ClinicApplication.class.getResource("views/PrescriptionsView.fxml"));
         put(Views.PRESCRIPTION_DETAILS, ClinicApplication.class.getResource("views/PrescriptionDetailsView.fxml"));
+        put(Views.REGISTER, ClinicApplication.class.getResource("dialogs/RegisterDialog.fxml"));
     }};
 
     static class ViewDefinition {

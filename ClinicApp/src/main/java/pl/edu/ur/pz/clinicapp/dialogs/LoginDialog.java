@@ -156,7 +156,7 @@ public class LoginDialog extends Stage {
 
     @FXML
     void openRegisterView() throws IOException {
-        final var stage = new RegisterDialog();
+        final var stage = new Stage();
         final var loader = new FXMLLoader(ClinicApplication.class.getResource("dialogs/RegisterDialog.fxml"));
         BorderPane BPane = loader.load();
         registerScene = new Scene(BPane);

@@ -156,7 +156,6 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
     // TEST ONLY - last param should be a patient, for now it's current user
     public void addReferral() {
-        this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS,
-                ReferralDetailsView.RefMode.CREATE, ClinicApplication.getUser());
+        this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS, "INDIRECT");
     }
 }
