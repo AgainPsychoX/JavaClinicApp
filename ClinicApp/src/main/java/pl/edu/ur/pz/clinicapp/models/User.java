@@ -7,14 +7,13 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "users")
-@Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries({
         @NamedQuery(name = "users.current", query = "SELECT user FROM User user WHERE user.databaseUsername = FUNCTION('CURRENT_USER')"),
 })
 @NamedNativeQueries({
         @NamedNativeQuery(name = "login", query = "SELECT get_user_internal_name(:input) AS internal_name"),
 })
-public class User {
+public final class User {
     public enum Role {
         ANONYMOUS,
         PATIENT,
@@ -42,9 +41,6 @@ public class User {
     @Column(nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
-    public Integer getId() {
-        return id;
-    }
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "user_role") // custom enum type
@@ -124,4 +120,58 @@ public class User {
     }
 
 
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Users might be patients
+     *
+     * Why not use inheritance? Hibernate handles it *not-that-well*,
+     * requiring large tables or unnecessarily joining tables for each query,
+     * and on top of that, it seems impossible to user SQL permissions
+     * and rules/policies system without custom queries... So, we simplify
+     * everything by having some one-to-one relations and proxy accessors.
+     */
+
+    @OneToOne(mappedBy = "user", optional = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Patient patient;
+
+    /**
+     * Provides access to the patient details of the user.
+     * @return patient model or null if the user isn't a patient
+     */
+    public Patient asPatient() {
+        return patient;
+    }
+
+    /**
+     * Checks whenever the user is a patient.
+     * @return true if the user is a patient, false otherwise.
+     */
+    public boolean isPatient() {
+        return patient != null;
+    }
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Users might be doctors
+     */
+
+    @OneToOne(mappedBy = "user", optional = true, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Doctor doctor;
+
+    /**
+     * Provides access to the doctor details of the user.
+     * @return doctor model or null if the user isn't a doctor
+     */
+    public Doctor asDoctor() {
+        return doctor;
+    }
+
+    /**
+     * Checks whenever the user is a doctor.
+     * @return true if the user is a doctor, false otherwise.
+     */
+    public boolean isDoctor() {
+        return doctor != null;
+    }
 }

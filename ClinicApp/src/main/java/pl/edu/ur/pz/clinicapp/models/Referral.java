@@ -44,7 +44,7 @@ public class Referral extends MedicalHistoryEntry {
      * Doctor who created the referral.
      */
     public Doctor getDoctor() {
-        return (Doctor) getAddedBy();
+        return getAddedBy().asDoctor();
     }
 
     /**

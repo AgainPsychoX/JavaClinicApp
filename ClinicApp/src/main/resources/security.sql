@@ -195,6 +195,9 @@ CREATE POLICY update_own_as_doctor ON public.doctors FOR UPDATE TO gp_doctors
     USING (id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER))
     WITH CHECK (id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
+-- TODO: make sure names are the same as related user (yes, redundant by design)
+-- TODO: test if setter in Java is coordinated (first user, then doctors table
+
 --------------------------------------------------------------------------------
 -- `notifications`
 
@@ -214,6 +217,8 @@ GRANT INSERT ON TABLE public.notifications TO PUBLIC;
 DROP POLICY IF EXISTS insert_as_source ON public.notifications;
 CREATE POLICY insert_as_source ON public.notifications FOR INSERT TO PUBLIC
     WITH CHECK (source_user_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+-- TODO: check if names are the same as related user (yes, redundant by design)
 
 ----------------------------------------
 -- SELECT

@@ -3,7 +3,7 @@ package pl.edu.ur.pz.clinicapp.models;
 public class DoctorSchedule extends Schedule {
     public static DoctorSchedule of(Doctor doctor) {
         final var instance = new DoctorSchedule();
-        instance.user = doctor;
+        instance.user = doctor.asUser();
         // TODO: prefetch?
         return instance;
     }
