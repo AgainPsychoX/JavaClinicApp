@@ -73,10 +73,10 @@ public class LoginDialog extends Stage {
             // TODO: make it separate control as well
         }};
 
-        if (rememberedUser != null) {
+        if (rememberedUser != null && !rememberedUser.isBlank()) {
             identityTextField.setText(rememberedUser);
 
-            if (rememberedPassword != null) {
+            if (rememberedPassword != null && !rememberedPassword.isBlank()) {
                 runDelayed(200, () -> {
                     logInUsingRememberedData(rememberedUser, rememberedPassword);
                 });
