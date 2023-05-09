@@ -7,8 +7,7 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
 @Entity
 @Table(name = "patients")
 @NamedQueries({
-        @NamedQuery(name = "patients",  query = "FROM Patient p LEFT JOIN FETCH p.user"),
-        @NamedQuery(name = "patient34",  query = "FROM Patient p LEFT JOIN FETCH p.user WHERE p.id = 34")
+        @NamedQuery(name = "patients",  query = "FROM Patient p LEFT JOIN FETCH p.user")
 })
 public class Patient {
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

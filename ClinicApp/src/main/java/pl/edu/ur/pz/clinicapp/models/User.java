@@ -8,12 +8,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "users")
 @NamedQueries({
-        @NamedQuery(name = "users.current", query = """
-            FROM User user
-                LEFT JOIN FETCH user.patient
-                LEFT JOIN FETCH user.doctor
-            WHERE user.databaseUsername = FUNCTION('CURRENT_USER')
-        """),
+        @NamedQuery(name = "users.current", query = "FROM User u WHERE u.databaseUsername = FUNCTION('CURRENT_USER')"),
 })
 @NamedNativeQueries({
         @NamedNativeQuery(name = "login", query = "SELECT get_user_internal_name(:input) AS internal_name"),
@@ -134,9 +129,15 @@ public final class User {
      * and on top of that, it seems impossible to user SQL permissions
      * and rules/policies system without custom queries... So, we simplify
      * everything by having some one-to-one relations and proxy accessors.
+     *
+     * Problems when using parent-side association with lazy loading,
+     * causing N+1 queries problem. Two solutions:
+     * 1) compile time instrumentation, or
+     * 2) a bit stupid (but working) find on demand.
+     * See {@link https://stackoverflow.com/questions/1444227/how-can-i-make-a-jpa-onetoone-relation-lazy}.
      */
 
-    @OneToOne(mappedBy = "user", optional = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Transient
     private Patient patient;
 
     /**
@@ -144,6 +145,9 @@ public final class User {
      * @return patient model or null if the user isn't a patient
      */
     public Patient asPatient() {
+        if (patient == null) {
+            patient = ClinicApplication.getEntityManager().find(Patient.class, id);
+        }
         return patient;
     }
 
@@ -152,24 +156,16 @@ public final class User {
      * @return true if the user is a patient, false otherwise.
      */
     public boolean isPatient() {
-        return patient != null;
+        return asPatient() != null;
     }
 
 
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Users might be doctors
-     *
-     * Problems when using parent-side association with lazy loading,
-     * causing N+1 queries problem. Two solutions:
-     * 1) compile time instrumentation, or
-     * 2) a bit stupid (but working) find on demand.
-     * See {@link https://stackoverflow.com/questions/1444227/how-can-i-make-a-jpa-onetoone-relation-lazy}.
-     *
-     * TODO: decide and solve it...
      */
 
-    @OneToOne(mappedBy = "user", optional = true, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @Transient
     private Doctor doctor;
 
     /**
@@ -177,6 +173,9 @@ public final class User {
      * @return doctor model or null if the user isn't a doctor
      */
     public Doctor asDoctor() {
+        if (doctor == null) {
+            doctor = ClinicApplication.getEntityManager().find(Doctor.class, id);
+        }
         return doctor;
     }
 
@@ -185,6 +184,6 @@ public final class User {
      * @return true if the user is a doctor, false otherwise.
      */
     public boolean isDoctor() {
-        return doctor != null;
+        return asDoctor() != null;
     }
 }
