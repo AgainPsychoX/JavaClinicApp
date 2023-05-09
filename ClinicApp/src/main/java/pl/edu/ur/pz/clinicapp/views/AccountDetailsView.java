@@ -21,6 +21,8 @@ public class AccountDetailsView extends ChildControllerBase<MainWindowController
     @FXML protected TextField phone;
     @FXML protected TextField email;
 
+    Patient currPat = Patient.getCurrent();
+
 
     @Override
     public void dispose() {
@@ -39,13 +41,14 @@ public class AccountDetailsView extends ChildControllerBase<MainWindowController
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
-        name.setText(Patient.getCurrent().getName());
-        surname.setText(Patient.getCurrent().getSurname());
-        pesel.setText(Patient.getCurrent().getPESEL());
-        phone.setText(Patient.getCurrent().getPhone());
-        email.setText(Patient.getCurrent().getEmail());
-        address.setText(Patient.getCurrent().getAddressDisplayShort());
-        post.setText(Patient.getCurrent().getPostCity() + " " + Patient.getCurrent().getPostCode());
+
+        name.setText(currPat.getName());
+        surname.setText(currPat.getSurname());
+        pesel.setText(currPat.getPESEL());
+        phone.setText(currPat.getPhone());
+        email.setText(currPat.getEmail());
+        address.setText(currPat.getAddressDisplayShort());
+        post.setText(currPat.getPostCity() + " " + currPat.getPostCode());
 
     }
 }
