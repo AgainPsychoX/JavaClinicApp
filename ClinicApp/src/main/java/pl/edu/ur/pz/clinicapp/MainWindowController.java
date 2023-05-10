@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
@@ -43,18 +44,22 @@ public class MainWindowController implements Initializable {
         TIMETABLE,
     }
 
-    private static final EnumMap<Views, URL> viewToResource = new EnumMap<>(Views.class) {{
-        put(Views.NOTIFICATIONS, ClinicApplication.class.getResource("views/NotificationsView.fxml"));
-        put(Views.ACCOUNTS, ClinicApplication.class.getResource("views/AccountsView.fxml"));
-        put(Views.ACCOUNT_DETAILS, ClinicApplication.class.getResource("views/AccountDetailsView.fxml"));
-        put(Views.VISITS, ClinicApplication.class.getResource("views/VisitsView.fxml"));
-        put(Views.PATIENTS, ClinicApplication.class.getResource("views/PatientsView.fxml"));
-        put(Views.REFERRALS, ClinicApplication.class.getResource("views/ReferralsView.fxml"));
-        put(Views.REFERRAL_DETAILS, ClinicApplication.class.getResource("views/ReferralDetailsView.fxml"));
-        put(Views.PRESCRIPTIONS, ClinicApplication.class.getResource("views/PrescriptionsView.fxml"));
-        put(Views.TIMETABLE, ClinicApplication.class.getResource("views/TimetableView.fxml"));
-        put(Views.PRESCRIPTION_DETAILS, ClinicApplication.class.getResource("views/PrescriptionDetailsView.fxml"));
-    }};
+    private static URL getViewResource(String resourcePath) {
+        return ClinicApplication.class.getResource(resourcePath);
+    }
+
+    private static final EnumMap<Views, URL> viewToResource = new EnumMap<>(Map.of(
+        Views.NOTIFICATIONS,        getViewResource("views/NotificationsView.fxml"),
+        Views.ACCOUNTS,             getViewResource("views/AccountsView.fxml"),
+        Views.ACCOUNT_DETAILS,      getViewResource("views/AccountDetailsView.fxml"),
+        Views.VISITS,               getViewResource("views/VisitsView.fxml"),
+        Views.PATIENTS,             getViewResource("views/PatientsView.fxml"),
+        Views.REFERRALS,            getViewResource("views/ReferralsView.fxml"),
+        Views.REFERRAL_DETAILS,     getViewResource("views/ReferralDetailsView.fxml"),
+        Views.PRESCRIPTIONS,        getViewResource("views/PrescriptionsView.fxml"),
+        Views.TIMETABLE,            getViewResource("views/TimetableView.fxml"),
+        Views.PRESCRIPTION_DETAILS, getViewResource("views/PrescriptionDetailsView.fxml")
+    ));
 
     static class ViewDefinition {
         public Node node;
@@ -129,6 +134,19 @@ public class MainWindowController implements Initializable {
         return button;
     }
 
+    private Button buttonForLogout() {
+        final var button = new Button("Wyloguj się");
+        button.getStyleClass().addAll("navigation-menu-button", "log-out");
+        button.setOnAction((e) -> {
+            // Log-out is necessary here, even tho there already is `setOnCloseRequest` for the stage,
+            // as it just catches window event.
+            if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
+            ClinicApplication.logOut();
+            getStage().close();
+        });
+        return button;
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Initialize views cache map and history tracker
@@ -166,21 +184,11 @@ public class MainWindowController implements Initializable {
             }
 
             if (role == User.Role.ADMIN) {
-                c.add(buttonForNavigationMenu("WIP: WeekPane", (e) -> goToView(Views.TIMETABLE)));
                 c.add(buttonForNavigationMenu("Zarządzanie kontami", (e) -> goToView(Views.ACCOUNTS)));
                 c.add(buttonForNavigationMenu("Raporty", (e) -> goToView(Views.REPORTS)));
             }
 
-            c.add(new Button("Wyloguj się") {{
-                this.getStyleClass().addAll("navigation-menu-button", "log-out");
-                this.setOnAction((e) -> {
-                    // Log-out is necessary here, even tho there already is `setOnCloseRequest` for the stage,
-                    // as it just catches window event.
-                    if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
-                    ClinicApplication.logOut();
-                    getStage().close();
-                });
-            }});
+            c.add(buttonForLogout());
         }
 
         // Choose initial view

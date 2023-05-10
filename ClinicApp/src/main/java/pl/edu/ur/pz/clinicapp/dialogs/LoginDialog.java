@@ -64,11 +64,9 @@ public class LoginDialog extends Stage {
         errorText.setVisible(false);
         errorText.setManaged(false);
 
-        loadingView = new VBox(new Text("Logowanie...")) {{
-            setSpacing(8);
-            // TODO: add generic loading spinner control
-            // TODO: make it separate control as well
-        }};
+        loadingView = new VBox(new Text("Logowanie..."));
+        loadingView.setSpacing(8);
+        // TODO: add generic loading spinner control
 
         if (!isStringNullOrBlank(rememberedUser)) {
             identityTextField.setText(rememberedUser);

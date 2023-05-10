@@ -147,14 +147,12 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
     static public class BaseEntryDisplayFactory<T extends WeekPane.Entry> implements Callback<T, Region> {
         @Override
         public Region call(T entry) {
-            return new VBox() {{
-                setPadding(new Insets(4));
-                getChildren().setAll(
-                        new TextFlow(
-                                new Text(entry.toString())
-                        )
-                );
-            }};
+            final var box = new VBox();
+            box.setPadding(new Insets(4));
+            box.getChildren().setAll(
+                    new TextFlow(new Text(entry.toString()))
+            );
+            return box;
         }
     }
 
@@ -194,6 +192,27 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
         // TODO: show current time line?
     }
 
+    protected Pane generateRowBackgroundPane(boolean even) {
+        final var pane = new Pane();
+        getStyleClass().addAll("row", even ? "even" : "odd");
+        return pane;
+    }
+
+    protected Pane generateRowHourLabelCell(boolean even, int minuteOfDay) {
+        final var box = new HBox();
+        box.setPadding(new Insets(4));
+        box.setAlignment(Pos.CENTER);
+        box.getChildren().setAll(new Label("%d:%02d".formatted(minuteOfDay / 60, minuteOfDay % 60)));
+        box.getStyleClass().addAll("hour", even ? "even" : "odd");
+        return box;
+    }
+
+    protected Pane generateColumnBackgroundPane(DayOfWeek day) {
+        final var pane = new Pane();
+        pane.getStyleClass().addAll("column", "day", day.toString().toLowerCase());
+        return pane;
+    }
+
     protected void generateRows() {
         final var rgp = getRowGenerationParams();
 
@@ -207,27 +226,15 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
         ) {
             final var isEvenRow = index % 2 == 0;
 
-            gridPane.getRowConstraints().add(new RowConstraints(rgp.rowHeight) {{
-                setVgrow(Priority.SOMETIMES);
-            }});
+            final var rowConstraints = new RowConstraints(rgp.rowHeight);
+            rowConstraints.setVgrow(Priority.SOMETIMES);
+            gridPane.getRowConstraints().add(rowConstraints);
 
-            final var rowBackgroundPane = new Pane() {{
-                final var sc = getStyleClass();
-                sc.add("row");
-                sc.add(isEvenRow ? "even" : "odd");
-            }};
+            final var rowBackgroundPane = generateRowBackgroundPane(isEvenRow);
             gridPane.add(rowBackgroundPane, 0, index);
             GridPane.setColumnSpan(rowBackgroundPane, 8);
 
-            final var hourText = String.format("%d:%02d", minuteOfDay / 60, minuteOfDay % 60);
-            final var rowHourLabelCell = new HBox() {{
-                setPadding(new Insets(4));
-                setAlignment(Pos.CENTER);
-                getChildren().setAll(new Label(hourText));
-                final var sc = getStyleClass();
-                sc.add("hour");
-                sc.add(isEvenRow ? "even" : "odd");
-            }};
+            final var rowHourLabelCell = generateRowHourLabelCell(isEvenRow, minuteOfDay);
             gridPane.add(rowHourLabelCell, 0, index);
 
             rowCount += 1;
@@ -236,12 +243,7 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
         for (int i = 1; i <= 7; i++) {
             final var day = DayOfWeek.of(i);
 
-            final var columnBackgroundPane = new Pane() {{
-                final var sc = getStyleClass();
-                sc.add("column");
-                sc.add("day");
-                sc.add(day.toString().toLowerCase());
-            }};
+            final var columnBackgroundPane = generateColumnBackgroundPane(day);
             gridPane.add(columnBackgroundPane, i, 0);
             GridPane.setRowSpan(columnBackgroundPane, rowCount);
         }
