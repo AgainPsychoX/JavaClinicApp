@@ -15,6 +15,8 @@ import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DirtyFixes;
 
 import java.net.URL;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
@@ -188,6 +190,8 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
         select(index);
     }
 
+    private static final NumberFormat totalHoursNumberFormat = new DecimalFormat("#.##");
+
     public void select(int index) {
         final var count = timetables.size();
         while (index < 0) index += count;
@@ -197,10 +201,9 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
         logger.fine("selectedTimetableIndex=" + index + ", timetable=" + timetable.toString());
 
         previousTimetableButton.setDisable(index == 0);
-
-        // TODO: update totalHoursText (and keep updating on entries changes)
-
         effectiveDatePicker.setValue(timetable.getEffectiveDate().toLocalDate());
+        totalHoursText.setText("Liczba godzin tygodniowo: " +
+                totalHoursNumberFormat.format((float) timetable.getTotalMinutesWeekly() / 60));
 
         if (index < count - 1) {
             nextTimetableButton.setDisable(false);

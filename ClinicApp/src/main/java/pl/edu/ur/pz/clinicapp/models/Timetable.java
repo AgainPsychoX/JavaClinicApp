@@ -74,6 +74,14 @@ public class Timetable implements Comparable<Timetable> {
         this.entries = entries;
     }
 
+    public int getTotalMinutesWeekly() {
+        int total = 0;
+        for (var entry : this.entries) {
+            total += entry.getDurationMinutes();
+        }
+        return total;
+    }
+
     @Override
     public String toString() {
         return String.format("Timetable{effective=%s,entries=[%s]}",
