@@ -171,6 +171,14 @@ public class MainWindowController implements Initializable {
                 c.add(buttonForNavigationMenu("Moje dane", (e) -> goToView(Views.ACCOUNT_DETAILS, ClinicApplication.getUser())));
             }
 
+            if (role == User.Role.DOCTOR) {
+//                c.add(buttonForNavigationMenu("Terminarz", (e) -> goToView(Views.SCHEDULE)));
+                // TODO: instead having direct button to timetable, there should be button in schedule,
+                //      as timetable isn't that interesting to be checked every time and the info will be
+                //      most likely already included on the schedule too.
+                c.add(buttonForNavigationMenu("Harmonogram", (e) -> goToView(Views.TIMETABLE)));
+            }
+
             if (role == User.Role.PATIENT) {
                 c.add(buttonForNavigationMenu("Wizyty", (e) -> goToView(Views.VISITS, ClinicApplication.getUser())));
                 c.add(buttonForNavigationMenu("Recepty", (e) -> goToView(Views.PRESCRIPTIONS)));

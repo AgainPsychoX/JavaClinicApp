@@ -8,7 +8,9 @@ import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "timetables")
@@ -54,6 +56,8 @@ public class Timetable {
     }
 
     public void add(Timetable.Entry entry) {
+        entry.timetable = this;
+        // TODO: detect overlapping and throw error
         entries.add(entry);
     }
 
@@ -70,12 +74,35 @@ public class Timetable {
         this.entries = entries;
     }
 
+    @Override
+    public String toString() {
+        return String.format("Timetable{effective=%s,entries=[%s]}",
+                effectiveDate.toString(),
+                entries.stream().map(Entry::toString).collect(Collectors.joining(",")));
+    }
+
     /**
      * Composite primary key for timetable entries, consisting of both timetable ID and weekday.
      */
-    public record EntryId(Timetable timetable, int weekday, int startMinute) implements Serializable {
-        public EntryId(Timetable timetable, DayOfWeek dayOfWeek, int startMinute) {
-            this(timetable, dayOfWeek.getValue() - 1, startMinute);
+    public static final class EntryId implements Serializable {
+        private final Timetable timetable;
+        private final int weekday;
+        private final int startMinute;
+
+        public Timetable timetable() {
+            return timetable;
+        }
+
+        public int weekday() {
+            return weekday;
+        }
+
+        public DayOfWeek dayOfWeek() {
+            return DayOfWeek.of(weekday + 1);
+        }
+
+        public int startMinute() {
+            return startMinute;
         }
 
         // Empty constructor is required for JPA standard.
@@ -83,8 +110,29 @@ public class Timetable {
             this(null, 0, 0); // invalid, but required for `record`
         }
 
-        public DayOfWeek dayOfWeek() {
-            return DayOfWeek.of(weekday + 1);
+        public EntryId(Timetable timetable, int weekday, int startMinute) {
+            this.timetable = timetable;
+            this.weekday = weekday;
+            this.startMinute = startMinute;
+        }
+
+        public EntryId(Timetable timetable, DayOfWeek dayOfWeek, int startMinute) {
+            this(timetable, dayOfWeek.getValue() - 1, startMinute);
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other == this) return true;
+            if (other == null || other.getClass() != this.getClass()) return false;
+            var that = (EntryId) other;
+            return Objects.equals(this.timetable, that.timetable) &&
+                    this.weekday == that.weekday &&
+                    this.startMinute == that.startMinute;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(timetable, weekday, startMinute);
         }
     }
 
@@ -187,8 +235,7 @@ public class Timetable {
         // Empty constructor is required for JPA standard.
         public Entry() {}
 
-        public Entry(Timetable timetable, DayOfWeek dayOfWeek, int startMinute, int endMinute) {
-            this.timetable = timetable;
+        public Entry(DayOfWeek dayOfWeek, int startMinute, int endMinute) {
             this.weekday = dayOfWeek.getValue() - 1;
             this.startMinute = startMinute;
             this.endMinute = endMinute;
@@ -196,7 +243,8 @@ public class Timetable {
 
         @Override
         public String toString() {
-            return String.format("Entry %s start=%d end=%d", this.getDayOfWeek().toString(), this.startMinute, this.endMinute);
+            return String.format("Timetable.Entry{day=%s,start=%d,end=%d}",
+                    this.getDayOfWeek().toString(), this.startMinute, this.endMinute);
         }
     }
 }

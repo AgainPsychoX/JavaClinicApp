@@ -1,16 +1,19 @@
 package pl.edu.ur.pz.clinicapp.models;
 
+import org.hibernate.Hibernate;
 import org.hibernate.annotations.Type;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
 import javax.persistence.*;
 import java.util.Collection;
+import java.util.Collections;
 
 @Entity
 @Table(name = "users")
 @NamedQueries({
         @NamedQuery(name = "users.current", query = "FROM User u WHERE u.databaseUsername = FUNCTION('CURRENT_USER')"),
         @NamedQuery(name = "users.get_by_login", query = "FROM User u WHERE u.databaseUsername = FUNCTION('get_user_internal_name', :input)"),
+        @NamedQuery(name = "User.clearTimetables", query = "DELETE FROM Timetable t WHERE t.user.id = :id")
 })
 @NamedNativeQueries({
         @NamedNativeQuery(name = "login", query = "SELECT get_user_internal_name(:input) AS internal_name"),
@@ -130,6 +133,14 @@ public final class User {
 
 
 
+    @Override
+    public String toString() {
+        return String.format("User{role=%s,name=%s,surname=%s,email=%s,internal=%s}",
+                role.toString(), name, surname, email, databaseUsername);
+    }
+
+
+
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Users might be patients
      *
@@ -203,12 +214,63 @@ public final class User {
     private Collection<Timetable> timetables;
 
     /**
+     * Provides access to timetables for given user.
+     *
      * @return Collection of all timetables objects related to the user,
-     * the latest effective date first.
+     * the latest effective date first as unmodifiable collection.
      */
     public Collection<Timetable> getTimetables() {
-        return timetables;
+        // TODO: use custom AbstractPersistentCollection to avoid get/set/clearXyz etc. in owner class...?
+        return Collections.unmodifiableCollection(timetables);
     }
+
+    /**
+     * Adds specified timetable to the user, persisting it the database.
+     *
+     * @param timetable timetable to add
+     */
+    public void addTimetable(Timetable timetable) {
+        if (Hibernate.isInitialized(timetables)) {
+            timetables.add(timetable);
+        }
+        timetable.setUser(this);
+        ClinicApplication.getEntityManager().persist(timetable);
+    }
+
+    /**
+     * Removes specified timetable to the user, removing it from the database too.
+     *
+     * If timetable is not related to the user, nothing happens (not even removed).
+     *
+     * @param timetable timetable to remove
+     */
+    public void removeTimetable(Timetable timetable) {
+        if (Hibernate.isInitialized(timetables)) {
+            timetables.remove(timetable);
+        }
+        if (timetable.getUser() != this) {
+            return; // not our concern
+        }
+        ClinicApplication.getEntityManager().remove(timetable);
+        timetable.setUser(null); // just in case
+    }
+
+    /**
+     * Removes all timetables, removing it from the database too.
+     */
+    public void clearTimetables() {
+        final var query = ClinicApplication.getEntityManager().createNamedQuery("User.clearTimetables");
+        query.setParameter("id", id);
+        query.executeUpdate();
+        if (Hibernate.isInitialized(timetables)) {
+            for (final var timetable : timetables) {
+                timetable.setUser(null); // just in case
+            }
+            timetables.clear();
+        }
+    }
+
+
 
     public Schedule getSchedule() {
         return Schedule.of(this);

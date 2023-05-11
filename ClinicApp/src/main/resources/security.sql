@@ -387,7 +387,20 @@ CREATE POLICY update_own_as_doctor ON public.referrals FOR UPDATE TO gp_doctors
 
 --ALTER TABLE public.schedule_simple_entries ENABLE ROW LEVEL SECURITY;
 GRANT ALL ON TABLE public.schedule_simple_entries TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
--- TODO: rethink whole schedule/timetable systems
+
+--------------------------------------------------------------------------------
+-- `timetable`
+
+--ALTER TABLE public.timetables ENABLE ROW LEVEL SECURITY;
+GRANT ALL ON TABLE public.timetables TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
+
+--------------------------------------------------------------------------------
+-- `timetable_entries`
+
+--ALTER TABLE public.timetable_entries ENABLE ROW LEVEL SECURITY;
+GRANT ALL ON TABLE public.timetable_entries TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
+
+-- TODO: fix & test permissions, make all those rules easier to read/maintain
 
 --------------------------------------------------------------------------------
 -- `users`

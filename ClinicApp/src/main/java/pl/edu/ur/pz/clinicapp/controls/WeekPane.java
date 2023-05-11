@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.time.DayOfWeek;
 import java.util.ResourceBundle;
+import java.util.Set;
 
 public class WeekPane<T extends WeekPane.Entry> extends VBox {
     /**
@@ -107,6 +108,7 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             if (newEntries != null) {
                 getValue().addListener(entriesSetChangeListener);
             }
+            // TODO: make there are enough rows
             WeekPane.this.layoutEntries();
             WeekPane.this.updateWeekendColumns();
         }
@@ -114,6 +116,13 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
     public final void setEntries(ObservableSet<T> value) {
         entriesProperty().set(value);
     }
+    public final void setEntries(Set<T> value) {
+        entriesProperty().set(FXCollections.observableSet(value));
+    }
+    /**
+     * Provides access observable set of entries. Where possible use {@link WeekPane#setEntries}.
+     * @return observable set of entries
+     */
     public final ObservableSet<T> getEntries() {
         return entries.get();
     }

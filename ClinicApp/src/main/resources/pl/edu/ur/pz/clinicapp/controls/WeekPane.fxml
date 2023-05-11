@@ -139,7 +139,7 @@
             <Insets right="12.0" />
          </padding>
       </GridPane>
-      <ScrollPane fx:id="scrollPane" fitToWidth="true" hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="720.0" prefWidth="960.0" VBox.vgrow="ALWAYS">
+      <ScrollPane fx:id="scrollPane" fitToWidth="true" hbarPolicy="NEVER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
          <content>
             <GridPane fx:id="gridPane">
               <columnConstraints>
