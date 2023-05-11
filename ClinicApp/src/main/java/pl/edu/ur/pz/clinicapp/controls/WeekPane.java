@@ -194,7 +194,7 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
 
     protected Pane generateRowBackgroundPane(boolean even) {
         final var pane = new Pane();
-        getStyleClass().addAll("row", even ? "even" : "odd");
+        pane.getStyleClass().addAll("row", even ? "even" : "odd");
         return pane;
     }
 

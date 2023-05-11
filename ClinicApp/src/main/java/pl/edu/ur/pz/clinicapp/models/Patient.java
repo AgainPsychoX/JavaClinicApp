@@ -2,7 +2,7 @@ package pl.edu.ur.pz.clinicapp.models;
 
 import javax.persistence.*;
 
-import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrBlank;
 
 @Entity
 @Table(name = "patients")
@@ -135,7 +135,7 @@ public class Patient {
     public String getAddressDisplayShort() {
         final var builder = new StringBuilder(80);
         builder.append(city);
-        if (!isStringNullOrEmpty(street)) {
+        if (!isStringNullOrBlank(street)) {
             builder.append(" ul. ");
             builder.append(street);
         }
@@ -151,7 +151,7 @@ public class Patient {
     public String getAddressDisplayLong() {
         final var builder = new StringBuilder(80);
         builder.append(city);
-        if (!isStringNullOrEmpty(street)) {
+        if (!isStringNullOrBlank(street)) {
             builder.append(" ul. ");
             builder.append(street);
         }

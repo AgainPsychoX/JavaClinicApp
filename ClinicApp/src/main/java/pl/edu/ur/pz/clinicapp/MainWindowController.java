@@ -214,7 +214,9 @@ public class MainWindowController implements Initializable {
         final var newView = getView(which);
         final var oldView = getPreviousView();
 
-        if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
+        // TODO: might be good idea to make it more generic behaviour of view, maybe providing new interface
+        //      and checking if (oldView instanceof NavigationAware np) { if (np.onNavigation(new)) {...} }
+        if (ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
         ReferralDetailsView.setEditState(false);
 
         if (oldView != null && oldView.controller != null) {

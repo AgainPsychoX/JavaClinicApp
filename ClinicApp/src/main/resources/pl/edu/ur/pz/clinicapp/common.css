@@ -7,7 +7,7 @@
     -fx-cursor: hand;
 }
 
-.button:hover {
+.my-primary-button:hover {
     -fx-background-color: #2a72ff;
 }
 

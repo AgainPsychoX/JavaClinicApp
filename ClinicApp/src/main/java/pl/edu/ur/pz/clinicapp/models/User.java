@@ -18,6 +18,7 @@ import java.util.Collection;
 public final class User {
     public enum Role {
         ANONYMOUS,
+        // TODO: rethink role field (as users can be both patients & doctors at the same time, no?
         PATIENT,
         RECEPTION,
         NURSE,

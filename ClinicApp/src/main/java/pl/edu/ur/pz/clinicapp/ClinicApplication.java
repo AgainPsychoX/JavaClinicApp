@@ -33,7 +33,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrBlank;
 
 public class ClinicApplication extends Application {
     private static final Logger logger = Logger.getLogger(ClinicApplication.class.getName());
@@ -74,9 +74,8 @@ public class ClinicApplication extends Application {
 
         // Load app properties
         try (InputStream inputStream = ClassLoader.getSystemResourceAsStream("app.default.properties")) {
-            final var defaults = new Properties() {{
-                load(inputStream);
-            }};
+            final var defaults = new Properties();
+            defaults.load(inputStream);
             properties = new Properties(defaults);
         }
         try (FileInputStream appPropertiesFile = new FileInputStream("app.properties")) {
@@ -140,7 +139,7 @@ public class ClinicApplication extends Application {
     }
 
     private boolean isSeedingAvailable() {
-        return !isStringNullOrEmpty(properties.getProperty("seeding.username"));
+        return !isStringNullOrBlank(properties.getProperty("seeding.username"));
     }
 
     private boolean showConfirmSeedingDialog() {
@@ -186,7 +185,7 @@ public class ClinicApplication extends Application {
             // Invoke example data seeder
             long seed = new Random().nextLong();
             final var seedString = properties.getProperty("seeding.seed");
-            if (!isStringNullOrEmpty(seedString)) {
+            if (!isStringNullOrBlank(seedString)) {
                 seed = Long.parseLong(seedString);
             }
             new ExampleDataSeeder(entityManager, seed).run();
