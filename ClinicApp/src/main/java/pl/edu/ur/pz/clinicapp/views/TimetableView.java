@@ -12,6 +12,7 @@ import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 import pl.edu.ur.pz.clinicapp.models.Timetable;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.DirtyFixes;
 
 import java.net.URL;
 import java.util.List;
@@ -75,6 +76,12 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        // Delay required as the fix below needs already initialized date picker skin
+        runDelayed(42, () -> {
+            DirtyFixes.fixDatePickerAlwaysEditableViaButton(endDatePicker);
+            // no need to fix startDatePicker as it's always editable anyway
+        });
+
         // TODO: set custom entry factory to week pane that informs us about selected/edited entries
     }
 
