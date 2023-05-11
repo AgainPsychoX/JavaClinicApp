@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @NamedQueries({
         @NamedQuery(name = "timetables_for_user", query = "SELECT t FROM Timetable t WHERE t.user = :user")
 })
-public class Timetable {
+public class Timetable implements Comparable<Timetable> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -79,6 +79,11 @@ public class Timetable {
         return String.format("Timetable{effective=%s,entries=[%s]}",
                 effectiveDate.toString(),
                 entries.stream().map(Entry::toString).collect(Collectors.joining(",")));
+    }
+
+    @Override
+    public int compareTo(Timetable other) {
+        return effectiveDate.compareTo(other.getEffectiveDate());
     }
 
     /**

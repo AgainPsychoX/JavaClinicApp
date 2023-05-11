@@ -206,10 +206,13 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
             nextTimetableButton.setDisable(false);
             final var nextTimetable = timetables.get(index + 1);
             endDatePicker.setValue(nextTimetable.getEffectiveDate().minusDays(1).toLocalDate());
-            resetEndDateButton.setDisable(false);
+            if (mode != Mode.VIEW) {
+                resetEndDateButton.setDisable(false);
+            }
         }
         else {
             nextTimetableButton.setDisable(true);
+            endDatePicker.setValue(null);
             endDatePicker.getEditor().setText("zawsze");
         }
 

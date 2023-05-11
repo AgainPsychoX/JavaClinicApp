@@ -28,6 +28,13 @@ public class ExampleDataSeeder
         this.seed = seed;
     }
 
+    private ZonedDateTime zonedDay() {
+        return ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS);
+    }
+    private ZonedDateTime zonedDay(int daysOffset) {
+        return ZonedDateTime.now().truncatedTo(ChronoUnit.DAYS).plusDays(daysOffset);
+    }
+
     public void run() {
         random = new Random(seed);
         logger.info("Running example data seeder with seed: %d".formatted(seed));
@@ -40,7 +47,9 @@ public class ExampleDataSeeder
 
         final var user = User.getByLogin("lwojcik@gmail.com");
         user.clearTimetables();
-        user.addTimetable(generateBasicTimetable());
+        user.addTimetable(generateBasicTimetable(zonedDay(-10)));
+        user.addTimetable(generateBasicTimetable(zonedDay(-3)));
+        user.addTimetable(generateBasicTimetable(zonedDay(4)));
 
         // TODO: generate K patients, each selecting one or more doctors, and have appointments generated for them
         // TODO: ...
@@ -49,9 +58,10 @@ public class ExampleDataSeeder
     }
 
     private Timetable generateBasicTimetable() {
-        final var effectiveDate = ZonedDateTime.now()
-                .truncatedTo(ChronoUnit.DAYS)
-                .minusDays(random.nextInt(1, 10));
+        final var effectiveDate = zonedDay().minusDays(random.nextInt(1, 10));
+        return generateBasicTimetable(effectiveDate);
+    }
+    private Timetable generateBasicTimetable(ZonedDateTime effectiveDate) {
         final var timetable = new Timetable(effectiveDate);
         for (var day : DayOfWeek.values()) {
             if (day == DayOfWeek.SATURDAY)
