@@ -55,10 +55,48 @@ public class Timetable implements Comparable<Timetable> {
         return entries;
     }
 
-    public void add(Timetable.Entry entry) {
-        entry.timetable = this;
-        // TODO: detect overlapping and throw error
-        entries.add(entry);
+    /**
+     * Adds (or merges in) new entry to the timetable.
+     * @param newEntry entry to be added (or merged).
+     * @return true if any entries were added or changed (due to merging),
+     *  false otherwise - meaning the range already is covered by existing entries.
+     */
+    public boolean add(Timetable.Entry newEntry) {
+        for (var existingEntry : entries) {
+            if (existingEntry.getDayOfWeek() == newEntry.getDayOfWeek()) {
+                if (newEntry.endMinute < existingEntry.startMinute) continue;
+                if (existingEntry.endMinute < newEntry.startMinute) continue;
+
+                int startMinute  = Math.min(newEntry.startMinute, existingEntry.startMinute);
+                int endMinute    = Math.min(newEntry.endMinute,   existingEntry.endMinute);
+                if (startMinute == existingEntry.startMinute && endMinute == existingEntry.endMinute) {
+                    // New entry is covered by existing entry entirely
+                    return false;
+                }
+
+                // Entries are immutable (start minute is part of composite key),
+                // so we remove existing one and create new one.
+                remove(existingEntry);
+                return add(new Timetable.Entry(newEntry.getDayOfWeek(), startMinute, endMinute));
+            }
+        }
+        newEntry.timetable = this;
+        entries.add(newEntry);
+        return true;
+    }
+
+    /**
+     * Removing existing valid entry from the timetable.
+     * @param entry entry to be removed
+     */
+    public void remove(Timetable.Entry entry) {
+        if (entries.remove(entry)) {
+            entry.timetable = null;
+        }
+    }
+
+    public boolean isEmpty() {
+        return entries.isEmpty();
     }
 
     public Timetable() {
@@ -156,7 +194,7 @@ public class Timetable implements Comparable<Timetable> {
         @Id
         @ManyToOne(fetch = FetchType.LAZY, optional = false)
         @JoinColumn(name = "timetable_id", referencedColumnName = "id", nullable = false)
-        protected Timetable timetable;
+        private Timetable timetable;
         public Timetable getTimetable() {
             return timetable;
         }
@@ -168,7 +206,7 @@ public class Timetable implements Comparable<Timetable> {
          */
         @Id
         @Column(name = "weekday", nullable = false)
-        protected int weekday;
+        private int weekday;
         public DayOfWeek getDayOfWeek() {
             return DayOfWeek.of(weekday + 1);
         }
@@ -181,20 +219,9 @@ public class Timetable implements Comparable<Timetable> {
         public int getStartMinute() {
             return startMinute;
         }
-        public void setStartMinute(int minute) {
-            if (minute < endMinute) {
-                startMinute = minute;
-            }
-            else {
-                startMinute = endMinute;
-                endMinute = minute;
-            }
-        }
-        public void setStartTime(ZonedDateTime time) {
-            setStartTime(time.toLocalTime());
-        }
-        public void setStartTime(LocalTime time) {
-            setStartMinute(time.getHour() * 60 + time.getMinute());
+
+        public LocalTime startAsLocalTime() {
+            return LocalTime.of(startMinute / 60, startMinute % 60);
         }
 
         /**
@@ -217,20 +244,9 @@ public class Timetable implements Comparable<Timetable> {
         public int getEndMinute() {
             return endMinute;
         }
-        public void setEndMinute(int minute) {
-            if (minute < startMinute) {
-                endMinute = startMinute;
-                startMinute = minute;
-            }
-            else {
-                endMinute = minute;
-            }
-        }
-        public void setEndTime(ZonedDateTime time) {
-            setEndTime(time.toLocalTime());
-        }
-        public void setEndTime(LocalTime time) {
-            setEndMinute(time.getHour() * 60 + time.getMinute());
+
+        public LocalTime endAsLocalTime() {
+            return LocalTime.of(endMinute / 60, endMinute % 60);
         }
 
         /**
@@ -250,8 +266,12 @@ public class Timetable implements Comparable<Timetable> {
 
         public Entry(DayOfWeek dayOfWeek, int startMinute, int endMinute) {
             this.weekday = dayOfWeek.getValue() - 1;
-            this.startMinute = startMinute;
-            this.endMinute = endMinute;
+            this.startMinute = Math.min(startMinute, endMinute);
+            this.endMinute = Math.max(startMinute, endMinute);
+        }
+
+        public Entry(DayOfWeek dayOfWeek, LocalTime start, LocalTime end) {
+            this(dayOfWeek, start.getHour() * 60 + start.getMinute(), end.getHour() * 60 + end.getMinute());
         }
 
         @Override

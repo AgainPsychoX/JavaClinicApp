@@ -1,4 +1,5 @@
 
+/* Fancy primary colored buttons */
 .my-primary-button {
     -fx-background-color: #4D89FF;
     -fx-padding: 8px;
@@ -6,14 +7,10 @@
     -fx-text-fill: white;
     -fx-cursor: hand;
 }
-
 .my-primary-button:hover {
     -fx-background-color: #2a72ff;
 }
 
-.back-text:hover {
-    -fx-fill: #2a72ff;
-}
 
 
 /* Fix for scroll panes always having gray background */
@@ -22,27 +19,41 @@
 }
 
 
-/* Navigation background color: #A4C2FD */
 
+/* Reset default action buttons color */
+.reset-default-button-color:default {
+    -fx-base: #ececec;
+}
+
+
+/* Navigation related stuff */
+/* Note: Navigation background color: #A4C2FD */
 .navigation-menu-button {
     -fx-text-fill: white;
     -fx-max-width: Infinity;
     -fx-background-color: transparent;
     -fx-font-size: 16px;
 }
-
 .navigation-menu-button:hover {
     -fx-background-color: #9fb6e3;
 }
-
 .navigation-menu-button.active {
     -fx-background-color: #284C92;
 }
-
 .navigation-menu-button.log-out {
     -fx-text-fill: #ec0000;
 }
 
+
+
+/* TODO: encapsulate this one to areas it applies only to avoid weird styles elsewhere */
 .text-input:readonly, .text-area:readonly .content {
     -fx-background-color: #d3d3d3;
 }
+/* ... */
+
+.back-text:hover {
+    -fx-fill: #2a72ff;
+}
+
+

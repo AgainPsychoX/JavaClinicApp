@@ -9,6 +9,7 @@ import javafx.scene.text.Text;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
+import pl.edu.ur.pz.clinicapp.dialogs.TimetableEntryEditDialog;
 import pl.edu.ur.pz.clinicapp.models.Timetable;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
@@ -328,6 +329,11 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
 
     @FXML
     protected void addEntryAction(ActionEvent actionEvent) {
+        final var dialog = new TimetableEntryEditDialog(null, getSelectedTimetable());
+        dialog.showAndWait();
+        switch (dialog.getState()) {
+            case NEW_COMMITTED, EDIT_COMMITTED, DELETE_COMMITTED -> refresh();
+        }
     }
 
     @FXML
