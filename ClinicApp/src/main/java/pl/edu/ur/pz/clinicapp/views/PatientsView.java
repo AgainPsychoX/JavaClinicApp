@@ -102,6 +102,6 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
 
     public void register() {
         this.getParentController().goToView(MainWindowController.Views.REGISTER,
-                ReferralDetailsView.RefMode.CREATE, ClinicApplication.getUser());
+                "INDIRECT");
     }
 }

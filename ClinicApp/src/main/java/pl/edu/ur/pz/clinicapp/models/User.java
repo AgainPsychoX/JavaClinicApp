@@ -17,9 +17,10 @@ import javax.persistence.*;
                 +"(internal_name, email, name, phone, role, surname) VALUES "
                 +"(:internalName, :email, :name, :phone, :role, :surname)",
                 resultClass = User.class),
-        @NamedNativeQuery(name = "createDatabaseUser", query = "CREATE USER :userName LOGIN ENCRYPTED "
-                +"PASSWORD :password IN ROLE gp_patients",
-                resultClass = User.class),
+//        @NamedNativeQuery(name = "createDatabaseUser", query = "CREATE USER :userName LOGIN ENCRYPTED "
+//                +"PASSWORD :password IN ROLE gp_patients",
+//                resultClass = User.class),
+        @NamedNativeQuery(name = "createDatabaseUser", query = "SELECT 1 FROM create_database_user(:userName, :password)"),
         @NamedNativeQuery(name = "findDatabaseUser", query = "SELECT FROM pg_catalog.pg_roles WHERE rolname = :rolname",
                 resultClass = User.class),
 })
@@ -38,7 +39,7 @@ public class User {
 
         public String toString() {
             // TODO: when we have localization it will look much nicer
-            if (this == PATIENT)   return "PATIENT";
+            if (this == PATIENT)   return "PATIENT"; //FIXME
             if (this == RECEPTION) return "Recepcja";
             if (this == NURSE)     return "Pielęgniarka";
             if (this == DOCTOR)    return "Lekarz";
@@ -72,7 +73,7 @@ public class User {
         return email;
     }
     public void setEmail(String email) {
-        this.email = email.toLowerCase();
+        this.email = (email == null) ? null : email.toLowerCase();
     }
 
     @Column(nullable = true, length = 12)

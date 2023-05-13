@@ -20,6 +20,7 @@ import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Referral;
+import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.sql.Timestamp;
@@ -156,6 +157,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
     // TEST ONLY - last param should be a patient, for now it's current user
     public void addReferral() {
-        this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS, "INDIRECT");
+        this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS,
+                ReferralDetailsView.RefMode.CREATE, ClinicApplication.getUser());
     }
 }

@@ -42,7 +42,17 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.get_user_internal_name TO anonymous;
 
+-- Function that creates a database user
+CREATE OR REPLACE FUNCTION public.create_database_user(uname varchar, passwrd varchar) RETURNS void
+    LANGUAGE plpgsql
+    SECURITY DEFINER
+AS $$
+BEGIN
+    EXECUTE FORMAT('CREATE USER %I LOGIN ENCRYPTED PASSWORD %L', uname, passwrd);
+END;
+$$;
 
+REVOKE EXECUTE ON FUNCTION public.create_database_user FROM anonymous, gp_receptionists, gp_doctors, gp_admins;
 
 --------------------------------------------------------------------------------
 -- Roles
@@ -62,14 +72,14 @@ CREATE ROLE gp_nurses;
 CREATE ROLE gp_doctors;
 CREATE ROLE gp_admins SUPERUSER CREATEDB CREATEROLE REPLICATION BYPASSRLS;
 
+GRANT EXECUTE ON FUNCTION public.create_database_user TO anonymous, gp_receptionists, gp_doctors, gp_admins;
+
 -- Note for admin users:
 -- > The role attributes `LOGIN`, `SUPERUSER`, `CREATEDB`, and `CREATEROLE` can be thought of as special privileges,
 -- > but they are never inherited as ordinary privileges on database objects are.
 -- >
 -- > &mdash; <cite>https://www.postgresql.org/docs/current/role-membership.html</cite>
 -- so those need to be explicitly added.
-
-
 
 --------------------------------------------------------------------------------
 -- Row Level Security
