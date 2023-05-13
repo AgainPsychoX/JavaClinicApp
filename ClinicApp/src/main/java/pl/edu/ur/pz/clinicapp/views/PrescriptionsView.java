@@ -44,7 +44,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     @FXML
     protected TableColumn<Prescription, String> doctorCol;
     @FXML
-    protected TableColumn<Prescription, Integer> codeCol;
+    protected TableColumn<Prescription, String> codeCol;
     @FXML
     protected TableColumn<Prescription, String> tagsCol;
     @FXML
@@ -55,6 +55,8 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     protected Button detailsButton;
     @FXML
     protected TextField searchTextField;
+
+
 
     protected ObservableList<Prescription> prescriptions = FXCollections.observableArrayList();
     protected FilteredList<Prescription> filteredPrescriptions = new FilteredList<>(prescriptions, b -> true);
@@ -80,7 +82,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
 
         doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getDoctorName()));
         patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatientName()));
-        codeCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getId()));
+        codeCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getGovernmentId()));
         tagsCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getStringTags()));
         dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddedDate().toString()));
 
@@ -97,23 +99,6 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
         if (searchTextField.getText() != null && !searchTextField.getText().trim().equals("")) {
             searchAction(new ActionEvent());
         }
-
-//        doctorCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDoctorName()));
-//        doctorCol.setCellFactory(column -> new TableCell<>() {
-//            @Override
-//            protected void updateItem(String item, boolean empty) {
-//                super.updateItem(item, empty);
-//                if (empty || item == null)
-//                    setText(null);
-//                else
-//                    setText(item);
-//            }
-
-        //Testing
-//        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-//        prescriptions2.addAll(query.getResultList());
-//        table2.setItems(prescriptions2);
-        //
     }
 
     @Override

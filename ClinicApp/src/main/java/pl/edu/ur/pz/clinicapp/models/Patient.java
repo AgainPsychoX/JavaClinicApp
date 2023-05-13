@@ -11,11 +11,26 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
 @Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries({
         @NamedQuery(name = "patients",  query = "FROM Patient"),
-        @NamedQuery(name = "patients.current", query = "SELECT patient FROM Patient patient WHERE patient.databaseUsername = FUNCTION('CURRENT_USER')")
+        @NamedQuery(name = "patients.current", query = "SELECT patient FROM Patient patient WHERE patient.databaseUsername = FUNCTION('CURRENT_USER')"),
+        @NamedQuery(name = "patients.fromUser", query = "SELECT patient FROM Patient patient WHERE patient.databaseUsername = :uname"),
 })
 public class Patient extends User {
+
+    public Patient(String building, String city, String pesel, String postCity, String postCode, String street){
+        this.building = building;
+        this.city = pesel;
+        this.postCity = postCity;
+        this.postCode = postCode;
+        this.street = street;
+    }
+
     @Column(nullable = false, length = 11, unique = true)
     private String pesel;
+
+    public Patient() {
+
+    }
+
     public String getPESEL() {
         return pesel;
     }
@@ -110,5 +125,10 @@ public class Patient extends User {
 
     static public Patient getCurrent() {
         return ClinicApplication.getEntityManager().createNamedQuery("patients.current", Patient.class).getSingleResult();
+    }
+
+    static public Patient getPatient(String uname){
+        return ClinicApplication.getEntityManager().createNamedQuery("patients.fromUser", Patient.class).setParameter("uname", uname).getSingleResult();
+
     }
 }

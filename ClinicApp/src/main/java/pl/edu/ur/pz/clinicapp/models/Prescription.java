@@ -25,11 +25,6 @@ import javax.persistence.*;
 })
 
 public class Prescription extends MedicalHistoryEntry {
-    @Id
-    @Column(nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
     /**
      * Government assigned ID for prescriptions (Polish "e-recepta").
      */
@@ -54,10 +49,6 @@ public class Prescription extends MedicalHistoryEntry {
 
     public String getPatientName(){
         return this.getPatient().getDisplayName();
-    }
-
-    public Integer getId(){
-        return this.id;
     }
 
 }

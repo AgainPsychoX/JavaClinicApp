@@ -10,11 +10,36 @@ import javax.persistence.*;
 @Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries({
         @NamedQuery(name = "users.current", query = "SELECT user FROM User user WHERE user.databaseUsername = FUNCTION('CURRENT_USER')"),
+        @NamedQuery(name = "users",  query = "FROM User"),
 })
 @NamedNativeQueries({
         @NamedNativeQuery(name = "login", query = "SELECT get_user_internal_name(:input) AS internal_name"),
+        @NamedNativeQuery(
+                name = "findFilteredUsers",
+                query = "SELECT u.id, u.name, u.surname, u.phone, u.email FROM users u WHERE CAST(u.role AS varchar) = :role",
+                resultClass = User.class
+        ),
+        @NamedNativeQuery(
+                name = "findAllUsers",
+                query = "SELECT id, name, surname, phone, email FROM users",
+                resultClass = User.class
+        ),
+
 })
 public class User {
+    public User(String name, String surname, String email, String phone, Role role, String databaseUsername) {
+        this.name = name;
+        this.surname = surname;
+        this.email = email;
+        this.phone = phone;
+        this.role = role;
+        this.databaseUsername = databaseUsername;
+    }
+
+    public User() {
+
+    }
+
     public enum Role {
         ANONYMOUS,
         PATIENT,
@@ -36,6 +61,7 @@ public class User {
             if (this == ADMIN)     return "Administrator";
             return this.name();
         }
+
     }
 
     @Id

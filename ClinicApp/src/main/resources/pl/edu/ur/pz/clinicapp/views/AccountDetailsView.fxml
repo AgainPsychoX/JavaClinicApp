@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
-<VBox fx:id="vBox" prefHeight="540.0" prefWidth="600.0" spacing="8.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.AccountDetailsView">
+<VBox fx:id="vBox" prefHeight="540.0" prefWidth="600.0" spacing="8.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.AccountDetailsView">
     <children>
         <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Dane ogólne" VBox.vgrow="ALWAYS">
             <VBox.margin>
@@ -28,14 +35,16 @@
                 <RowConstraints minHeight="10.0" vgrow="NEVER" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
             </rowConstraints>
             <children>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Imię" GridPane.halignment="LEFT" >
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Imię" GridPane.halignment="LEFT">
                     <GridPane.margin>
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField fx:id="name" text="Adam" GridPane.rowIndex="1">
+                <TextField fx:id="nameTextField" text="Adam" GridPane.rowIndex="1">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
@@ -45,7 +54,7 @@
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField fx:id="surname" text="Kwaśniewski" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <TextField fx:id="surnameTextField" text="Kwaśniewski" GridPane.columnIndex="1" GridPane.rowIndex="1">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
@@ -55,17 +64,12 @@
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField fx:id="pesel" text="88080808088" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                <TextField fx:id="peselTextField" text="88080808088" GridPane.columnIndex="2" GridPane.rowIndex="1">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
                 </TextField>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Adres" GridPane.halignment="LEFT" GridPane.rowIndex="2">
-                    <GridPane.margin>
-                        <Insets left="8.0" right="8.0" top="8.0" />
-                    </GridPane.margin>
-                </Text>
-                <TextField fx:id="address" text="Rzeszów, ul. Nieistniejąca 17/6 " GridPane.columnSpan="2" GridPane.rowIndex="3">
+                <TextField fx:id="addressTextField" text="Rzeszów, ul. Nieistniejąca 17/6 " GridPane.columnSpan="2" GridPane.rowIndex="3">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
@@ -75,7 +79,7 @@
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField fx:id="post" text="Rzeszów 35-123" GridPane.columnIndex="2" GridPane.rowIndex="3">
+                <TextField fx:id="postTextField" text="Rzeszów 35-123" GridPane.columnIndex="2" GridPane.rowIndex="3">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
@@ -85,7 +89,7 @@
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField fx:id="phone" text="+48 731 731 731" GridPane.rowIndex="5">
+                <TextField fx:id="phoneTextField" text="+48 731 731 731" GridPane.rowIndex="5">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
@@ -95,87 +99,108 @@
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField fx:id="email" text="adam.kwasniewski@example.com" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                <TextField fx:id="emailTextField" text="adam.kwasniewski@example.com" GridPane.columnIndex="1" GridPane.rowIndex="5">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
                 </TextField>
+                <Text fx:id="roleText" strokeType="OUTSIDE" strokeWidth="0.0" text="Rola" visible="false" GridPane.halignment="LEFT" GridPane.rowIndex="6">
+                    <GridPane.margin>
+                        <Insets left="8.0" right="8.0" top="8.0" />
+                    </GridPane.margin>
+                </Text>
+            <ComboBox fx:id="roleComboBox" disable="true" prefWidth="150.0" visible="false" GridPane.halignment="LEFT" GridPane.rowIndex="7">
+               <GridPane.margin>
+                  <Insets left="8.0" right="8.0" top="4.0" />
+               </GridPane.margin>
+            </ComboBox>
+            <TextField fx:id="specialityTextField" disable="true" prefWidth="150.0" visible="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="7">
+               <GridPane.margin>
+                  <Insets left="6.0" right="8.0" top="4.0" />
+               </GridPane.margin>
+            </TextField>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Adres" GridPane.halignment="LEFT" GridPane.rowIndex="2">
+               <GridPane.margin>
+                  <Insets left="8.0" right="8.0" top="8.0" />
+               </GridPane.margin>
+            </Text>
+            <Text fx:id="specialityText" strokeType="OUTSIDE" strokeWidth="0.0" text="Specjalizacja" visible="false" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="6">
+               <GridPane.margin>
+                  <Insets left="8.0" right="8.0" top="8.0" />
+               </GridPane.margin>
+            </Text>
             </children>
             <VBox.margin>
                 <Insets bottom="8.0" />
             </VBox.margin>
         </GridPane>
-        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Dane medyczne" VBox.vgrow="ALWAYS">
-            <font>
-                <Font size="16.0" />
-            </font>
-            <VBox.margin>
-                <Insets left="8.0" right="8.0" top="8.0" />
-            </VBox.margin>
-        </Text>
-        <GridPane maxHeight="500.0" maxWidth="1000.0" prefHeight="58.0" prefWidth="600.0" VBox.vgrow="ALWAYS">
+        <GridPane fx:id="medicalDataGridPane" maxHeight="500.0" maxWidth="1000.0" prefHeight="58.0" prefWidth="600.0" VBox.vgrow="ALWAYS">
             <columnConstraints>
                 <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" minWidth="10.0" percentWidth="33.0" />
                 <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" minWidth="10.0" percentWidth="33.0" prefWidth="100.0" />
                 <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" minWidth="10.0" percentWidth="33.0" prefWidth="100.0" />
             </columnConstraints>
             <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
                 <RowConstraints minHeight="10.0" vgrow="NEVER" />
                 <RowConstraints minHeight="10.0" vgrow="NEVER" />
             </rowConstraints>
             <children>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Grupa krwi" GridPane.halignment="LEFT">
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Grupa krwi" GridPane.halignment="LEFT" GridPane.rowIndex="1">
                     <GridPane.margin>
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Wzrost (cm)" GridPane.columnIndex="1" GridPane.halignment="LEFT">
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Wzrost (cm)" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="1">
                     <GridPane.margin>
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField text="180" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <TextField GridPane.columnIndex="1" GridPane.rowIndex="2">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
                 </TextField>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Waga (kg)" GridPane.columnIndex="2" GridPane.halignment="LEFT">
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Waga (kg)" GridPane.columnIndex="2" GridPane.halignment="LEFT" GridPane.rowIndex="1">
                     <GridPane.margin>
                         <Insets left="8.0" right="8.0" top="8.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField text="94" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                <TextField GridPane.columnIndex="2" GridPane.rowIndex="2">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
                 </TextField>
-                <ComboBox promptText="(Nie wybrano)" GridPane.halignment="LEFT" GridPane.rowIndex="1" GridPane.valignment="CENTER">
+                <ComboBox promptText="(Nie wybrano)" GridPane.halignment="LEFT" GridPane.rowIndex="2" GridPane.valignment="CENTER">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
                 </ComboBox>
+              <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Dane medyczne" GridPane.halignment="LEFT">
+                  <font>
+                      <Font size="16.0" />
+                  </font>
+               <GridPane.margin>
+                  <Insets left="8.0" right="8.0" top="8.0" />
+               </GridPane.margin>
+              </Text>
             </children>
         </GridPane>
         <HBox alignment="CENTER_LEFT" maxHeight="100.0" maxWidth="1000.0" prefHeight="30.0" prefWidth="600.0" VBox.vgrow="ALWAYS">
             <children>
-                <HBox alignment="CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
+                <HBox fx:id="moveToViewsButtonBox" alignment="CENTER" prefHeight="48.0" prefWidth="600.0" spacing="8.0" HBox.hgrow="ALWAYS">
                     <children>
-                        <Button fx:id="markUnreadButton1" mnemonicParsing="false" prefWidth="200.0" text="Edytuj">
+                        <Button fx:id="moveToVisitsButton" mnemonicParsing="false" prefWidth="200.0" text="Przejdź do wizyt">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
-                        <Button fx:id="markUnreadButton11" mnemonicParsing="false" prefWidth="200.0" text="Przejdź do wizyt">
+                        <Button fx:id="moveToPrescriptionsButton" mnemonicParsing="false" prefWidth="200.0" text="Przejdź do recept">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
-                        <Button fx:id="markUnreadButton111" mnemonicParsing="false" prefWidth="200.0" text="Przejdź do recept">
-                            <padding>
-                                <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                            </padding>
-                        </Button>
-                        <Button fx:id="markUnreadButton112" mnemonicParsing="false" prefWidth="200.0" text="Przejdź do skierowań">
+                        <Button fx:id="moveToReferralsButton" mnemonicParsing="false" prefWidth="200.0" text="Przejdź do skierowań">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
@@ -184,5 +209,22 @@
                 </HBox>
             </children>
         </HBox>
+      <HBox fx:id="crudButtonBox" alignment="CENTER" prefHeight="62.0" prefWidth="600.0" spacing="8.0">
+         <children>
+            <Button fx:id="editButton" mnemonicParsing="false" onAction="#editSave" prefWidth="200.0" text="Zapisz">
+               <padding>
+                  <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+               </padding>
+            </Button>
+            <Button fx:id="deleteButton" mnemonicParsing="false" prefWidth="200.0" text="Usuń">
+               <padding>
+                  <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+               </padding>
+            </Button>
+         </children>
+         <opaqueInsets>
+            <Insets bottom="45.0" />
+         </opaqueInsets>
+      </HBox>
     </children>
 </VBox>
