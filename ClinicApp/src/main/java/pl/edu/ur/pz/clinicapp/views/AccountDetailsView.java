@@ -13,6 +13,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.StringConverter;
 import org.hibernate.Session;
+import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Doctor;
@@ -23,6 +24,7 @@ import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import java.net.URL;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class AccountDetailsView extends ChildControllerBase<MainWindowController> implements Initializable {
 
@@ -58,6 +60,9 @@ public class AccountDetailsView extends ChildControllerBase<MainWindowController
     private User user;
     Patient currPat = Patient.getCurrent();
     Doctor currDoc;
+
+    Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
+    Query findDatabaseUserQuery = session.getNamedQuery("findDatabaseUser");
 
     /**
      * Get current edit state (fields editable or non-editable).
@@ -270,13 +275,25 @@ public class AccountDetailsView extends ChildControllerBase<MainWindowController
                     editState.setValue(!editState.getValue());
                 }
                 else {
-                    String dbUname = "u" + nameTextField.getText().toLowerCase().charAt(0) +
-                            surnameTextField.getText().toLowerCase().charAt(0) +
-                            phoneTextField.getText().substring(0, 4);
+
+                    String dbUName;
+                    while (true) {
+                        int random = ThreadLocalRandom.current().nextInt(1000, 10000);
+                        dbUName = "u" + Character.toLowerCase(nameTextField.getText().charAt(0))
+                                + Character.toLowerCase(surnameTextField.getText().charAt(0)) + random;
+                        findDatabaseUserQuery.setParameter("rolname", dbUName);
+                        if (findDatabaseUserQuery.getResultList().size() == 0) break;
+                    }
                     String temp = roleComboBox.getSelectionModel().getSelectedItem().toString();
-                    User newUser = new User(nameTextField.getText(), surnameTextField.getText(),
-                            emailTextField.getText(),
-                            phoneTextField.getText(), User.Role.PATIENT, dbUname);
+                    User newUser = new User();
+                    newUser.setDatabaseUsername(dbUName);
+                    newUser.setEmail((emailTextField.getText() == null || emailTextField.getText().isBlank()) ? null :
+                            emailTextField.getText().trim());
+                    newUser.setName(nameTextField.getText().trim());
+                    newUser.setPhone((phoneTextField.getText() == null || phoneTextField.getText().isBlank()) ? null :
+                            phoneTextField.getText().trim());
+                    newUser.setRole(User.Role.PATIENT); //I don't work properly
+                    newUser.setSurname(surnameTextField.getText().trim());
                     session.persist(newUser);
 
                     Patient newPatient = new Patient("12", "Rzeszów", peselTextField.getText(),
@@ -307,5 +324,5 @@ public class AccountDetailsView extends ChildControllerBase<MainWindowController
         }
     }
 
-    public enum AccMode{DETAILS, CREATE, VIEW}
+    public enum AccMode{DETAILS, CREATE}
 }

@@ -24,22 +24,11 @@ import javax.persistence.*;
                 query = "SELECT id, name, surname, phone, email FROM users",
                 resultClass = User.class
         ),
+        @NamedNativeQuery(name = "findDatabaseUser", query = "SELECT FROM pg_catalog.pg_roles WHERE rolname = :rolname",
+                resultClass = User.class),
 
 })
 public class User {
-    public User(String name, String surname, String email, String phone, Role role, String databaseUsername) {
-        this.name = name;
-        this.surname = surname;
-        this.email = email;
-        this.phone = phone;
-        this.role = role;
-        this.databaseUsername = databaseUsername;
-    }
-
-    public User() {
-
-    }
-
     public enum Role {
         ANONYMOUS,
         PATIENT,
@@ -135,7 +124,9 @@ public class User {
     public String getDatabaseUsername() {
         return databaseUsername;
     }
-
+    public void setDatabaseUsername(String databaseUsername) {
+        this.databaseUsername = databaseUsername;
+    }
     static public String getDatabaseUsernameForInput(String emailOrPESEL) {
         final var em = ClinicApplication.getEntityManager();
         Query query = em.createNamedQuery("login");
