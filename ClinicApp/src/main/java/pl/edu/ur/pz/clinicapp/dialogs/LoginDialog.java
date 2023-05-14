@@ -154,22 +154,22 @@ public class LoginDialog extends Stage {
         logInUsingFormData();
     }
 
-    @FXML
-    void openRegisterView() throws IOException {
-        final var stage = new Stage();
-        final var loader = new FXMLLoader(ClinicApplication.class.getResource("dialogs/RegisterDialog.fxml"));
-        BorderPane BPane = loader.load();
-        registerScene = new Scene(BPane);
-        stage.setTitle("Rejestracja");
-        stage.setScene(registerScene);
-        stage.minWidthProperty().bind(BPane.minWidthProperty());
-        stage.maxWidthProperty().bind(BPane.maxWidthProperty());
-        stage.minHeightProperty().bind(BPane.minHeightProperty());
-        stage.maxHeightProperty().bind(BPane.maxHeightProperty());
-        stage.initModality(Modality.APPLICATION_MODAL);
-        stage.initOwner(this.getScene().getWindow());
-
-        stage.showAndWait();
-    }
+//    @FXML
+//    void openRegisterView() throws IOException {
+//        final var stage = new Stage();
+//        final var loader = new FXMLLoader(ClinicApplication.class.getResource("dialogs/RegisterDialog.fxml"));
+//        BorderPane BPane = loader.load();
+//        registerScene = new Scene(BPane);
+//        stage.setTitle("Rejestracja");
+//        stage.setScene(registerScene);
+//        stage.minWidthProperty().bind(BPane.minWidthProperty());
+//        stage.maxWidthProperty().bind(BPane.maxWidthProperty());
+//        stage.minHeightProperty().bind(BPane.minHeightProperty());
+//        stage.maxHeightProperty().bind(BPane.maxHeightProperty());
+//        stage.initModality(Modality.APPLICATION_MODAL);
+//        stage.initOwner(this.getScene().getWindow());
+//
+//        stage.showAndWait();
+//    }
 
 }

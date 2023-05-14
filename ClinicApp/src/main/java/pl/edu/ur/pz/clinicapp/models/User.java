@@ -13,10 +13,11 @@ import javax.persistence.*;
 })
 @NamedNativeQueries({
         @NamedNativeQuery(name = "login", query = "SELECT get_user_internal_name(:input) AS internal_name"),
-        @NamedNativeQuery(name = "createUser", query = "INSERT INTO users "
-                +"(internal_name, email, name, phone, role, surname) VALUES "
-                +"(:internalName, :email, :name, :phone, :role, :surname)",
-                resultClass = User.class),
+//        @NamedNativeQuery(name = "createUser", query = "INSERT INTO users "
+//                +"(internal_name, email, name, phone, role, surname) VALUES "
+//                +"(:internalName, :email, :name, :phone, :role, :surname)",
+//                resultClass = User.class),
+        @NamedNativeQuery(name = "createUser", query = "SELECT 1 FROM create_user(:internalName, :email, :name, :phone, :role, :surname)"),
 //        @NamedNativeQuery(name = "createDatabaseUser", query = "CREATE USER :userName LOGIN ENCRYPTED "
 //                +"PASSWORD :password IN ROLE gp_patients",
 //                resultClass = User.class),
@@ -28,6 +29,7 @@ public class User {
     public enum Role {
         ANONYMOUS,
         PATIENT,
+        PATIENT_DB,
         RECEPTION,
         NURSE,
         DOCTOR,
@@ -39,7 +41,8 @@ public class User {
 
         public String toString() {
             // TODO: when we have localization it will look much nicer
-            if (this == PATIENT)   return "PATIENT"; //FIXME
+            if (this == PATIENT)   return "Pacjent";
+            if (this == PATIENT_DB)   return "PATIENT";
             if (this == RECEPTION) return "Recepcja";
             if (this == NURSE)     return "Pielęgniarka";
             if (this == DOCTOR)    return "Lekarz";

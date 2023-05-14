@@ -48,11 +48,11 @@ CREATE OR REPLACE FUNCTION public.create_database_user(uname varchar, passwrd va
     SECURITY DEFINER
 AS $$
 BEGIN
-    EXECUTE FORMAT('CREATE USER %I LOGIN ENCRYPTED PASSWORD %L', uname, passwrd);
+    EXECUTE FORMAT('CREATE USER %I LOGIN ENCRYPTED PASSWORD %L IN ROLE gp_patients', uname, passwrd);
 END;
 $$;
 
-REVOKE EXECUTE ON FUNCTION public.create_database_user FROM anonymous, gp_receptionists, gp_doctors, gp_admins;
+REVOKE EXECUTE ON FUNCTION public.create_database_user FROM gp_receptionists, gp_doctors, gp_admins;
 
 --------------------------------------------------------------------------------
 -- Roles
@@ -72,7 +72,7 @@ CREATE ROLE gp_nurses;
 CREATE ROLE gp_doctors;
 CREATE ROLE gp_admins SUPERUSER CREATEDB CREATEROLE REPLICATION BYPASSRLS;
 
-GRANT EXECUTE ON FUNCTION public.create_database_user TO anonymous, gp_receptionists, gp_doctors, gp_admins;
+GRANT EXECUTE ON FUNCTION public.create_database_user TO gp_receptionists, gp_doctors, gp_admins;
 
 -- Note for admin users:
 -- > The role attributes `LOGIN`, `SUPERUSER`, `CREATEDB`, and `CREATEROLE` can be thought of as special privileges,
@@ -268,6 +268,10 @@ GRANT INSERT ON TABLE public.patients TO gp_receptionists, gp_doctors;
 DROP POLICY IF EXISTS insert_asdf ON public.patients;
 CREATE POLICY insert_asdf ON public.patients FOR INSERT TO gp_receptionists, gp_doctors;
 
+DROP POLICY IF EXISTS insert_auth ON public.patients;
+CREATE POLICY insert_auth ON public.patients FOR INSERT TO gp_receptionists, gp_doctors
+    WITH CHECK (true);
+
 ----------------------------------------
 -- SELECT
 
@@ -421,6 +425,10 @@ GRANT INSERT ON TABLE public.users TO gp_receptionists, gp_doctors;
 DROP POLICY IF EXISTS insert_asdf ON public.users;
 CREATE POLICY insert_asdf ON public.users FOR INSERT TO gp_receptionists, gp_doctors
     WITH CHECK (role = 'PATIENT' AND LENGTH(internal_name) = 0);
+
+DROP POLICY IF EXISTS insert_auth ON public.users;
+CREATE POLICY insert_auth ON public.users FOR INSERT TO gp_receptionists, gp_doctors
+    WITH CHECK (true);
 
 ----------------------------------------
 -- SELECT
