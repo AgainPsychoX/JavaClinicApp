@@ -130,7 +130,7 @@ public class User {
         final var em = ClinicApplication.getEntityManager();
         Query query = em.createNamedQuery("login");
         query.setParameter("input", emailOrPESEL.toLowerCase());
-        return (String) query.getSingleResult();
+        return (query.getSingleResult() == null) ? "" : (String) query.getSingleResult();
     }
 
 
