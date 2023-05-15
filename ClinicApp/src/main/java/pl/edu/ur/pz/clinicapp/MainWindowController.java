@@ -49,6 +49,7 @@ public class MainWindowController implements Initializable {
         put(Views.ACCOUNTS, ClinicApplication.class.getResource("views/AccountsView.fxml"));
         put(Views.ACCOUNT_DETAILS, ClinicApplication.class.getResource("views/AccountDetailsView.fxml"));
         put(Views.VISITS, ClinicApplication.class.getResource("views/VisitsView.fxml"));
+        put(Views.VISIT_DETAILS, ClinicApplication.class.getResource("views/VisitsDetailsView.fxml"));
         put(Views.PATIENTS, ClinicApplication.class.getResource("views/PatientsView.fxml"));
         put(Views.REFERRALS, ClinicApplication.class.getResource("views/ReferralsView.fxml"));
         put(Views.REFERRAL_DETAILS, ClinicApplication.class.getResource("views/ReferralDetailsView.fxml"));
@@ -202,6 +203,7 @@ public class MainWindowController implements Initializable {
      * @param context Additional context parameter(s).
      */
     public void goToViewRaw(Views which, Object... context) {
+        System.out.println(which);
         final var newView = getView(which);
         final var oldView = getPreviousView();
 

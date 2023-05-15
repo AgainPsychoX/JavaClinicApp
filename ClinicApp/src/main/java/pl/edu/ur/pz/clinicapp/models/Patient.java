@@ -1,8 +1,14 @@
 package pl.edu.ur.pz.clinicapp.models;
 
+import org.hibernate.Session;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
+import javafx.collections.ObservableList;
+
 import javax.persistence.*;
+
+import java.util.Comparator;
+import java.util.List;
 
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
 
@@ -13,7 +19,7 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
         @NamedQuery(name = "patients",  query = "FROM Patient"),
         @NamedQuery(name = "patients.current", query = "SELECT patient FROM Patient patient WHERE patient.databaseUsername = FUNCTION('CURRENT_USER')")
 })
-public class Patient extends User {
+public class Patient extends User{
     @Column(nullable = false, length = 11, unique = true)
     private String pesel;
     public String getPESEL() {
@@ -111,4 +117,19 @@ public class Patient extends User {
     static public Patient getCurrent() {
         return ClinicApplication.getEntityManager().createNamedQuery("patients.current", Patient.class).getSingleResult();
     }
+
+    public static List getAll(Class c) {
+        Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
+        return session.createCriteria(c).list();
+    }
+
+    public static Comparator<Patient> patientNameComparator = new Comparator<Patient>() {
+        public int compare(Patient patient1, Patient patient2) {
+
+            String patientName1 = patient1.getDisplayName().toUpperCase();
+            String patientName2 = patient2.getDisplayName().toUpperCase();
+            return patientName1.compareTo(patientName2);
+        }
+
+    };
 }

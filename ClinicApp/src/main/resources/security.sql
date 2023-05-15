@@ -84,10 +84,10 @@ ALTER ROLE CURRENT_USER WITH BYPASSRLS;
 
 ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
 
-GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.appointments TO gp_admins;
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.appointments TO gp_admins, gp_patients, gp_receptionists, gp_doctors;
 
 DROP POLICY IF EXISTS admin ON public.appointments;
-CREATE POLICY admin ON public.appointments FOR ALL TO gp_admins
+CREATE POLICY admin ON public.appointments FOR ALL TO gp_admins, gp_receptionists
     USING (TRUE);
 
 ----------------------------------------
@@ -244,10 +244,10 @@ CREATE POLICY update_on_read ON public.notifications FOR UPDATE TO PUBLIC
 
 ALTER TABLE public.patients ENABLE ROW LEVEL SECURITY;
 
-GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.patients TO gp_admins;
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.patients TO gp_admins, gp_patients, gp_receptionists, gp_doctors, gp_nurses;
 
 DROP POLICY IF EXISTS admin ON public.patients;
-CREATE POLICY admin ON public.patients FOR ALL TO gp_admins
+CREATE POLICY admin ON public.patients FOR ALL TO gp_admins, gp_patients, gp_receptionists, gp_doctors, gp_nurses
     USING (TRUE);
 
 ----------------------------------------
@@ -302,10 +302,10 @@ CREATE POLICY update_as_doctor ON public.patients FOR UPDATE TO gp_doctors
 
 ALTER TABLE public.prescriptions ENABLE ROW LEVEL SECURITY;
 
-GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.prescriptions TO gp_admins;
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.prescriptions TO gp_admins, gp_patients, gp_receptionists, gp_doctors, gp_nurses;
 
 DROP POLICY IF EXISTS admin ON public.prescriptions;
-CREATE POLICY admin ON public.prescriptions FOR ALL TO gp_admins
+CREATE POLICY admin ON public.prescriptions FOR ALL TO gp_admins, gp_patients, gp_receptionists, gp_doctors, gp_nurses
     USING (TRUE);
 
 ----------------------------------------
@@ -345,10 +345,10 @@ CREATE POLICY update_own_as_doctor ON public.prescriptions FOR UPDATE TO gp_doct
 --------------------------------------------------------------------------------
 -- `referrals`
 
-GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.referrals TO gp_admins, gp_doctors; -- TEST ONLY
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.referrals TO gp_admins, gp_patients, gp_receptionists, gp_doctors, gp_nurses; -- TEST ONLY
 
 DROP POLICY IF EXISTS admin ON public.referrals;
-CREATE POLICY admin ON public.referrals FOR ALL TO gp_admins
+CREATE POLICY admin ON public.referrals FOR ALL TO gp_admins, gp_patients, gp_receptionists, gp_doctors, gp_nurses
     USING (TRUE);
 
 ----------------------------------------
