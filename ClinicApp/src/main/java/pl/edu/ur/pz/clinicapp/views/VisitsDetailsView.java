@@ -12,9 +12,7 @@ import javafx.scene.layout.HBox;
 import javafx.util.Callback;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.jpa.TypedParameterValue;
 import org.hibernate.query.Query;
-import org.hibernate.type.StandardBasicTypes;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Appointment;
@@ -23,13 +21,11 @@ import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
-import javax.print.Doc;
 import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -64,42 +60,26 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
     Query editQuery = session.getNamedQuery("editAppointment");
     Query deleteQuery = session.getNamedQuery("deleteAppointment");
 
-    Query allAppointmentQuery = session.getNamedQuery("allAppointmentsForDoctor");
     /**
      * Current view mode.
      */
     private PrMode currMode;
     private Appointment appointment;
 
-    private ObservableList<Integer> hours = FXCollections.observableArrayList();
+    private final ObservableList<Integer> hours = FXCollections.observableArrayList();
 
-    private ChangeListener<LocalDate> listener = new ChangeListener<>() {
+    /** Listener for datePicker which calls function to update list of hours **/
+
+    private final ChangeListener<LocalDate> listener = new ChangeListener<>() {
         @Override
         public void changed(ObservableValue<? extends LocalDate> observableValue, LocalDate localDate, LocalDate t1) {
             hourPicker.getItems().clear();
             refreshHours(t1, appointment);
             hourPicker.getItems().addAll(hours);
             hourPicker.setValue(null);
-            System.out.println("testt");
-//            if (currMode == PrMode.DETAILS)
-//                observableValue.removeListener(listener);
         }
     };
 
-
-    /**
-     * Get current edit state (fields editable or non-editable).
-     */
-    public static boolean getEditState() {
-        return editState.getValue();
-    }
-
-    /**
-     * Set current edit state (fields editable or non-editable).
-     */
-    public static void setEditState(boolean editState) {
-        VisitsDetailsView.editState.set(editState);
-    }
 
     /**
      * Displays alert about unsaved changes and returns whether user wants to discard them or not.
@@ -139,10 +119,8 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
     }
 
     /**
-     * Adds listener to the editState which accordingly sets fields to editable or non-editable.
      * Checks current window mode and user's identity and accordingly removes forbidden activities (edit and deletion
      * for non-creators of the referral or deletion if mode is set to CREATE).
-     * Sets editState to true if mode is set to CREATE.
      */
     @Override
     public void populate(Object... context) {
@@ -224,7 +202,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             @Override
             public void updateItem(LocalDate date, boolean empty) {
                 super.updateItem(date, empty);
-                setDisable(empty || date.compareTo(LocalDate.now()) < 0 || date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY);
+                setDisable(empty || date.isBefore(LocalDate.now()) || date.getDayOfWeek() == DayOfWeek.SATURDAY || date.getDayOfWeek() == DayOfWeek.SUNDAY);
 
             }
         });
@@ -300,6 +278,8 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
         }
     }
 
+
+    /** Function refreshes hours of selected doctor to match his timetable and exclude hours that are occupied **/
     private void refreshHours(LocalDate newValue, Appointment localAppointment) {
         if(newValue == null) newValue = LocalDate.now();
         final int[] dayHours = {-1, -1};
@@ -312,35 +292,30 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
                     dayHours[0] = doctor.getWeeklyTimetable().getMondayStart();
                     dayHours[1] = doctor.getWeeklyTimetable().getMondayEnd();
                 } catch (Exception ignored){}
-                break;
             }
             case TUESDAY -> {
                 try {
                     dayHours[0] = doctor.getWeeklyTimetable().getTuesdayStart();
                     dayHours[1] = doctor.getWeeklyTimetable().getTuesdayEnd();
                 } catch (Exception ignored){}
-                break;
             }
             case WEDNESDAY -> {
                 try {
                     dayHours[0] = doctor.getWeeklyTimetable().getWednesdayStart();
                     dayHours[1] = doctor.getWeeklyTimetable().getWednesdayEnd();
                 } catch (Exception ignored){}
-                break;
             }
             case THURSDAY -> {
                 try {
                     dayHours[0] = doctor.getWeeklyTimetable().getThursdayStart();
                     dayHours[1] = doctor.getWeeklyTimetable().getThursdayEnd();
                 } catch (Exception ignored){}
-                break;
             }
             case FRIDAY -> {
                 try {
                     dayHours[0] = doctor.getWeeklyTimetable().getFridayStart();
                     dayHours[1] = doctor.getWeeklyTimetable().getFridayEnd();
                 } catch (Exception ignored){}
-                break;
             }
         }
         ArrayList<Integer> occupiedHours = new ArrayList<>();
@@ -371,12 +346,10 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
      * Sets values of table cells.
      */
     @Override
-    public void refresh() {
-//        patientCombo.getItems().add(appointment.getPatient().getDisplayName());
-//        doctorCombo.getItems().add(appointment.getDoctor().getDisplayName());
-//        notesTextField.setText(appointment.getNotes());
-    }
+    public void refresh() {}
 
+
+    /** Creating transaction and execute queries depending on type of action **/
     @FXML
     public void editSave() {
         Transaction transaction;
@@ -399,7 +372,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
                         alert.showAndWait();
                         editState.setValue(!editState.getValue());
                     } else {
-                        int hour = (int)Math.floor(hourPicker.getValue()/60);
+                        int hour = (int)Math.floor((double) hourPicker.getValue() /60);
                         int minutes = hourPicker.getValue() - hour * 60;
                         editQuery.setParameter("date", datePicker.getValue().atTime(hour, minutes));
                         transaction = session.beginTransaction();
@@ -433,9 +406,9 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
                     newVisit.setPatient(patientCombo.getValue());
                     newVisit.setDuration(doctorCombo.getValue().getSpeciality().defaultVisitTime);
                     newVisit.setDoctor(doctorCombo.getValue());
-                    newVisit.setStringTags("test");
-                    int hour = (int) Math.floor((int) hourPicker.getValue()/60);
-                    int minutes = (int)hourPicker.getValue() - (hour * 60);
+                    newVisit.setStringTags(null);
+                    int hour = (int) Math.floor((double) hourPicker.getValue() /60);
+                    int minutes = hourPicker.getValue() - (hour * 60);
                     newVisit.setDate(Timestamp.valueOf(datePicker.getValue().atTime(hour, minutes)));
                     session.persist(newVisit);
                     transaction.commit();
@@ -462,7 +435,6 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
      */
     @FXML
     public void deleteAppointment() {
-        System.out.println(appointment.getId());
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Odwoływanie wizyty");
         alert.setHeaderText("Czy na pewno chcesz odwołać wizytę?");
@@ -482,8 +454,9 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
 
     public enum PrMode {DETAILS, CREATE}
 
+    /** Converts hour(integer) to text form used in details view**/
     private String minutesToHour(int minutes) {
-        int hours = (int) Math.floor(minutes/60);
+        int hours = (int) Math.floor((double) minutes /60);
         int remainingMinutes = minutes - hours*60;
         if (remainingMinutes == 0)
             return hours + ":" + remainingMinutes + "0";
