@@ -367,9 +367,6 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
         hourPicker.setDisable(hours.isEmpty());
     }
 
-    // przy tworzeniu dojesz mu null on wtedy sprawdza wszystkie normalnie i usuwa
-    // jezeli nie dostanie null to moga byc godzinki co on zajal bo tak
-
     /**
      * Sets values of table cells.
      */
