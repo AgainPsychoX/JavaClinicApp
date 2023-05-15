@@ -5,6 +5,11 @@ import java.sql.Timestamp;
 
 @Entity
 @Table(name = "notifications")
+
+@NamedQueries({
+        @NamedQuery(name = "getAllNotifications", query = "FROM Notification "),
+})
+
 public class Notification {
     @Id
     @Column(nullable = false)

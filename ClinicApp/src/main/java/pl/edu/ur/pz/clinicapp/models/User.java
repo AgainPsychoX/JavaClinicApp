@@ -4,6 +4,7 @@ import org.hibernate.annotations.Type;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -103,6 +104,20 @@ public class User {
     public void setSurname(String surname) {
         this.surname = surname;
     }
+
+    @OneToMany(mappedBy = "sourceUser", fetch = FetchType.LAZY)
+    private List<Notification> allSentNotifications;
+    public List<Notification> getAllSentNotifications() {
+        return allSentNotifications;
+    }
+
+    @OneToMany(mappedBy = "destinationUser", fetch = FetchType.LAZY)
+    private List<Notification> allReceivedNotifications;
+    public List<Notification> getAllReceivedNotifications() {
+        return allReceivedNotifications;
+    }
+
+
 
     public String getDisplayName() {
         if (name != null) {
