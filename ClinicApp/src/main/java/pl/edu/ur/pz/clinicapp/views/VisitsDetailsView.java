@@ -231,7 +231,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             // in case the referral was edited while app is running
             ClinicApplication.getEntityManager().refresh(appointment);
 
-            if (role != User.Role.ADMIN && appointment.getAddedBy() != ClinicApplication.getUser()) {
+            if (role != User.Role.ADMIN && appointment.getAddedBy() != ClinicApplication.getUser() && role != User.Role.RECEPTION) {
                 buttonBox.getChildren().remove(editButton);
                 buttonBox.getChildren().remove(deleteButton);
             } else {
@@ -254,12 +254,12 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
 
             if(ClinicApplication.getUser().getRole().name().equals("DOCTOR")) {
                 doctors.add(ClinicApplication.getUser());
-                doctorCombo.getItems().add((Doctor) ClinicApplication.getUser());
                 doctorCombo.setValue((Doctor) ClinicApplication.getUser());
-            } else
+            } else {
                 doctors = Patient.getAll(Doctor.class);
-            doctors.sort(Patient.patientNameComparator);
+            }
             doctorCombo.getItems().addAll(doctors);
+            doctors.sort(Patient.patientNameComparator);
             notesTextField.setText(null);
             editState.setValue(true);
 
@@ -340,6 +340,11 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             hours.add(dayHours[0]);
             dayHours[0] += 15;
         }
+        if(hours.isEmpty()) {
+            hourPicker.setDisable(true);
+        } else {
+            hourPicker.setDisable(false);
+        }
     }
 
     /**
@@ -406,7 +411,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
                     newVisit.setPatient(patientCombo.getValue());
                     newVisit.setDuration(doctorCombo.getValue().getSpeciality().defaultVisitTime);
                     newVisit.setDoctor(doctorCombo.getValue());
-                    newVisit.setStringTags(null);
+                    newVisit.setStringTags(" ");
                     int hour = (int) Math.floor((double) hourPicker.getValue() /60);
                     int minutes = hourPicker.getValue() - (hour * 60);
                     newVisit.setDate(Timestamp.valueOf(datePicker.getValue().atTime(hour, minutes)));
