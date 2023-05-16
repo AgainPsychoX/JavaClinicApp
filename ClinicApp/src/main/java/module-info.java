@@ -8,8 +8,7 @@ module pl.edu.ur.pz.clinicapp {
     requires org.controlsfx.controls;
     requires java.naming;
     requires java.desktop;
-    requires org.junit.jupiter.api;
-    requires org.junit.platform.commons;
+
 
     exports pl.edu.ur.pz.clinicapp;
     exports pl.edu.ur.pz.clinicapp.models;
