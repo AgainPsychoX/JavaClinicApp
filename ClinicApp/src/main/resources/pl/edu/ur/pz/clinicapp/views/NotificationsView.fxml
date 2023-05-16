@@ -26,21 +26,27 @@
             <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
          </columnResizePolicy>
         <columns>
-          <TableColumn fx:id="dateCol" maxWidth="200.0" prefWidth="100.0" text="Data" />
-            <TableColumn fx:id="fromCol" maxWidth="200.0" prefWidth="100.0" text="Od" />
-            <TableColumn fx:id="contentCol" maxWidth="1000.0" minWidth="100.0" prefWidth="300.0" text="Treść" />
+          <TableColumn fx:id="dateCol" maxWidth="150.0" minWidth="120.0" prefWidth="120.0" text="Data" />
+            <TableColumn fx:id="fromCol" maxWidth="120.0" minWidth="100.0" prefWidth="100.0" text="Od" />
+            <TableColumn fx:id="contentCol" maxWidth="1000.0" minWidth="100.0" prefWidth="264.0" text="Treść" />
+            <TableColumn fx:id="readCol" maxWidth="70.0" minWidth="70.0" prefWidth="70.0" text="Przeczytane" />
         </columns>
       </TableView>
       <HBox alignment="CENTER_LEFT">
          <children>
             <HBox alignment="CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
                <children>
-                  <Button fx:id="markUnreadButton1" disable="true" mnemonicParsing="false" prefWidth="200.0" text="Oznacz jako nieprzeczytane">
+                  <Button fx:id="markReadButton" disable="true" mnemonicParsing="false" onAction="#readAction" prefWidth="200.0" text="Oznacz jako przeczytane">
                      <padding>
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>
                   </Button>
-                  <Button fx:id="markUnreadButton" disable="true" mnemonicParsing="false" prefWidth="200.0" text="Usuń">
+                  <Button fx:id="markUnreadButton" disable="true" mnemonicParsing="false" onAction="#readAction" prefWidth="200.0" text="Oznacz jako nieprzeczytane">
+                     <padding>
+                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                     </padding>
+                  </Button>
+                  <Button fx:id="deleteButton" disable="true" mnemonicParsing="false" onAction="#deleteAction" prefWidth="200.0" text="Usuń">
                      <padding>
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>

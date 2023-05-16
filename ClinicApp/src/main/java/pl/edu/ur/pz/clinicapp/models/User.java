@@ -106,12 +106,14 @@ public class User {
     }
 
     @OneToMany(mappedBy = "sourceUser", fetch = FetchType.LAZY)
+    @OrderBy("sentDate DESC ")
     private List<Notification> allSentNotifications;
     public List<Notification> getAllSentNotifications() {
         return allSentNotifications;
     }
 
     @OneToMany(mappedBy = "destinationUser", fetch = FetchType.LAZY)
+    @OrderBy("sentDate DESC ")
     private List<Notification> allReceivedNotifications;
     public List<Notification> getAllReceivedNotifications() {
         return allReceivedNotifications;
