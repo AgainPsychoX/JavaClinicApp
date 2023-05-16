@@ -16,6 +16,7 @@ import pl.edu.ur.pz.clinicapp.dialogs.RegisterDialog;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildController;
 import pl.edu.ur.pz.clinicapp.utils.HistoryTracker;
+import pl.edu.ur.pz.clinicapp.views.MyAccount;
 import pl.edu.ur.pz.clinicapp.views.PrescriptionDetailsView;
 import pl.edu.ur.pz.clinicapp.views.ReferralDetailsView;
 
@@ -34,6 +35,7 @@ public class MainWindowController implements Initializable {
         NOTIFICATIONS,
         ACCOUNTS,
         ACCOUNT_DETAILS,
+        MY_ACCOUNT,
         SCHEDULE,
         VISITS,
         VISIT_DETAILS,
@@ -59,6 +61,7 @@ public class MainWindowController implements Initializable {
         put(Views.PRESCRIPTIONS, ClinicApplication.class.getResource("views/PrescriptionsView.fxml"));
         put(Views.PRESCRIPTION_DETAILS, ClinicApplication.class.getResource("views/PrescriptionDetailsView.fxml"));
         put(Views.REGISTER, ClinicApplication.class.getResource("dialogs/RegisterDialog.fxml"));
+        put(Views.MY_ACCOUNT, ClinicApplication.class.getResource("views/MyAccount.fxml"));
     }};
 
     static class ViewDefinition {
@@ -155,7 +158,7 @@ public class MainWindowController implements Initializable {
             // TODO: notifications button should include red dot when there are any unread
             c.add(buttonForNavigationMenu("Powiadomienia", (e) -> goToView(Views.NOTIFICATIONS)));
             if (!role.isGroupUser()) {
-                c.add(buttonForNavigationMenu("Moje dane", (e) -> goToView(Views.ACCOUNT_DETAILS, ClinicApplication.getUser())));
+                c.add(buttonForNavigationMenu("Moje dane", (e) -> goToView(Views.MY_ACCOUNT, ClinicApplication.getUser())));
             }
 
             if (role == User.Role.PATIENT) {
@@ -183,6 +186,7 @@ public class MainWindowController implements Initializable {
                     if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
                     if(PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) return;
                     if(RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) return;
+                    if(MyAccount.getEditState() && !MyAccount.exitConfirm()) return;
                     ClinicApplication.logOut();
                     getStage().close();
                 });
@@ -219,6 +223,8 @@ public class MainWindowController implements Initializable {
         PrescriptionDetailsView.setEditState(false);
         if(RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) return;
         RegisterDialog.setEditState(false);
+        if(MyAccount.getEditState() && !MyAccount.exitConfirm()) return;
+        MyAccount.setEditState(false);
 
         if (oldView != null && oldView.controller != null) {
             oldView.controller.dispose();
