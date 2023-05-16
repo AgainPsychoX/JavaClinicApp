@@ -12,9 +12,11 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import pl.edu.ur.pz.clinicapp.dialogs.RegisterDialog;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildController;
 import pl.edu.ur.pz.clinicapp.utils.HistoryTracker;
+import pl.edu.ur.pz.clinicapp.views.PrescriptionDetailsView;
 import pl.edu.ur.pz.clinicapp.views.ReferralDetailsView;
 
 import java.io.IOException;
@@ -42,6 +44,7 @@ public class MainWindowController implements Initializable {
         PRESCRIPTIONS,
         PRESCRIPTION_DETAILS,
         REPORTS,
+        REGISTER
     }
 
     private static final EnumMap<Views, URL> viewToResource = new EnumMap<>(Views.class) {{
@@ -55,6 +58,7 @@ public class MainWindowController implements Initializable {
         put(Views.REFERRAL_DETAILS, ClinicApplication.class.getResource("views/ReferralDetailsView.fxml"));
         put(Views.PRESCRIPTIONS, ClinicApplication.class.getResource("views/PrescriptionsView.fxml"));
         put(Views.PRESCRIPTION_DETAILS, ClinicApplication.class.getResource("views/PrescriptionDetailsView.fxml"));
+        put(Views.REGISTER, ClinicApplication.class.getResource("dialogs/RegisterDialog.fxml"));
     }};
 
     static class ViewDefinition {
@@ -177,6 +181,8 @@ public class MainWindowController implements Initializable {
                     // Log-out is necessary here, even tho there already is `setOnCloseRequest` for the stage,
                     // as it just catches window event.
                     if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
+                    if(PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) return;
+                    if(RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) return;
                     ClinicApplication.logOut();
                     getStage().close();
                 });
@@ -209,6 +215,10 @@ public class MainWindowController implements Initializable {
 
         if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
         ReferralDetailsView.setEditState(false);
+        if(PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) return;
+        PrescriptionDetailsView.setEditState(false);
+        if(RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) return;
+        RegisterDialog.setEditState(false);
 
         if (oldView != null && oldView.controller != null) {
             oldView.controller.dispose();

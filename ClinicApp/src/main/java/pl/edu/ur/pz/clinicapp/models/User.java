@@ -4,6 +4,7 @@ import org.hibernate.annotations.Type;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -13,6 +14,16 @@ import javax.persistence.*;
 })
 @NamedNativeQueries({
         @NamedNativeQuery(name = "login", query = "SELECT get_user_internal_name(:input) AS internal_name"),
+        @NamedNativeQuery(name = "createUser", query = "INSERT INTO users "
+                +"(internal_name, email, name, phone, role, surname) VALUES "
+                +"(:internalName, :email, :name, :phone, :role, :surname)",
+                resultClass = User.class),
+//        @NamedNativeQuery(name = "createDatabaseUser", query = "CREATE USER :userName LOGIN ENCRYPTED "
+//                +"PASSWORD :password IN ROLE gp_patients",
+//                resultClass = User.class),
+        @NamedNativeQuery(name = "createDatabaseUser", query = "SELECT 1 FROM create_database_user(:userName, :password)"),
+        @NamedNativeQuery(name = "findDatabaseUser", query = "SELECT FROM pg_catalog.pg_roles WHERE rolname = :rolname",
+                resultClass = User.class),
 })
 public class User {
     public enum Role {
@@ -29,7 +40,7 @@ public class User {
 
         public String toString() {
             // TODO: when we have localization it will look much nicer
-            if (this == PATIENT)   return "Pacjent";
+            if (this == PATIENT)   return "PATIENT"; //FIXME
             if (this == RECEPTION) return "Recepcja";
             if (this == NURSE)     return "Pielęgniarka";
             if (this == DOCTOR)    return "Lekarz";
@@ -63,7 +74,7 @@ public class User {
         return email;
     }
     public void setEmail(String email) {
-        this.email = email.toLowerCase();
+        this.email = (email == null) ? null : email.toLowerCase();
     }
 
     @Column(nullable = true, length = 12)
@@ -94,6 +105,22 @@ public class User {
         this.surname = surname;
     }
 
+    @OneToMany(mappedBy = "sourceUser", fetch = FetchType.LAZY)
+    @OrderBy("sentDate DESC ")
+    private List<Notification> allSentNotifications;
+    public List<Notification> getAllSentNotifications() {
+        return allSentNotifications;
+    }
+
+    @OneToMany(mappedBy = "destinationUser", fetch = FetchType.LAZY)
+    @OrderBy("sentDate DESC ")
+    private List<Notification> allReceivedNotifications;
+    public List<Notification> getAllReceivedNotifications() {
+        return allReceivedNotifications;
+    }
+
+
+
     public String getDisplayName() {
         if (name != null) {
             if (surname != null)
@@ -108,6 +135,9 @@ public class User {
     private String databaseUsername;
     public String getDatabaseUsername() {
         return databaseUsername;
+    }
+    public void setDatabaseUsername(String databaseUsername) {
+        this.databaseUsername = databaseUsername;
     }
 
     static public String getDatabaseUsernameForInput(String emailOrPESEL) {

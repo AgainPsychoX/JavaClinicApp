@@ -9,6 +9,7 @@ import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -23,6 +24,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class PatientsView extends ChildControllerBase<MainWindowController> implements Initializable {
+    @FXML
+    protected Button registerButton;
     @FXML
     protected TableView<Patient> table;
     @FXML
@@ -95,5 +98,10 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
         sortedPatients.comparatorProperty().bind(table.comparatorProperty());
         table.setItems(sortedPatients);
         table.refresh();
+    }
+
+    public void register() {
+        this.getParentController().goToView(MainWindowController.Views.REGISTER,
+                "INDIRECT");
     }
 }

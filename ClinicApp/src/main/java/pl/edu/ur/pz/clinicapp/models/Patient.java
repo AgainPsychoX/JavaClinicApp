@@ -19,7 +19,15 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
         @NamedQuery(name = "patients",  query = "FROM Patient"),
         @NamedQuery(name = "patients.current", query = "SELECT patient FROM Patient patient WHERE patient.databaseUsername = FUNCTION('CURRENT_USER')")
 })
-public class Patient extends User{
+
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "createPatient", query = "INSERT INTO public.patients "
+                +"(building, city, pesel, post_city, post_code, street, id) "
+                +"VALUES (:building, :city, :pesel, :post_city, :post_code, :street, :id)",
+                resultClass = Patient.class)
+})
+
+public class Patient extends User {
     @Column(nullable = false, length = 11, unique = true)
     private String pesel;
     public String getPESEL() {

@@ -261,9 +261,9 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
         Transaction transaction;
         try {
             String dateVal = (datePicker.getValue() == null) ? null : datePicker.getValue().toString();
-            String dateTimeVal = (dateTimeField.getText() == null) ? "00:00:00" : dateTimeField.getText();
+            String dateTimeVal = (dateTimeField.getText() == null) ? "00:00:00" : dateTimeField.getText().trim();
             String fulDateVal = (fulDatePicker.getValue() == null) ? null : fulDatePicker.getValue().toString();
-            String fulDateTimeVal = (fulDateTimeField.getText() == null) ? "00:00:00" : fulDateTimeField.getText();
+            String fulDateTimeVal = (fulDateTimeField.getText() == null) ? "00:00:00" : fulDateTimeField.getText().trim();
             if (currMode == RefMode.DETAILS) {
                 if (editState.getValue()) {
                     if (dateVal == null || notesArea.getText() == null || notesArea.getText().trim().equals("")
@@ -286,19 +286,24 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
                             editQuery.setParameter("fulfilmentDate", Timestamp.valueOf((fulDateTimeVal.length() != 8)
                                     ? newFulDate + ":00" : newFulDate));
                         }
-                        editQuery.setParameter("pointOfInterest", (interestField.getText() == null)
+                        editQuery.setParameter("pointOfInterest", (interestField.getText() == null
+                                || interestField.getText().isBlank())
                                 ? new TypedParameterValue(StandardBasicTypes.STRING, null)
                                 : interestField.getText().trim());
-                        editQuery.setParameter("notes", (notesArea.getText() == null)
+                        editQuery.setParameter("notes", (notesArea.getText() == null
+                                || notesArea.getText().isBlank())
                                 ? new TypedParameterValue(StandardBasicTypes.STRING, null)
                                 : notesArea.getText().trim());
-                        editQuery.setParameter("feedback", (feedbackArea.getText() == null)
+                        editQuery.setParameter("feedback", (feedbackArea.getText() == null
+                                || feedbackArea.getText().isBlank())
                                 ? new TypedParameterValue(StandardBasicTypes.STRING, null)
                                 : feedbackArea.getText().trim());
-                        editQuery.setParameter("tags", (tagsField.getText() == null)
+                        editQuery.setParameter("tags", (tagsField.getText() == null
+                                || tagsField.getText().isBlank())
                                 ? new TypedParameterValue(StandardBasicTypes.STRING, null)
                                 : tagsField.getText().trim());
-                        editQuery.setParameter("governmentId", (codeField.getText() == null)
+                        editQuery.setParameter("governmentId", (codeField.getText() == null
+                                || codeField.getText().isBlank())
                                 ? new TypedParameterValue(StandardBasicTypes.STRING, null)
                                 : codeField.getText().trim());
                         editQuery.setParameter("refId", ref.getId());
@@ -332,15 +337,20 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
                         newRef.setFulfilmentDate(Timestamp.valueOf((fulDateTimeVal.length() != 8)
                                 ? newFulDate + ":00" : newFulDate));
                     }
-                    newRef.setPointOfInterest((interestField.getText() == null)
+                    newRef.setPointOfInterest((interestField.getText() == null
+                            || interestField.getText().isBlank())
                             ? null : interestField.getText().trim());
-                    newRef.setNotes((notesArea.getText() == null)
+                    newRef.setNotes((notesArea.getText() == null
+                            || notesArea.getText().isBlank())
                             ? null : notesArea.getText().trim());
-                    newRef.setFeedback((feedbackArea.getText() == null)
+                    newRef.setFeedback((feedbackArea.getText() == null
+                            || feedbackArea.getText().isBlank())
                             ? null : feedbackArea.getText().trim());
-                    newRef.setStringTags((tagsField.getText() == null)
+                    newRef.setStringTags((tagsField.getText() == null
+                            || tagsField.getText().isBlank())
                             ? null : tagsField.getText().trim());
-                    newRef.setGovernmentId((codeField.getText() == null)
+                    newRef.setGovernmentId((codeField.getText() == null
+                            || codeField.getText().isBlank())
                             ? null : codeField.getText().trim());
                     newRef.setPatient(targetPatient);
                     session.persist(newRef);

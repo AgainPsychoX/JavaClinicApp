@@ -12,8 +12,10 @@ import javafx.stage.Stage;
 import org.hibernate.exception.GenericJDBCException;
 import org.hibernate.service.spi.ServiceException;
 import pl.edu.ur.pz.clinicapp.dialogs.LoginDialog;
+import pl.edu.ur.pz.clinicapp.dialogs.RegisterDialog;
 import pl.edu.ur.pz.clinicapp.localization.JavaFxBuiltInsLocalizationFix;
 import pl.edu.ur.pz.clinicapp.models.User;
+import pl.edu.ur.pz.clinicapp.views.PrescriptionDetailsView;
 import pl.edu.ur.pz.clinicapp.views.ReferralDetailsView;
 
 import javax.persistence.EntityManager;
@@ -244,7 +246,9 @@ public class ClinicApplication extends Application {
 //        stage.setWidth(pane.getMinWidth());
 //        stage.setHeight(pane.getMinHeight());
         stage.setOnCloseRequest(we -> {
-            if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()){
+            if((ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm())
+            || (PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm())
+            || (RegisterDialog.getEditState() && !RegisterDialog.exitConfirm())){
                 we.consume();
             }else {
                 logOut();
