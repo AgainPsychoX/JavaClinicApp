@@ -74,7 +74,12 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
         @Override
         public void changed(ObservableValue<? extends LocalDate> observableValue, LocalDate localDate, LocalDate t1) {
             hourPicker.getItems().clear();
-            refreshHours(t1, appointment);
+            if (currMode == PrMode.CREATE) {
+                refreshHours(t1, null);
+            } else {
+                refreshHours(t1, appointment);
+            }
+
             hourPicker.getItems().addAll(hours);
             hourPicker.setValue(null);
         }
@@ -254,11 +259,12 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
 
             if(ClinicApplication.getUser().getRole().name().equals("DOCTOR")) {
                 doctors.add(ClinicApplication.getUser());
+                doctorCombo.getItems().addAll(doctors);
                 doctorCombo.setValue((Doctor) ClinicApplication.getUser());
             } else {
                 doctors = Patient.getAll(Doctor.class);
+                doctorCombo.getItems().addAll(doctors);
             }
-            doctorCombo.getItems().addAll(doctors);
             doctors.sort(Patient.patientNameComparator);
             notesTextField.setText(null);
             editState.setValue(true);
@@ -329,22 +335,36 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
                     occupiedHours.add(local.getDate().toLocalDateTime().getHour() * 60 +
                             local.getDate().toLocalDateTime().getMinute());
                 }
+            } else {
+                List<Appointment> appointments = ClinicApplication.getEntityManager().createNamedQuery("allAppointmentsForDoctor", Appointment.class)
+                        .setParameter("doctor", doctorCombo.getValue())
+                        .setParameter("id", -1)
+                        .getResultList();
+                for (Appointment local : appointments) {
+                    occupiedHours.add(local.getDate().toLocalDateTime().getHour() * 60 +
+                            local.getDate().toLocalDateTime().getMinute());
+                }
             }
         }
 
         while (dayHours[0] != -1 && dayHours[0] <= dayHours[1]) {
-            if(occupiedHours.contains(dayHours[0])) {
-                dayHours[0] += 15;
-                continue;
+            if(localAppointment != null) {
+                if(occupiedHours.contains(dayHours[0]) && dayHours[0] != localAppointment.getDate().toLocalDateTime().getHour() * 60 + localAppointment.getDate().toLocalDateTime().getMinute()) {
+                    dayHours[0] += localAppointment.getDoctor().getSpeciality().defaultVisitTime;
+                    continue;
+                }
+                hours.add(dayHours[0]);
+                dayHours[0] += localAppointment.getDoctor().getSpeciality().defaultVisitTime;
+            } else {
+                if(occupiedHours.contains(dayHours[0])) {
+                    dayHours[0] += doctorCombo.getValue().getSpeciality().defaultVisitTime;
+                    continue;
+                }
+                hours.add(dayHours[0]);
+                dayHours[0] += doctorCombo.getValue().getSpeciality().defaultVisitTime;
             }
-            hours.add(dayHours[0]);
-            dayHours[0] += 15;
         }
-        if(hours.isEmpty()) {
-            hourPicker.setDisable(true);
-        } else {
-            hourPicker.setDisable(false);
-        }
+        hourPicker.setDisable(hours.isEmpty());
     }
 
     /**
@@ -368,8 +388,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
                 hourPicker.getItems().addAll(hours);
                 hourPicker.setValue(temp);
                 if (editState.getValue()) {
-                    if (notesTextField.getText().trim().equals("") || patientCombo.getValue() == null ||
-                            doctorCombo.getValue() == null || datePicker.getValue() == null || hourPicker.getValue() == null) {
+                    if (datePicker.getValue() == null || hourPicker.getValue() == null) {
                         Alert alert = new Alert(Alert.AlertType.ERROR);
                         alert.setTitle("Błąd zapisu");
                         alert.setHeaderText("Nie wypełniono wymaganych pól");
@@ -393,7 +412,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
                 }
             }
             else {
-                if (notesTextField.getText().trim().equals("") || patientCombo.getValue() == null ||
+                if (notesTextField.getText() == null || patientCombo.getValue() == null ||
                         doctorCombo.getValue() == null || datePicker.getValue() == null || hourPicker.getValue() == null) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Błąd zapisu");

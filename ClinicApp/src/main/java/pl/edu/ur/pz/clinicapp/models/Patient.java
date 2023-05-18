@@ -19,6 +19,7 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
         @NamedQuery(name = "patients",  query = "FROM Patient"),
         @NamedQuery(name = "patients.current", query = "SELECT patient FROM Patient patient WHERE patient.databaseUsername = FUNCTION('CURRENT_USER')")
 })
+<<<<<<<<< Temporary merge branch 1
 
 @NamedNativeQueries({
         @NamedNativeQuery(name = "createPatient", query = "INSERT INTO public.patients "
