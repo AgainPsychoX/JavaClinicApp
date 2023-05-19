@@ -20,12 +20,10 @@ import pl.edu.ur.pz.clinicapp.utils.InteractionGuard;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static pl.edu.ur.pz.clinicapp.utils.JPAUtils.transaction;
@@ -41,9 +39,9 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
  *      + Filter date pickers (or make them auto-correct on wrong date): https://stackoverflow.com/questions/35907325/how-to-set-minimum-and-maximum-date-in-datepicker-calander-in-javafx8
  *  steps:
  *      0. map FXML elements as fields -- DONE
- *      1. base modes switching -- DONE?
- *      2. navigate timetables --- DONE, but allow jumps using date picker
- *      3. dialog to add/edit/remove entries (reuse pattern from old project) --- ALMOST (implement refresh)
+ *      1. base modes switching -- DONE
+ *      2. navigate timetables --- DONE
+ *      3. dialog to add/edit/remove entries (reuse pattern from old project) --- DONE? (test editing)
  *      4. warning for unsaved changes (add fresh/dirty tracking)
  *      5. double click (or enter on focused) entry to edit
  *      6. properly make use of populate interface -- DONE?
@@ -96,22 +94,27 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
 
         // TODO: set custom entry factory to week pane that informs us about selected/edited entries
 
-        // TODO: custom date pickers factories:
-        //  start (effective) -> ?
-        //  end -> disallow changing before start date
-        //  + maybe show timetables by colors?
+        effectiveDatePicker.setDayCellFactory(param -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate item, boolean empty) {
+                super.updateItem(item, empty);
 
-//        effectiveDatePicker.setValue(LocalDate.now());
-//        effectiveDatePicker.valueProperty().addListener(new NonRecursiveChangeListener<>() {
-//            @Override
-//            public void once(ObservableValue<? extends LocalDate> observable, LocalDate oldValue, LocalDate newValue) {
-//                System.out.println(newValue);
-//                if (newValue.isAfter(LocalDate.now().plusDays(7))) {
-//                    System.out.println("trying prevent change...");
-//                    effectiveDatePicker.setValue(oldValue);
-//                }
-//            }
-//        });
+                if (!empty) {
+                    final var zonedDateTime = item.atStartOfDay(ZoneId.systemDefault());
+                    final var index = findEffectiveTimetableIndex(zonedDateTime);
+
+                    getStyleClass().removeIf(s -> s.startsWith("fancy"));
+                    if (index != -1) {
+                        getStyleClass().add("fancy" + (index % 9 + 1));
+                    }
+                }
+            }
+        });
+
+        // TODO: custom date pickers factories:
+        //  start (effective) -> ? (DONE?)
+        //  end -> disallow changing before start date
+        //  + maybe show timetables by colors? (DONE)
     }
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -177,7 +180,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
     /**
      * List of timetables, kept sorted chronologically (oldest first).
      */
-    private List<Timetable> timetables;
+    private List<Timetable> timetables = Collections.emptyList();
 
     /**
      * Index of currently selected timetable. Modify using {@link TimetableView#select} method to update the UI.
@@ -248,7 +251,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
      * @param date date to look around.
      * @return index for found timetable, or -1 if not found.
      */
-    protected int findEffectiveTimetableIndex(ZonedDateTime date) {
+    public int findEffectiveTimetableIndex(ZonedDateTime date) {
         // Looping in reverse order through sorted chronologically timetables
         for (int i = timetables.size() - 1; i >= 0; i--) {
             final var timetable = timetables.get(i);
@@ -257,6 +260,16 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
             }
         }
         return -1;
+    }
+
+    /**
+     * Finds effective timetable for given date.
+     * @param date date to look around.
+     * @return found timetable, or nul if not found.
+     */
+    public Timetable findEffectiveTimetable(ZonedDateTime date) {
+        final var index = findEffectiveTimetableIndex(date);
+        return index < 0 ? null : timetables.get(index);
     }
 
     public void select(Timetable timetable) {
