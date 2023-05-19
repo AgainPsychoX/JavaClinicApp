@@ -154,12 +154,13 @@ public class MainWindowController implements Initializable {
         historyTracker = new HistoryTracker<>();
 
         // Update displayed names if any
-        final var displayName = ClinicApplication.getUser().getDisplayName();
-        final var role = ClinicApplication.getUser().getRole();
+        final var loggedInUser = ClinicApplication.requireUser();
+        final var displayName = loggedInUser.getDisplayName();
+        final var role = loggedInUser.getRole();
         if (displayName != null) {
             loggedAsText.setText("Zalogowany jako " + displayName);
         }
-        roleText.setText(ClinicApplication.getUser().getRole().toString());
+        roleText.setText(loggedInUser.getRole().toString());
 
         // Populate navigation menu
         {
@@ -168,7 +169,7 @@ public class MainWindowController implements Initializable {
             // TODO: notifications button should include red dot when there are any unread
             c.add(buttonForNavigationMenu("Powiadomienia", (e) -> goToView(Views.NOTIFICATIONS)));
             if (!role.isGroupUser()) {
-                c.add(buttonForNavigationMenu("Moje dane", (e) -> goToView(Views.ACCOUNT_DETAILS, ClinicApplication.getUser())));
+                c.add(buttonForNavigationMenu("Moje dane", (e) -> goToView(Views.ACCOUNT_DETAILS, loggedInUser)));
             }
 
             if (role == User.Role.DOCTOR) {
@@ -180,7 +181,7 @@ public class MainWindowController implements Initializable {
             }
 
             if (role == User.Role.PATIENT) {
-                c.add(buttonForNavigationMenu("Wizyty", (e) -> goToView(Views.VISITS, ClinicApplication.getUser())));
+                c.add(buttonForNavigationMenu("Wizyty", (e) -> goToView(Views.VISITS, loggedInUser)));
                 c.add(buttonForNavigationMenu("Recepty", (e) -> goToView(Views.PRESCRIPTIONS)));
                 c.add(buttonForNavigationMenu("Skierowania", (e) -> goToView(Views.REFERRALS)));
             }

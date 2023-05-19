@@ -32,6 +32,7 @@ public class Schedule {
         // TODO: unit testing
         final var list = new ArrayList<Entry>(10);
         final var timetables = user.getTimetables(); // latest first
+        // FIXME: timetables are kept in natural order for effective dates, earliest first, latest last
 
         ZonedDateTime currentTime = begin;
         while (currentTime.isBefore(end)) {

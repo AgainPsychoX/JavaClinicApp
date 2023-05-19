@@ -46,16 +46,49 @@ public class ClinicApplication extends Application {
 
     static private ClinicApplication instance;
 
+    /**
+     * Provides access to application-wide properties/configuration/settings.
+     * @return Properties object.
+     */
     public static Properties getProperties() {
         return instance.properties;
     }
 
+    /**
+     * Provides access to the entity manager that allows operating persistable data,
+     * connected with login details of current user, or anonymous if no one logged-in.
+     * @return Entity manager.
+     */
     public static EntityManager getEntityManager() {
         return instance.entityManager;
     }
 
+    /**
+     * Provides access to currently logged-in user. Makes sure the instance is managed by the entity manager.
+     * @return Currently logged-in user, or null if no one logged-in.
+     */
     public static User getUser() {
+        if (instance.user == null) {
+            return null;
+        }
+        final var em = getEntityManager();
+        if (!em.contains(instance.user)) {
+            em.refresh(instance.user);
+        }
         return instance.user;
+    }
+
+    /**
+     * Provides access to currently logged-in user or throws if no one logged-in.
+     * @throws IllegalStateException When no user is logged-in.
+     * @return Currently logged-in user
+     */
+    public static User requireUser() throws IllegalStateException {
+        final var user = getUser();
+        if (user == null) {
+            throw new IllegalStateException("");
+        }
+        return user;
     }
 
     @Override

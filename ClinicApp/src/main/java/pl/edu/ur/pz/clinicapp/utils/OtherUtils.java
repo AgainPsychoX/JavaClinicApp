@@ -3,13 +3,31 @@ package pl.edu.ur.pz.clinicapp.utils;
 import javafx.concurrent.Task;
 import javafx.event.Event;
 import javafx.scene.Node;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 
 public class OtherUtils {
     public static boolean isStringNullOrBlank(String string) {
         return string == null || string.isBlank();
+    }
+
+    @SafeVarargs
+    public static <T> T nullCoalesce(@Nullable T... params) {
+        for (T param : params) {
+            if (param != null) {
+                return param;
+            }
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unused")
+    public static void doNothing(Object... params) {
+        // This function really does nothing, but good luck removing it without introducing errors or warnings :)
     }
 
     public static Stage getStageFromEvent(Event event) {
@@ -20,6 +38,39 @@ public class OtherUtils {
         final var scene = node.getScene();
         if (scene == null) return null;
         return (Stage) scene.getWindow();
+    }
+
+    /**
+     * Helper method to ask user for confirmation by boolean dialog.
+     * False is always default, not only when false button is pressed, but also on dialog close.
+     * @param title the title of the alert dialog
+     * @param content the content of the alert dialog
+     * @param falseButton the button type for the false button,
+     *                    required to avoid "cancel" on cancel confirmation (UX anti-pattern)
+     * @return true if the user clicks the true button, false otherwise (default).
+     */
+    public static boolean requireConfirmation(String title, String content, ButtonType falseButton) {
+        return requireConfirmation(Alert.AlertType.WARNING, title, content, ButtonType.YES, falseButton);
+    }
+
+    /**
+     * Helper method to ask user for confirmation by boolean dialog.
+     * False is always default, not only when false button is pressed, but also on dialog close.
+     * @param type the type of the alert dialog
+     * @param title the title of the alert dialog
+     * @param content the content of the alert dialog
+     * @param trueButton the button type for the true button
+     * @param falseButton the button type for the false button
+     * @return true if the user clicks the true button, false otherwise (default).
+     */
+    public static boolean requireConfirmation(Alert.AlertType type, String title, String content,
+                                          ButtonType trueButton, ButtonType falseButton) {
+        final var dialog = new Alert(type);
+        dialog.setTitle(title);
+        dialog.setHeaderText(null);
+        dialog.setContentText(content);
+        dialog.getButtonTypes().setAll(trueButton, falseButton);
+        return dialog.showAndWait().orElse(ButtonType.CLOSE) == trueButton;
     }
 
     public enum OS {

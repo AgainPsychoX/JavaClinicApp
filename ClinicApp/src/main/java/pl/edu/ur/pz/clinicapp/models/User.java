@@ -5,8 +5,7 @@ import org.hibernate.annotations.Type;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
 import javax.persistence.*;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -47,6 +46,9 @@ public final class User {
     @Column(nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    public Integer getId() {
+        return id;
+    }
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "user_role") // custom enum type
@@ -121,6 +123,7 @@ public final class User {
 
 
     static public User getCurrent() {
+        // TODO: rename the method to avoid confusion
         return ClinicApplication.getEntityManager().createNamedQuery("users.current", User.class).getSingleResult();
     }
 
@@ -137,6 +140,20 @@ public final class User {
     public String toString() {
         return String.format("User{role=%s,name=%s,surname=%s,email=%s,internal=%s}",
                 role.toString(), name, surname, email, databaseUsername);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) return true;
+        if (other instanceof User that) {
+            return getId() != null && getId().equals(that.getId());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return getId() != null ? getId().hashCode() : super.hashCode();
     }
 
 
@@ -209,19 +226,27 @@ public final class User {
 
 
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @OrderBy("effective_date DESC")
-    private Collection<Timetable> timetables;
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true)
+    @OrderBy("effective_date")
+    private List<Timetable> timetables;
 
     /**
-     * Provides access to timetables for given user.
+     * Provides access to timetables for given user. Upon persisting/merging,
+     * the list will be persisted/merged as well, incl. deletion of removed elements.
      *
-     * @return Collection of all timetables objects related to the user,
+     * @return List of all timetables objects related to the user,
      * the latest effective date first as unmodifiable collection.
      */
-    public Collection<Timetable> getTimetables() {
-        // TODO: use custom AbstractPersistentCollection to avoid get/set/clearXyz etc. in owner class...?
-        return Collections.unmodifiableCollection(timetables);
+    public List<Timetable> getTimetables() {
+        // TODO: custom PersistentCollection (to avoid add/remove/clear-Timetable in User)
+        //  and custom CollectionPersister (to avoid N+1 more properly somehow)...
+        if (!Hibernate.isInitialized(timetables)) {
+            final var entityManager = ClinicApplication.getEntityManager();
+            final var query = entityManager.createNamedQuery("Timetables.forUser", Timetable.class);
+            query.setParameter("user", this);
+            query.getResultList(); // to prefetch both timetables and their entries avoiding N+1
+        }
+        return timetables;
     }
 
     /**
@@ -230,11 +255,13 @@ public final class User {
      * @param timetable timetable to add
      */
     public void addTimetable(Timetable timetable) {
+        timetable.setUser(this);
         if (Hibernate.isInitialized(timetables)) {
             timetables.add(timetable);
         }
-        timetable.setUser(this);
-        ClinicApplication.getEntityManager().persist(timetable);
+        else {
+            ClinicApplication.getEntityManager().persist(timetable);
+        }
     }
 
     /**
@@ -248,10 +275,12 @@ public final class User {
         if (Hibernate.isInitialized(timetables)) {
             timetables.remove(timetable);
         }
+        else {
+            ClinicApplication.getEntityManager().remove(timetable);
+        }
         if (timetable.getUser() != this) {
             return; // not our concern
         }
-        ClinicApplication.getEntityManager().remove(timetable);
         timetable.setUser(null); // just in case
     }
 
@@ -259,14 +288,16 @@ public final class User {
      * Removes all timetables, removing it from the database too.
      */
     public void clearTimetables() {
-        final var query = ClinicApplication.getEntityManager().createNamedQuery("User.clearTimetables");
-        query.setParameter("id", id);
-        query.executeUpdate();
         if (Hibernate.isInitialized(timetables)) {
             for (final var timetable : timetables) {
                 timetable.setUser(null); // just in case
             }
             timetables.clear();
+        }
+        else {
+            final var query = ClinicApplication.getEntityManager().createNamedQuery("User.clearTimetables");
+            query.setParameter("id", id);
+            query.executeUpdate();
         }
     }
 

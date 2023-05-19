@@ -4,9 +4,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -126,22 +124,6 @@ public abstract class BaseEditDialog extends Stage {
         this.mode = mode;
 
         deleteButton.setVisible(this.mode != Mode.NEW);
-    }
-
-    /**
-     * Helper method to ask user for confirmation by standard Yes/Cancel dialog,
-     * to be used for edit dialog implementations.
-     * @param title Title displayed in the confirmation dialog.
-     * @param content Text contents.
-     * @return True if confirmed (Yes button), false otherwise.
-     */
-    protected boolean requireConfirmation(String title, String content) {
-        final var dialog = new Alert(Alert.AlertType.WARNING);
-        dialog.setTitle(title);
-        dialog.setHeaderText(null);
-        dialog.setContentText(content);
-        dialog.getButtonTypes().setAll(ButtonType.YES, ButtonType.CANCEL);
-        return dialog.showAndWait().orElse(ButtonType.CLOSE) == ButtonType.YES;
     }
 
     @Override

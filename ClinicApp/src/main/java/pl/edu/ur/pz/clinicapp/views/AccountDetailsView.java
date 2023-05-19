@@ -28,7 +28,9 @@ public class AccountDetailsView extends ChildControllerBase<MainWindowController
 
     @Override
     public void populate(Object... context) {
-        final var user = ClinicApplication.getUser();
+        // TODO: use context to determine if we want to select other user, fall back to logged-in if not specified
+
+        final var user = ClinicApplication.requireUser();
         name.setText(user.getName());
         surname.setText(user.getSurname());
         phone.setText(user.getPhone());

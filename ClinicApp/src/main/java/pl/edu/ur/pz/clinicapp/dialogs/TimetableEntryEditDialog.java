@@ -2,6 +2,7 @@ package pl.edu.ur.pz.clinicapp.dialogs;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.ChoiceBox;
 import javafx.util.StringConverter;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
@@ -81,12 +82,22 @@ public class TimetableEntryEditDialog extends BaseEditDialog {
 
     @Override
     protected boolean save() {
+        var newEntry = new Timetable.Entry(dayChoiceBox.getValue(), startSpinner.getValue(), endSpinner.getValue());
+        if (newEntry.getDurationMinutes() < 15) {
+            final var dialog = new Alert(Alert.AlertType.WARNING);
+            dialog.setTitle("Nieprawidłowe dane");
+            dialog.setHeaderText(null);
+            dialog.setContentText("Wybrana długość wpisu jest za krótka.");
+            dialog.showAndWait();
+            return false;
+        }
+
         // Timetable entries are immutable (start minute is part of composite key),
         // so we remove existing one and create new one.
         if (oldEntry != null) {
             timetable.remove(oldEntry);
         }
-        timetable.add(new Timetable.Entry(dayChoiceBox.getValue(), startSpinner.getValue(), endSpinner.getValue()));
+        timetable.add(newEntry);
         return true;
     }
 

@@ -1,5 +1,6 @@
 package pl.edu.ur.pz.clinicapp.models;
 
+import org.jetbrains.annotations.NotNull;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 
 import javax.persistence.*;
@@ -15,8 +16,21 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "timetables")
 @NamedQueries({
-        @NamedQuery(name = "timetables_for_user", query = "SELECT t FROM Timetable t WHERE t.user = :user")
+        @NamedQuery(name = "Timetables.forUser", query = """
+                FROM Timetable t LEFT JOIN FETCH t.entries
+                WHERE t.user = :user
+                ORDER BY t.effectiveDate
+                """)
 })
+//@NamedNativeQueries({
+//        @NamedNativeQuery(name = "Timetables.forUser", query = """
+//                SELECT t.*, e.*
+//                FROM timetables t
+//                    LEFT JOIN timetable_entries e ON t.id = e.timetable_id
+//                WHERE t.user_id = :id
+//                ORDER BY t.effective_date, e.weekday, e.start_minute
+//                """, readOnly = true),
+//})
 public class Timetable implements Comparable<Timetable> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +40,7 @@ public class Timetable implements Comparable<Timetable> {
     }
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
+//    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private User user;
     public User getUser() {
         return user;
@@ -48,8 +62,7 @@ public class Timetable implements Comparable<Timetable> {
         this.effectiveDate = effectiveDate;
     }
 
-    @OneToMany(mappedBy = "timetable", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @OrderBy("weekday, start_minute")
+    @OneToMany(mappedBy = "timetable", fetch = FetchType.LAZY, orphanRemoval = true)
     private Set<Entry> entries;
     public Set<Entry> getEntries() {
         return entries;
@@ -62,6 +75,7 @@ public class Timetable implements Comparable<Timetable> {
      *  false otherwise - meaning the range already is covered by existing entries.
      */
     public boolean add(Timetable.Entry newEntry) {
+        // TODO: unit testing & fix it because feels unreliable
         for (var existingEntry : entries) {
             if (existingEntry.getDayOfWeek() == newEntry.getDayOfWeek()) {
                 if (newEntry.endMinute < existingEntry.startMinute) continue;
@@ -128,8 +142,22 @@ public class Timetable implements Comparable<Timetable> {
     }
 
     @Override
-    public int compareTo(Timetable other) {
-        return effectiveDate.compareTo(other.getEffectiveDate());
+    public boolean equals(Object other) {
+        if (this == other) return true;
+        if (other instanceof Timetable that) {
+            return getId() != null && getId().equals(that.getId());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
+    }
+
+    @Override
+    public int compareTo(@NotNull Timetable o) {
+        return this.effectiveDate.compareTo(o.effectiveDate);
     }
 
     /**
@@ -173,17 +201,24 @@ public class Timetable implements Comparable<Timetable> {
 
         @Override
         public boolean equals(Object other) {
-            if (other == this) return true;
-            if (other == null || other.getClass() != this.getClass()) return false;
-            var that = (EntryId) other;
-            return Objects.equals(this.timetable, that.timetable) &&
-                    this.weekday == that.weekday &&
-                    this.startMinute == that.startMinute;
+            if (this == other) return true;
+            if (other instanceof EntryId that) {
+                return Objects.equals(this.timetable, that.timetable) &&
+                        this.weekday == that.weekday &&
+                        this.startMinute == that.startMinute;
+            }
+            return false;
         }
 
         @Override
         public int hashCode() {
             return Objects.hash(timetable, weekday, startMinute);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Timetable.EntryId{timetable_id=%d,weekday=%d,start=%d}",
+                    timetable.getId(), weekday, startMinute);
         }
     }
 
@@ -193,7 +228,7 @@ public class Timetable implements Comparable<Timetable> {
     public static class Entry implements WeekPane.Entry {
         @Id
         @ManyToOne(fetch = FetchType.LAZY, optional = false)
-        @JoinColumn(name = "timetable_id", referencedColumnName = "id", nullable = false)
+//        @JoinColumn(name = "timetable_id", referencedColumnName = "id", nullable = false)
         private Timetable timetable;
         public Timetable getTimetable() {
             return timetable;
@@ -278,6 +313,22 @@ public class Timetable implements Comparable<Timetable> {
         public String toString() {
             return String.format("Timetable.Entry{day=%s,start=%d,end=%d}",
                     this.getDayOfWeek().toString(), this.startMinute, this.endMinute);
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (this == other) return true;
+            if (other instanceof Entry that) {
+                return Objects.equals(this.timetable, that.timetable) &&
+                        this.weekday == that.weekday &&
+                        this.startMinute == that.startMinute;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(timetable, weekday, startMinute);
         }
     }
 }

@@ -15,7 +15,8 @@ public class Doctor {
     @Id
     private Integer id;
 
-    @OneToOne(optional = false, orphanRemoval = true, cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @OneToOne(optional = false, orphanRemoval = true,
+            cascade = {CascadeType.REFRESH, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @MapsId // same ID as user
     @JoinColumn(name = "id")
     private User user;

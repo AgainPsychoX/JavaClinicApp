@@ -46,6 +46,13 @@
 
 
 
+/* Util to make prompt text (shown when field is empty/null) look like regular */
+.prompt-text-as-regular .text-field {
+    -fx-prompt-text-fill: black;
+}
+
+
+
 /* TODO: encapsulate this one to areas it applies only to avoid weird styles elsewhere */
 .text-input:readonly, .text-area:readonly .content {
     -fx-background-color: #d3d3d3;
