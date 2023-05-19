@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
@@ -22,15 +21,6 @@ import java.util.stream.Collectors;
                 ORDER BY t.effectiveDate
                 """)
 })
-//@NamedNativeQueries({
-//        @NamedNativeQuery(name = "Timetables.forUser", query = """
-//                SELECT t.*, e.*
-//                FROM timetables t
-//                    LEFT JOIN timetable_entries e ON t.id = e.timetable_id
-//                WHERE t.user_id = :id
-//                ORDER BY t.effective_date, e.weekday, e.start_minute
-//                """, readOnly = true),
-//})
 public class Timetable implements Comparable<Timetable> {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,7 +52,7 @@ public class Timetable implements Comparable<Timetable> {
         this.effectiveDate = effectiveDate;
     }
 
-    @OneToMany(mappedBy = "timetable", fetch = FetchType.LAZY, orphanRemoval = true)
+    @ElementCollection
     private Set<Entry> entries;
     public Set<Entry> getEntries() {
         return entries;
@@ -94,7 +84,6 @@ public class Timetable implements Comparable<Timetable> {
                 return add(new Timetable.Entry(newEntry.getDayOfWeek(), startMinute, endMinute));
             }
         }
-        newEntry.timetable = this;
         entries.add(newEntry);
         return true;
     }
@@ -104,9 +93,7 @@ public class Timetable implements Comparable<Timetable> {
      * @param entry entry to be removed
      */
     public void remove(Timetable.Entry entry) {
-        if (entries.remove(entry)) {
-            entry.timetable = null;
-        }
+        entries.remove(entry);
     }
 
     public boolean isEmpty() {
@@ -160,86 +147,13 @@ public class Timetable implements Comparable<Timetable> {
         return this.effectiveDate.compareTo(o.effectiveDate);
     }
 
-    /**
-     * Composite primary key for timetable entries, consisting of both timetable ID and weekday.
-     */
-    public static final class EntryId implements Serializable {
-        private final Timetable timetable;
-        private final int weekday;
-        private final int startMinute;
-
-        public Timetable timetable() {
-            return timetable;
-        }
-
-        public int weekday() {
-            return weekday;
-        }
-
-        public DayOfWeek dayOfWeek() {
-            return DayOfWeek.of(weekday + 1);
-        }
-
-        public int startMinute() {
-            return startMinute;
-        }
-
-        // Empty constructor is required for JPA standard.
-        public EntryId() {
-            this(null, 0, 0); // invalid, but required for `record`
-        }
-
-        public EntryId(Timetable timetable, int weekday, int startMinute) {
-            this.timetable = timetable;
-            this.weekday = weekday;
-            this.startMinute = startMinute;
-        }
-
-        public EntryId(Timetable timetable, DayOfWeek dayOfWeek, int startMinute) {
-            this(timetable, dayOfWeek.getValue() - 1, startMinute);
-        }
-
-        @Override
-        public boolean equals(Object other) {
-            if (this == other) return true;
-            if (other instanceof EntryId that) {
-                return Objects.equals(this.timetable, that.timetable) &&
-                        this.weekday == that.weekday &&
-                        this.startMinute == that.startMinute;
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(timetable, weekday, startMinute);
-        }
-
-        @Override
-        public String toString() {
-            return String.format("Timetable.EntryId{timetable_id=%d,weekday=%d,start=%d}",
-                    timetable.getId(), weekday, startMinute);
-        }
-    }
-
-    @Entity
-    @IdClass(EntryId.class)
-    @Table(name = "timetable_entries")
+    @Embeddable
     public static class Entry implements WeekPane.Entry {
-        @Id
-        @ManyToOne(fetch = FetchType.LAZY, optional = false)
-//        @JoinColumn(name = "timetable_id", referencedColumnName = "id", nullable = false)
-        private Timetable timetable;
-        public Timetable getTimetable() {
-            return timetable;
-        }
-
         /**
          * Weekday in SQL is integer as Sunday (0) to Saturday (6).
          *
          * See <a href="https://www.postgresql.org/docs/current/functions-datetime.html">PostgreSQL docs about datetime functions</a>.
          */
-        @Id
         @Column(name = "weekday", nullable = false)
         private int weekday;
         public DayOfWeek getDayOfWeek() {
@@ -319,16 +233,16 @@ public class Timetable implements Comparable<Timetable> {
         public boolean equals(Object other) {
             if (this == other) return true;
             if (other instanceof Entry that) {
-                return Objects.equals(this.timetable, that.timetable) &&
-                        this.weekday == that.weekday &&
-                        this.startMinute == that.startMinute;
+                return this.weekday == that.weekday &&
+                       this.startMinute == that.startMinute &&
+                       this.endMinute == that.endMinute;
             }
             return false;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(timetable, weekday, startMinute);
+            return Objects.hash(weekday, startMinute, endMinute);
         }
     }
 }

@@ -974,8 +974,6 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
                 else {
                     toBeRemoved.remove(timetable);
                     logger.finer("Merging (edited) timetable: " + timetable);
-                    // FIXME: error because Hibernate merge is retarded and tries load related stuff,
-                    //  including new entries that haven't been saved yet XD
                     entityManager.merge(timetable); // results in selects before update XD
                     // TODO: solve by using Active pattern or DAO (custom entity operations, avoid stupid Hibernate)
                 }

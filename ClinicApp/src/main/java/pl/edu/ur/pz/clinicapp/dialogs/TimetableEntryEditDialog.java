@@ -5,6 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ChoiceBox;
 import javafx.util.StringConverter;
+import org.jetbrains.annotations.NotNull;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.controls.LocalTimeSpinner;
 import pl.edu.ur.pz.clinicapp.models.Timetable;
@@ -22,32 +23,17 @@ public class TimetableEntryEditDialog extends BaseEditDialog {
     private final Timetable timetable;
 
     /**
-     * Shorthand for full constructor, for opening the dialog
-     * for existing entry (timetable is deduced).
-     * @param entry Entry to edit.
-     */
-    public TimetableEntryEditDialog(Timetable.Entry entry) {
-        this(entry, entry.getTimetable());
-    }
-
-    /**
      * Constructor for timetable entry related dialog.
-     * @param entry Entry to affect;
-     *              or preset data for fields if timetable is null;
-     *              or null for creating new entry.
+     * @param entry Entry to affect or null for creating new entry.
      * @param timetable Timetable to affect.
      */
-    public TimetableEntryEditDialog(Timetable.Entry entry, Timetable timetable) {
+    public TimetableEntryEditDialog(Timetable.Entry entry, @NotNull Timetable timetable) {
         super(ClinicApplication.class.getResource("dialogs/TimetableEntryEditDialog.fxml"),
-                entry == null ? Mode.NEW : (entry.getTimetable() == null ? Mode.NEW : Mode.EDIT));
+                entry == null ? Mode.NEW : Mode.EDIT);
 
-        if (timetable == null) {
-            throw new IllegalArgumentException("Timetable must be provided when adding new entry");
-        }
         this.timetable = timetable;
 
         if (entry == null) {
-            //
             entry = new Timetable.Entry(DayOfWeek.MONDAY, 8 * 60, 16 * 60);
         }
 
@@ -77,7 +63,7 @@ public class TimetableEntryEditDialog extends BaseEditDialog {
         startSpinner.getValueFactory().setValue(entry.startAsLocalTime());
 
         endSpinner.setPattern("HH:mm");
-        endSpinner.getValueFactory().setValue(entry.startAsLocalTime());
+        endSpinner.getValueFactory().setValue(entry.endAsLocalTime());
     }
 
     @Override
@@ -103,6 +89,7 @@ public class TimetableEntryEditDialog extends BaseEditDialog {
 
     @Override
     protected boolean delete() {
+        // No confirm: it's simple to just create new entry & the delete button is hidden away from the timetable view.
         timetable.remove(oldEntry);
         return true;
     }
