@@ -359,7 +359,7 @@ CREATE POLICY update_own_as_doctor ON public.prescriptions FOR UPDATE TO gp_doct
 --------------------------------------------------------------------------------
 -- `referrals`
 
-GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.referrals TO gp_admins, gp_patients, gp_receptionists, gp_doctors, gp_nurses;
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.referrals TO gp_admins;
 
 DROP POLICY IF EXISTS admin ON public.referrals;
 CREATE POLICY admin ON public.referrals FOR ALL TO gp_admins, gp_patients, gp_receptionists, gp_doctors, gp_nurses
@@ -400,8 +400,17 @@ DROP POLICY IF EXISTS update_as_nurse ON public.referrals;
 CREATE POLICY update_as_nurse ON public.referrals FOR UPDATE TO  gp_nurses
     USING (TRUE);
 
+----------------------------------------
+-- UPDATE
+
+GRANT DELETE ON TABLE public.referrals TO gp_doctors;
+
+DROP POLICY IF EXISTS delete_own_as_doctor ON public.referrals;
+CREATE POLICY delete_own_as_doctor ON public.referrals FOR DELETE TO gp_doctors
+    USING (added_by_user_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+
 -- TODO: rules to validate update/inserts
--- TODO: should doctors be able to delete?
 
 --------------------------------------------------------------------------------
 -- `schedule_entries`
