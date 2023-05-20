@@ -62,6 +62,7 @@ public class MainWindowController implements Initializable {
         put(Views.PRESCRIPTION_DETAILS, ClinicApplication.class.getResource("views/PrescriptionDetailsView.fxml"));
         put(Views.REGISTER, ClinicApplication.class.getResource("dialogs/RegisterDialog.fxml"));
         put(Views.MY_ACCOUNT, ClinicApplication.class.getResource("views/MyAccount.fxml"));
+        put(Views.PATIENT_DETAILS, ClinicApplication.class.getResource("views/PatientDetailsView.fxml"));
     }};
 
     static class ViewDefinition {

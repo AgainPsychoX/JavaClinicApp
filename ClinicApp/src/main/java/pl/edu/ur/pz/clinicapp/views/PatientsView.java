@@ -17,6 +17,7 @@ import javafx.util.Duration;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Patient;
+import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.net.URL;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class PatientsView extends ChildControllerBase<MainWindowController> implements Initializable {
+
     @FXML
     protected Button registerButton;
     @FXML
@@ -42,6 +44,8 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
     protected TableColumn<Patient, String> addressCol;
     @FXML
     protected TextField searchTextField;
+    @FXML
+    protected Button detailsButton;
 
     protected ObservableList<Patient> patients = FXCollections.observableArrayList();
     protected FilteredList<Patient> filteredPatients = new FilteredList<>(patients, b -> true);
@@ -100,8 +104,17 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
         table.refresh();
     }
 
+    @FXML
+    protected void detailsAction(ActionEvent event){
+        this.getParentController().goToView(MainWindowController.Views.PATIENT_DETAILS,
+                PatientDetailsView.RefMode.DETAILS, table.getSelectionModel().getSelectedItem());
+
+    }
+
     public void register() {
         this.getParentController().goToView(MainWindowController.Views.REGISTER,
                 "INDIRECT");
     }
+
+
 }
