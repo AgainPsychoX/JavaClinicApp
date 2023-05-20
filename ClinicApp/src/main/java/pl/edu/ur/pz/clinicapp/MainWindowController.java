@@ -74,17 +74,22 @@ public class MainWindowController implements Initializable {
         }
     }
 
-    @FXML private BorderPane contentPane;
+    @FXML
+    private BorderPane contentPane;
 
-    @FXML private VBox navigationButtons;
+    @FXML
+    private VBox navigationButtons;
 
-    @FXML private Text loggedAsText;
+    @FXML
+    private Text loggedAsText;
 
-    @FXML private Text roleText;
+    @FXML
+    private Text roleText;
 
     public Window getWindow() {
         return this.contentPane.getScene().getWindow();
     }
+
     public Stage getStage() {
         return (Stage) getWindow();
     }
@@ -108,12 +113,10 @@ public class MainWindowController implements Initializable {
                 final var def = new ViewDefinition(node, controller);
                 views.put(which, def);
                 return def;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException("Error while loading view: " + which.name(), e);
             }
-        }
-        else {
+        } else {
             return cached;
         }
     }
@@ -165,8 +168,11 @@ public class MainWindowController implements Initializable {
                 c.add(buttonForNavigationMenu("Wizyty", (e) -> goToView(Views.VISITS, ClinicApplication.getUser())));
                 c.add(buttonForNavigationMenu("Recepty", (e) -> goToView(Views.PRESCRIPTIONS)));
                 c.add(buttonForNavigationMenu("Skierowania", (e) -> goToView(Views.REFERRALS)));
-            }
-            else {
+            } else if (role == User.Role.NURSE) {
+                c.add(buttonForNavigationMenu("Skierowania", (e) -> goToView(Views.REFERRALS)));
+            } else if (role == User.Role.RECEPTION) {
+                c.add(buttonForNavigationMenu("Pacjenci", (e) -> goToView(Views.PATIENTS)));
+            } else {
                 c.add(buttonForNavigationMenu("Wizyty", (e) -> goToView(Views.VISITS)));
                 c.add(buttonForNavigationMenu("Recepty", (e) -> goToView(Views.PRESCRIPTIONS)));
                 c.add(buttonForNavigationMenu("Skierowania", (e) -> goToView(Views.REFERRALS)));
@@ -183,9 +189,9 @@ public class MainWindowController implements Initializable {
                 this.setOnAction((e) -> {
                     // Log-out is necessary here, even tho there already is `setOnCloseRequest` for the stage,
                     // as it just catches window event.
-                    if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
-                    if(PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) return;
-                    if(RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) return;
+                    if (ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
+                    if (PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) return;
+                    if (RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) return;
                     if(MyAccount.getEditState() && !MyAccount.exitConfirm()) return;
                     ClinicApplication.logOut();
                     getStage().close();
@@ -209,19 +215,19 @@ public class MainWindowController implements Initializable {
 
     /**
      * Navigates to view without pushing history stack.
-     * @param which Which view to navigate to.
+     *
+     * @param which   Which view to navigate to.
      * @param context Additional context parameter(s).
      */
     public void goToViewRaw(Views which, Object... context) {
-        System.out.println(which);
         final var newView = getView(which);
         final var oldView = getPreviousView();
 
-        if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
+        if (ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
         ReferralDetailsView.setEditState(false);
-        if(PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) return;
+        if (PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) return;
         PrescriptionDetailsView.setEditState(false);
-        if(RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) return;
+        if (RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) return;
         RegisterDialog.setEditState(false);
         if(MyAccount.getEditState() && !MyAccount.exitConfirm()) return;
         MyAccount.setEditState(false);
@@ -238,7 +244,8 @@ public class MainWindowController implements Initializable {
 
     /**
      * Navigates to view.
-     * @param which Which view to navigate to.
+     *
+     * @param which   Which view to navigate to.
      * @param context Additional context parameter(s).
      */
     public void goToView(Views which, Object... context) {

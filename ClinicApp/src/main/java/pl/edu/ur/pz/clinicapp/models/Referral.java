@@ -32,6 +32,21 @@ import java.sql.Timestamp;
         }
 )
 
+@NamedQueries({
+        @NamedQuery(
+                name = "allReferrals",
+                query = "FROM Referral"
+        ),
+        @NamedQuery(
+                name = "nursesReferrals",
+                query = "FROM Referral WHERE pointOfInterest = 'ZABIEG'"
+        ),
+        @NamedQuery(
+                name = "createdReferrals",
+                query = "FROM Referral WHERE addedBy = :user"
+        ),
+})
+
 @Entity
 @Table(name = "referrals")
 public class Referral extends MedicalHistoryEntry {
@@ -116,4 +131,6 @@ public class Referral extends MedicalHistoryEntry {
     public void setGovernmentId(String governmentId) {
         this.governmentId = governmentId;
     }
+
+    public final static String forNurses = "ZABIEG";
 }

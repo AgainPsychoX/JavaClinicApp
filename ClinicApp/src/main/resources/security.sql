@@ -359,7 +359,7 @@ CREATE POLICY update_own_as_doctor ON public.prescriptions FOR UPDATE TO gp_doct
 --------------------------------------------------------------------------------
 -- `referrals`
 
-GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.referrals TO gp_admins, gp_patients, gp_receptionists, gp_doctors, gp_nurses; -- TEST ONLY
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.referrals TO gp_admins, gp_patients, gp_receptionists, gp_doctors, gp_nurses;
 
 DROP POLICY IF EXISTS admin ON public.referrals;
 CREATE POLICY admin ON public.referrals FOR ALL TO gp_admins, gp_patients, gp_receptionists, gp_doctors, gp_nurses
@@ -383,18 +383,22 @@ DROP POLICY IF EXISTS select_own_as_patient ON public.referrals;
 CREATE POLICY select_own_as_patient ON public.referrals FOR SELECT TO gp_patients
     USING (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
-DROP POLICY IF EXISTS select_as_doctor ON public.referrals;
-CREATE POLICY select_as_doctor ON public.referrals FOR SELECT TO gp_doctors
+DROP POLICY IF EXISTS select_as_personel ON public.referrals;
+CREATE POLICY select_as_personel ON public.referrals FOR SELECT TO gp_doctors, gp_nurses
     USING (TRUE);
 
 ----------------------------------------
 -- UPDATE
 
-GRANT UPDATE ON TABLE public.referrals TO gp_doctors;
+GRANT UPDATE ON TABLE public.referrals TO gp_doctors, gp_nurses;
 
 DROP POLICY IF EXISTS update_own_as_doctor ON public.referrals;
 CREATE POLICY update_own_as_doctor ON public.referrals FOR UPDATE TO gp_doctors
     USING (added_by_user_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+DROP POLICY IF EXISTS update_as_nurse ON public.referrals;
+CREATE POLICY update_as_nurse ON public.referrals FOR UPDATE TO  gp_nurses
+    USING (TRUE);
 
 -- TODO: rules to validate update/inserts
 -- TODO: should doctors be able to delete?

@@ -26,12 +26,16 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.runDelayed;
  * Dialog responsible for logging in user.
  */
 public class LoginDialog extends Stage {
-    @FXML protected VBox logInForm;
+    @FXML
+    protected VBox logInForm;
     final protected VBox loadingView;
 
-    @FXML protected TextField identityTextField;
-    @FXML protected PasswordField passwordField;
-    @FXML protected Text errorText;
+    @FXML
+    protected TextField identityTextField;
+    @FXML
+    protected PasswordField passwordField;
+    @FXML
+    protected Text errorText;
 
     protected static Scene loginScene;
     protected static Scene registerScene;
@@ -54,8 +58,7 @@ public class LoginDialog extends Stage {
 
         try {
             pane = fxmlLoader.load();
-        }
-        catch (IOException exception) {
+        } catch (IOException exception) {
             Logger.getGlobal().log(
                     Level.SEVERE,
                     "Error creating login dialog!" +
@@ -106,8 +109,7 @@ public class LoginDialog extends Stage {
         try {
             ClinicApplication.logIn(identity, password);
             super.close();
-        }
-        catch (LoginException e) {
+        } catch (LoginException e) {
             pane.setCenter(logInForm);
             passwordField.clear();
             errorText.setText("Zapamiętane dane logowania są nieprawidłowe. Zaloguj się ponownie.");
@@ -122,18 +124,20 @@ public class LoginDialog extends Stage {
 
         // TODO: remember me checkbox
 
-        // TODO: simple validation before even trying to log-in
-
         pane.setCenter(loadingView);
 
         try {
+            if (identity == null || identity.isBlank() || password == null || password.isBlank()) {
+                throw new LoginException();
+            }
             ClinicApplication.logIn(identity, password);
             super.close();
-        }
-        catch (LoginException e) {
+        } catch (LoginException e) {
             pane.setCenter(logInForm);
             passwordField.clear();
-            errorText.setText("Nieprawidłowe dane logowania!");
+            errorText.setText((e.getMessage() == null)
+                    ? "Nie wypełniono wymaganych pól!"
+                    : "Nieprawidłowe dane logowania!");
             errorText.setVisible(true);
             errorText.setManaged(true);
         }
@@ -153,23 +157,4 @@ public class LoginDialog extends Stage {
     protected void passwordEnterAction(ActionEvent event) {
         logInUsingFormData();
     }
-
-//    @FXML
-//    void openRegisterView() throws IOException {
-//        final var stage = new Stage();
-//        final var loader = new FXMLLoader(ClinicApplication.class.getResource("dialogs/RegisterDialog.fxml"));
-//        BorderPane BPane = loader.load();
-//        registerScene = new Scene(BPane);
-//        stage.setTitle("Rejestracja");
-//        stage.setScene(registerScene);
-//        stage.minWidthProperty().bind(BPane.minWidthProperty());
-//        stage.maxWidthProperty().bind(BPane.maxWidthProperty());
-//        stage.minHeightProperty().bind(BPane.minHeightProperty());
-//        stage.maxHeightProperty().bind(BPane.maxHeightProperty());
-//        stage.initModality(Modality.APPLICATION_MODAL);
-//        stage.initOwner(this.getScene().getWindow());
-//
-//        stage.showAndWait();
-//    }
-
 }

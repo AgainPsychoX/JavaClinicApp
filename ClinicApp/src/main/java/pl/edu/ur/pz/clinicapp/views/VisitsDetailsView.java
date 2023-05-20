@@ -438,8 +438,8 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
                     transaction.commit();
                     editState.setValue(!editState.getValue());
                     Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                    alert.setTitle("Dodawanie Wizyty");
-                    alert.setHeaderText("Pomyślnie dodano Wizyte");
+                    alert.setTitle("Dodawanie wizyty");
+                    alert.setHeaderText("Pomyślnie dodano wizytę.");
                     alert.showAndWait();
                     this.getParentController().goBack();
                     return;

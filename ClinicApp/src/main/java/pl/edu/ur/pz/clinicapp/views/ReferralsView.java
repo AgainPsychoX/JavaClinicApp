@@ -7,10 +7,7 @@ import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
@@ -19,15 +16,20 @@ import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.models.Appointment;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
+import java.net.URL;
 import java.sql.Timestamp;
+import java.util.EnumMap;
 import java.util.List;
 
 public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
+    @FXML
+    protected ComboBox filter;
     @FXML
     protected Button addButton;
     @FXML
@@ -59,10 +61,20 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
     protected ObservableList<Referral> referrals = FXCollections.observableArrayList();
     protected FilteredList<Referral> filteredReferrals = new FilteredList<>(referrals, b -> true);
-    Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
+    Session session;
     protected PauseTransition searchDebounce;
-    Query query = session.getNamedQuery("findUsersReferrals").setParameter("uname",
-            ClinicApplication.getUser().getDatabaseUsername());
+    Query currQuery;
+    Query findUsersReferrals;
+    Query allReferrals;
+    Query nursesReferrals;
+    Query createdReferrals;
+
+    User.Role currUserRole;
+
+    private enum filterMode {OWN, NURSES, CREATED, ALL}
+
+    private static final EnumMap<filterMode, String> filterModeToString = new EnumMap<>(filterMode.class);
+
 
     /**
      * Default dispose method.
@@ -72,11 +84,54 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         super.dispose();
     }
 
+    public void setCurrQuery(User.Role role) {
+        if(currQuery == null){
+            if (role == User.Role.NURSE) {
+                currQuery = nursesReferrals;
+            } else if (role == User.Role.PATIENT) {
+                currQuery = findUsersReferrals;
+            } else if (role == User.Role.DOCTOR) {
+                currQuery = createdReferrals;
+            } else {
+                currQuery = allReferrals;
+            }
+        }
+
+    }
+
+    public void setFilterVals(User.Role role) {
+        if (role == User.Role.NURSE) {
+            filter.setVisible(false);
+        } else if (role == User.Role.PATIENT) {
+            filter.setVisible(false);
+        } else if (role == User.Role.DOCTOR) {
+            filter.setItems(FXCollections.observableArrayList(
+                    filterModeToString.get(filterMode.CREATED),
+                    filterModeToString.get(filterMode.OWN)
+            ));
+        } else {
+            filter.setItems(FXCollections.observableArrayList(
+                    filterModeToString.get(filterMode.ALL),
+                    filterModeToString.get(filterMode.CREATED),
+                    filterModeToString.get(filterMode.OWN),
+                    filterModeToString.get(filterMode.NURSES)
+            ));
+        }
+    }
+
     /**
      * Initializes table cells and adds listener which enables or disables the edit/save button.
      */
     @Override
     public void populate(Object... context) {
+        session = ClinicApplication.getEntityManager().unwrap(Session.class);
+        findUsersReferrals = session.getNamedQuery("findUsersReferrals").setParameter("uname",
+                ClinicApplication.getUser().getDatabaseUsername());
+        allReferrals = session.getNamedQuery("allReferrals");
+        nursesReferrals = session.getNamedQuery("nursesReferrals");
+        createdReferrals = session.getNamedQuery("createdReferrals").setParameter("user",
+                ClinicApplication.getUser());
+
         table.getSelectionModel().clearSelection();
 
         dateCol.setCellValueFactory(new PropertyValueFactory<>("addedDate"));
@@ -96,6 +151,20 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         searchDebounce.setOnFinished(this::searchAction);
         searchTextField.textProperty().addListener((observable, oldValue, newValue) -> searchDebounce.playFromStart());
 
+        filterModeToString.put(filterMode.OWN, "Moje skierowania");
+        filterModeToString.put(filterMode.NURSES, "Skierowania do gabinetu zabiegowego");
+        filterModeToString.put(filterMode.CREATED, "Utworzone przeze mnie");
+        filterModeToString.put(filterMode.ALL, "Wszystkie");
+        
+        User.Role currUserRole = ClinicApplication.getUser().getRole();
+        setCurrQuery(currUserRole);
+        setFilterVals(currUserRole);
+
+        if(currQuery == allReferrals) filter.setValue(filterModeToString.get(filterMode.ALL));
+        else if(currQuery == createdReferrals) filter.setValue(filterModeToString.get(filterMode.CREATED));
+        else if(currQuery == findUsersReferrals) filter.setValue(filterModeToString.get(filterMode.OWN));
+        else filter.setValue(filterModeToString.get(filterMode.NURSES));
+
         refresh();
 
         // if search field is not empty, perform search again - for user's convenience (no need to hit enter/type again)
@@ -110,14 +179,25 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
     @Override
     public void refresh() {
         table.getSelectionModel().clearSelection();
-        List results = query.getResultList();
+        List results = currQuery.getResultList();
 
         //in case some element gets edited while app is running
         for (Object refElem : results) {
             ClinicApplication.getEntityManager().refresh(refElem);
         }
-        referrals.setAll(query.getResultList());
+        referrals.setAll(currQuery.getResultList());
         table.setItems(referrals);
+    }
+
+    // Changes items according to selected filter mode.
+    public void changeFilter(ActionEvent actionEvent) {
+
+        if(filter.getSelectionModel().getSelectedItem() == filterModeToString.get(filterMode.ALL)) currQuery = allReferrals;
+        else if(filter.getSelectionModel().getSelectedItem() == filterModeToString.get(filterMode.CREATED)) currQuery = createdReferrals;
+        else if(filter.getSelectionModel().getSelectedItem() == filterModeToString.get(filterMode.OWN)) currQuery = findUsersReferrals;
+        else currQuery = nursesReferrals;
+
+        refresh();
     }
 
     /**

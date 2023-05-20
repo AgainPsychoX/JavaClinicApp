@@ -23,6 +23,7 @@ import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.regex.Pattern;
 
 public class RegisterDialog extends ChildControllerBase<MainWindowController> {
 
@@ -127,6 +128,27 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
                 || repPasswordField.getText().isBlank()) {
             showErrorAlert("Błąd zapisu", "Nie wypełniono wymaganych pól",
                     "Pola \"imię\", \"nazwisko\", \"PESEL\", \"hasło\" i \"powtórz hasło\" są wymagane.");
+        } else if (!nameSurnameValidator(nameField.getText().trim())) {
+            showErrorAlert("Błąd zapisu", "Niepoprawne imię",
+                    "Pole \"imię\" nie jest poprawną wartością.");
+        } else if (!nameSurnameValidator(surnameField.getText().trim())) {
+            showErrorAlert("Błąd zapisu", "Niepoprawne nazwisko",
+                    "Pole \"nazwisko\" nie jest poprawną wartością.");
+        } else if (emailField.getText() != null && !emailField.getText().isBlank()
+                && !emailValidator(emailField.getText().trim())) {
+            showErrorAlert("Błąd zapisu", "Niepoprawny email",
+                    "Pole \"email\" nie jest poprawnym adresem email.");
+        } else if (phoneField.getText() != null && !phoneField.getText().isBlank()
+                && !phoneValidator(phoneField.getText().trim())) {
+            showErrorAlert("Błąd zapisu", "Niepoprawny numer telefonu",
+                    "Pole \"numer telefonu\" nie jest poprawnym numerem telefonu.");
+        } else if (!PESELValidator(PESELField.getText().trim())) {
+            showErrorAlert("Błąd zapisu", "Niepoprawny PESEL",
+                    "Pole \"PESEL\" nie jest poprawnym numerem PESEL.");
+        } else if (postCodeField.getText() != null && !postCodeField.getText().isBlank()
+                && !postCodeValidator(postCodeField.getText().trim())) {
+            showErrorAlert("Błąd zapisu", "Niepoprawny kod pocztowy",
+                    "Pole \"kod pocztowy\" nie jest poprawnym kodem pocztowym.");
         } else if (!passwordField.getText().trim().equals(repPasswordField.getText().trim())) {
             showErrorAlert("Błąd zapisu", "Niezgodne hasła",
                     "Pola \"hasło\" i \"powtórz hasło\" muszą być takie same.");
@@ -157,23 +179,6 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
 
                 session.persist(newUser);
 
-//                System.out.println(internalName);
-//
-//                createUserQuery.setParameter("internalName", internalName);
-//                createUserQuery.setParameter("email", (emailField.getText() == null
-//                        || emailField.getText().isBlank())
-//                        ? new TypedParameterValue(StandardBasicTypes.STRING, null)
-//                        : emailField.getText().trim());
-//                createUserQuery.setParameter("name", nameField.getText().trim());
-//                createUserQuery.setParameter("phone", (phoneField.getText() == null
-//                        || phoneField.getText().isBlank())
-//                        ? new TypedParameterValue(StandardBasicTypes.STRING, null)
-//                        : phoneField.getText().trim());
-//                createUserQuery.setParameter("role", "PATIENT");
-//                createUserQuery.setParameter("surname", surnameField.getText().trim());
-
-//                int newUserId = Integer.parseInt(createUserQuery.getSingleResult().toString());
-
                 createPatientQuery.setParameter("building", (buildingField.getText() == null
                         || buildingField.getText().isBlank())
                         ? new TypedParameterValue(StandardBasicTypes.STRING, null)
@@ -201,19 +206,20 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
                 createPatientQuery.executeUpdate();
                 transaction.commit();
 
+                Alert exit = new Alert(Alert.AlertType.INFORMATION);
+                exit.setTitle("Rejestracja");
+                exit.setHeaderText("Rejestracja zakończona pomyślnie");
+                exit.setContentText("Zarejestrowano nowego pacjenta.");
+                exit.showAndWait();
+
                 fieldsEdited.setValue(0);
-                this.getParentController().goBack(); //WrongClassException?
+                this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS); //WrongClassException?
             } catch (Exception e) {
-                e.printStackTrace();
                 transaction = session.getTransaction();
                 if (transaction.isActive()) transaction.rollback();
-                System.err.println(e.getMessage());
                 if (e.getMessage().contains("ConstraintViolationException")) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Błąd zapisu");
-                    alert.setHeaderText("Podane dane istnieją już w bazie.");
-                    alert.setContentText("Wprowadzony PESEL lub email jest już przypisany do istniejącego użytkownika.");
-                    alert.showAndWait();
+                    showErrorAlert("Błąd zapisu", "Podane dane istnieją już w bazie.",
+                            "Wprowadzony PESEL lub email jest już przypisany do istniejącego użytkownika.");
                 }
             }
         }
@@ -259,10 +265,10 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
         for (TextField field : allFields) {
             field.textProperty().addListener((observable, oldValue, newValue) -> {
                 int oldFieldsVal = fieldsEdited.getValue();
-                if ((oldValue == null || oldValue.isBlank()) && newValue != null && !newValue.isBlank()){
+                if ((oldValue == null || oldValue.isBlank()) && newValue != null && !newValue.isBlank()) {
                     fieldsEdited.setValue(oldFieldsVal + 1);
                 }
-                if ((oldValue != null && !oldValue.isBlank()) && (newValue == null || newValue.isBlank())){
+                if ((oldValue != null && !oldValue.isBlank()) && (newValue == null || newValue.isBlank())) {
                     fieldsEdited.setValue(oldFieldsVal - 1);
                 }
             });
@@ -291,10 +297,36 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
         if (editState) {
             if (exitConfirm()) {
                 editState = false;
-                this.getParentController().goBack();
+                this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS);
             }
         } else {
-            this.getParentController().goBack();
+            this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS);
         }
     }
+
+    public static boolean emailValidator(String email) {
+        if (!email.contains("@")) return false;
+        String prev = email.substring(0, email.indexOf('@'));
+        String past = email.substring(email.indexOf('@'));
+
+        if (prev.length() == 0) return false;
+        return past.contains(".");
+    }
+
+    public static boolean PESELValidator(String pesel) {
+        return pesel.matches("[0-9]{11}");
+    }
+
+    public static boolean phoneValidator(String phone) {
+        return phone.matches("[0-9]{9}");
+    }
+
+    public static boolean postCodeValidator(String code) {
+        return code.matches("[0-9]{2}-[0-9]{3}");
+    }
+
+    public static boolean nameSurnameValidator(String text) {
+        return text.matches("[a-zA-ZżźćńółęąśŻŹĆĄŚĘŁÓŃ]+");
+    }
+
 }
