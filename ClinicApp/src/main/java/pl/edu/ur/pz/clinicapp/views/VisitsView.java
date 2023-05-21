@@ -98,70 +98,75 @@ public class VisitsView extends ChildControllerBase<MainWindowController> {
     /** Populates the table with adding cell factories **/
     @Override
     public void populate(Object... context) {
-        dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
-        if(ClinicApplication.getUser().getRole().name().equals("DOCTOR")){
-            doctorCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getPatient().getDisplayName()));
-            doctorCol.setText("Pacjent");
-            specCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getNotes()));
-            specCol.setText("Notatki");
+        if (ClinicApplication.getUser().getRole().equals(User.Role.NURSE)) {
+            filter.setDisable(true);
+            filter.setOpacity(0);
+            newButton.setDisable(true);
         }
         else {
-            if(firstRun) {
-                TableColumn<Appointment, String> notesCol = new TableColumn<>();
-                notesCol.setText("Notatki");
-                notesCol.setMaxWidth(specCol.getMaxWidth());
-                table.getColumns().add(notesCol);
-                notesCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getNotes()));
-            }
-
-            if (!ClinicApplication.getUser().getRole().name().equals("PATIENT")) {
-                if(firstRun) {
-                    TableColumn<Appointment, String> patientCol = new TableColumn<>();
-                    patientCol.setText("Pacjent");
-                    patientCol.setMaxWidth(specCol.getMaxWidth());
-                    table.getColumns().add(patientCol);
-                    patientCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getPatient().getDisplayName()));
+            dateCol.setCellValueFactory(new PropertyValueFactory<>("date"));
+            if (ClinicApplication.getUser().getRole().name().equals("DOCTOR")) {
+                doctorCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getPatient().getDisplayName()));
+                doctorCol.setText("Pacjent");
+                specCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getNotes()));
+                specCol.setText("Notatki");
+            } else {
+                if (firstRun) {
+                    TableColumn<Appointment, String> notesCol = new TableColumn<>();
+                    notesCol.setText("Notatki");
+                    notesCol.setMaxWidth(specCol.getMaxWidth());
+                    table.getColumns().add(notesCol);
+                    notesCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getNotes()));
                 }
-            }
-            doctorCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getDoctor().getDisplayName()));
-            specCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getDoctor().getSpeciality().getName()));
 
-        }
-        firstRun = false;
-        appointments.clear();
-        table.getItems().clear();
-        table.refresh();
-
-        table.setRowFactory(tv -> {
-            TableRow<Appointment> localRow = new TableRow<>();
-            localRow.setOnMouseClicked(mouseEvent -> {
-                if(mouseEvent.getButton() == MouseButton.PRIMARY) {
-                    if (mouseEvent.getClickCount() == 2 && table.getSelectionModel().getSelectedItem() != null) {
-                        this.getParentController().goToView(MainWindowController.Views.VISIT_DETAILS, VisitsDetailsView.PrMode.DETAILS, table.getSelectionModel().getSelectedItem());
+                if (!ClinicApplication.getUser().getRole().name().equals("PATIENT")) {
+                    if (firstRun) {
+                        TableColumn<Appointment, String> patientCol = new TableColumn<>();
+                        patientCol.setText("Pacjent");
+                        patientCol.setMaxWidth(specCol.getMaxWidth());
+                        table.getColumns().add(patientCol);
+                        patientCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getPatient().getDisplayName()));
                     }
                 }
-            });
-            return localRow;
-        });
-        try {
-            table.getItems().addAll(getAllVisits());
-        } catch (Exception e) {}
+                doctorCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getDoctor().getDisplayName()));
+                specCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getDoctor().getSpeciality().getName()));
 
-        filter.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
-            @Override
-            public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
-                FilteredList<Appointment> appointmentFilteredList = new FilteredList<>(appointments);
-                appointmentFilteredList.setPredicate(appointment -> {
-                    return filter.getValue().equals("Nadchodzące wizyty") ?
-                            appointment.getDate().compareTo(Timestamp.valueOf(LocalDateTime.now())) > 0
-                            : appointment.getDate().compareTo(Timestamp.valueOf(LocalDateTime.now())) < 0;
-                });
-                table.setItems(appointmentFilteredList);
             }
-        });
-        appointments.addAll(getAllVisits());
-        if (ClinicApplication.getUser().getRole().equals(User.Role.NURSE))
-            newButton.setDisable(true);
+            firstRun = false;
+            appointments.clear();
+            table.getItems().clear();
+            table.refresh();
+
+            table.setRowFactory(tv -> {
+                TableRow<Appointment> localRow = new TableRow<>();
+                localRow.setOnMouseClicked(mouseEvent -> {
+                    if (mouseEvent.getButton() == MouseButton.PRIMARY) {
+                        if (mouseEvent.getClickCount() == 2 && table.getSelectionModel().getSelectedItem() != null) {
+                            this.getParentController().goToView(MainWindowController.Views.VISIT_DETAILS, VisitsDetailsView.PrMode.DETAILS, table.getSelectionModel().getSelectedItem());
+                        }
+                    }
+                });
+                return localRow;
+            });
+            try {
+                table.getItems().addAll(getAllVisits());
+            } catch (Exception e) {
+            }
+
+            filter.getSelectionModel().selectedIndexProperty().addListener(new ChangeListener<Number>() {
+                @Override
+                public void changed(ObservableValue<? extends Number> observableValue, Number number, Number t1) {
+                    FilteredList<Appointment> appointmentFilteredList = new FilteredList<>(appointments);
+                    appointmentFilteredList.setPredicate(appointment -> {
+                        return filter.getValue().equals("Nadchodzące wizyty") ?
+                                appointment.getDate().compareTo(Timestamp.valueOf(LocalDateTime.now())) > 0
+                                : appointment.getDate().compareTo(Timestamp.valueOf(LocalDateTime.now())) < 0;
+                    });
+                    table.setItems(appointmentFilteredList);
+                }
+            });
+            appointments.addAll(getAllVisits());
+        }
     }
 
 
