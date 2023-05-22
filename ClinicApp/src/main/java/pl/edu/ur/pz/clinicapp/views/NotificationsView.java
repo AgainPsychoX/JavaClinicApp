@@ -16,7 +16,6 @@ import org.hibernate.Transaction;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Notification;
-import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.net.URL;

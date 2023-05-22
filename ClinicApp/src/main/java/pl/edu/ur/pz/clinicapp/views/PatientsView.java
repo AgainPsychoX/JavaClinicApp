@@ -65,6 +65,9 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
         searchDebounce = new PauseTransition(Duration.millis(250));
         searchDebounce.setOnFinished(this::searchAction);
 
+        table.getSelectionModel().selectedItemProperty().addListener(observable ->
+                detailsButton.setDisable(table.getSelectionModel().getSelectedItem() == null));
+
         searchTextField.textProperty().addListener((observable, oldValue, newValue) -> searchDebounce.playFromStart());
     }
 
@@ -76,6 +79,7 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
     public void populate(Object... context) {
         patients.setAll(getAllPatients());
         table.getItems().setAll(patients);
+        table.getSelectionModel().clearSelection();
     }
 
     @Override
@@ -103,6 +107,11 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
         table.setItems(sortedPatients);
         table.refresh();
     }
+
+
+    /**
+     * Opens details view of the chosen referral in DETAILS mode.
+     */
 
     @FXML
     protected void detailsAction(ActionEvent event){

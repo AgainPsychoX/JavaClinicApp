@@ -39,15 +39,24 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
 
     private static final BooleanProperty editState = new SimpleBooleanProperty(false);
 
-    @FXML protected HBox buttonBox;
-    @FXML protected TextField patientTextField;
-    @FXML protected TextField doctorTextField;
-    @FXML protected TextArea notesTextField;
-    @FXML protected TextField tagsTextField;
-    @FXML protected TextField codeTextField;
-    @FXML protected Button editButton;
-    @FXML protected Button ikpButton;
-    @FXML protected Button deleteButton;
+    @FXML
+    protected HBox buttonBox;
+    @FXML
+    protected TextField patientTextField;
+    @FXML
+    protected TextField doctorTextField;
+    @FXML
+    protected TextArea notesTextField;
+    @FXML
+    protected TextField tagsTextField;
+    @FXML
+    protected TextField codeTextField;
+    @FXML
+    protected Button editButton;
+    @FXML
+    protected Button ikpButton;
+    @FXML
+    protected Button deleteButton;
 
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
     Query editQuery = session.getNamedQuery("editPrescription");
