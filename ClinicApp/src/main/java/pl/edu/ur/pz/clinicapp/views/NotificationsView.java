@@ -1,44 +1,161 @@
 package pl.edu.ur.pz.clinicapp.views;
 
+import javafx.animation.PauseTransition;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
+import javafx.collections.transformation.SortedList;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.VBox;
+import javafx.fxml.Initializable;
+import javafx.event.ActionEvent;
+import javafx.scene.control.*;
+import javafx.util.Duration;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.models.Notification;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
-public class NotificationsView extends ChildControllerBase<MainWindowController> {
+import java.net.URL;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.ResourceBundle;
+
+public class NotificationsView extends ChildControllerBase<MainWindowController> implements Initializable {
+
     @FXML protected TextField searchTextField;
-    @FXML protected TableView table;
+    @FXML protected TableView<Notification> table;
+    @FXML protected TableColumn<Notification, Date> dateCol;
+    @FXML protected TableColumn<Notification, String> fromCol;
+    @FXML protected TableColumn<Notification, String> contentCol;
+    @FXML protected TableColumn<Notification, Boolean> readCol;
+    @FXML protected Button markReadButton;
     @FXML protected Button markUnreadButton;
     @FXML protected Button deleteButton;
-    @FXML protected TableColumn dateCol;
-    @FXML protected TableColumn categoryCol;
-    @FXML protected TableColumn fromCol;
-    @FXML protected TableColumn contentCol;
-    @FXML protected VBox vBox;
+
+    protected ObservableList<Notification> notification = FXCollections.observableArrayList();
+    protected FilteredList<Notification> filteredNotifications = new FilteredList<>(notification, b -> true);
+
+    protected PauseTransition searchDebounce;
+    Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
+    Transaction transaction = null;
+
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSentDate()));
+        fromCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSourceUser().getDisplayName()));
+        contentCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getContent()));
+        readCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().wasRead()));
+
+        table.getSelectionModel().selectedItemProperty().addListener(observable -> {
+            if (table.getSelectionModel().getSelectedItem() == null){
+                deleteButton.setDisable(true);
+                markUnreadButton.setDisable(true);
+                markReadButton.setDisable(true);
+            }else {
+                deleteButton.setDisable(false);
+                markUnreadButton.setDisable(!table.getSelectionModel().getSelectedItem().wasRead());
+                markReadButton.setDisable(table.getSelectionModel().getSelectedItem().wasRead());
+            }
+
+        });
+
+        searchDebounce = new PauseTransition(Duration.millis(250));
+        searchDebounce.setOnFinished(this::searchAction);
+
+        searchTextField.textProperty().addListener((observable, oldValue, newValue) -> searchDebounce.playFromStart());
+
+    }
+
+    private List<Notification> getAllNotifications(){
+        return ClinicApplication.getUser().getAllReceivedNotifications();
+
+    }
+
+    @Override
+    public void populate(Object... context) {
+        notification.setAll(getAllNotifications());
+        table.getItems().setAll(notification);
+    }
 
     @Override
     public void dispose() {
         super.dispose();
     }
 
-    @Override
-    public void populate(Object... context) {
-        vBox.widthProperty().addListener((obs, oldVal, newVal) -> {
-            double tableWidth = newVal.doubleValue() - 50;
-            dateCol.setPrefWidth(tableWidth * 0.2);
-            categoryCol.setPrefWidth(tableWidth * 0.2);
-            fromCol.setPrefWidth(tableWidth * 0.2);
-            contentCol.setPrefWidth(tableWidth * 0.2);
-            contentCol.setPrefWidth(contentCol.getPrefWidth() + tableWidth - (dateCol.getPrefWidth() + categoryCol.getPrefWidth() + fromCol.getPrefWidth()));
-        });
-    }
 
     @Override
     public void refresh() {
+        populate();
+    }
+
+    @FXML
+    protected void searchAction(ActionEvent event) {
+        searchDebounce.stop();
+
+        final var text = searchTextField.getText().toLowerCase();
+        filteredNotifications.setPredicate(notification -> {
+            if(text.isBlank()) return true;
+            if(notification.getSourceUser().getName().toLowerCase().contains(text)) return true;
+            if(notification.getSourceUser().getSurname().toLowerCase().contains(text)) return true;
+            if(notification.getSentDate().toLocalDateTime().toString().toLowerCase().contains(text)) return true;
+            if(notification.getContent().toLowerCase().contains(text)) return true;
+            return false;
+        });
+
+        SortedList<Notification> sortedNotification = new SortedList<>(filteredNotifications);
+        sortedNotification.comparatorProperty().bind(table.comparatorProperty());
+        table.setItems(sortedNotification);
+        table.refresh();
+    }
+
+    @FXML
+    protected void readAction(ActionEvent event){
+
+        int id = table.getSelectionModel().getSelectedItem().getId();
+        Notification notification = session.get(Notification.class, id);
+        transaction = session.beginTransaction();
+
+        if(table.getSelectionModel().getSelectedItem().wasRead()){
+
+            notification.setReadDate(null);
+            session.update(notification);
+        }else {
+            notification.setReadDate(Timestamp.valueOf(LocalDateTime.now()));
+            session.update(notification);
+        }
+
+        transaction.commit();
+        refresh();
+    }
+
+    @FXML
+    protected void deleteAction(ActionEvent event){
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Usuwanie powiadomienia.");
+        alert.setHeaderText("Czy na pewno chcesz usunąć to powiadomienie?");
+        alert.setContentText("Tej operacji nie można cofnąć.");
+
+        int id = table.getSelectionModel().getSelectedItem().getId();
+        Optional<ButtonType> result = alert.showAndWait();
+
+        if (result.get() == ButtonType.OK) {
+            table.getItems().removeAll(table.getSelectionModel().getSelectedItem());
+            transaction = session.beginTransaction();
+            Notification notification = session.get(Notification.class, id);
+            session.delete(notification);
+            transaction.commit();
+            refresh();
+        } else {
+            alert.close();
+        }
 
     }
+
 }

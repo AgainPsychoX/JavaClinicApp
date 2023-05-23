@@ -12,9 +12,12 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import pl.edu.ur.pz.clinicapp.dialogs.RegisterDialog;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildController;
 import pl.edu.ur.pz.clinicapp.utils.HistoryTracker;
+import pl.edu.ur.pz.clinicapp.views.MyAccount;
+import pl.edu.ur.pz.clinicapp.views.PrescriptionDetailsView;
 import pl.edu.ur.pz.clinicapp.views.ReferralDetailsView;
 
 import java.io.IOException;
@@ -32,6 +35,7 @@ public class MainWindowController implements Initializable {
         NOTIFICATIONS,
         ACCOUNTS,
         ACCOUNT_DETAILS,
+        MY_ACCOUNT,
         SCHEDULE,
         VISITS,
         VISIT_DETAILS,
@@ -42,6 +46,7 @@ public class MainWindowController implements Initializable {
         PRESCRIPTIONS,
         PRESCRIPTION_DETAILS,
         REPORTS,
+        REGISTER
     }
 
     private static final EnumMap<Views, URL> viewToResource = new EnumMap<>(Views.class) {{
@@ -49,11 +54,15 @@ public class MainWindowController implements Initializable {
         put(Views.ACCOUNTS, ClinicApplication.class.getResource("views/AccountsView.fxml"));
         put(Views.ACCOUNT_DETAILS, ClinicApplication.class.getResource("views/AccountDetailsView.fxml"));
         put(Views.VISITS, ClinicApplication.class.getResource("views/VisitsView.fxml"));
+        put(Views.VISIT_DETAILS, ClinicApplication.class.getResource("views/VisitsDetailsView.fxml"));
         put(Views.PATIENTS, ClinicApplication.class.getResource("views/PatientsView.fxml"));
         put(Views.REFERRALS, ClinicApplication.class.getResource("views/ReferralsView.fxml"));
         put(Views.REFERRAL_DETAILS, ClinicApplication.class.getResource("views/ReferralDetailsView.fxml"));
         put(Views.PRESCRIPTIONS, ClinicApplication.class.getResource("views/PrescriptionsView.fxml"));
         put(Views.PRESCRIPTION_DETAILS, ClinicApplication.class.getResource("views/PrescriptionDetailsView.fxml"));
+        put(Views.REGISTER, ClinicApplication.class.getResource("dialogs/RegisterDialog.fxml"));
+        put(Views.MY_ACCOUNT, ClinicApplication.class.getResource("views/MyAccount.fxml"));
+        put(Views.PATIENT_DETAILS, ClinicApplication.class.getResource("views/PatientDetailsView.fxml"));
     }};
 
     static class ViewDefinition {
@@ -150,7 +159,7 @@ public class MainWindowController implements Initializable {
             // TODO: notifications button should include red dot when there are any unread
             c.add(buttonForNavigationMenu("Powiadomienia", (e) -> goToView(Views.NOTIFICATIONS)));
             if (!role.isGroupUser()) {
-                c.add(buttonForNavigationMenu("Moje dane", (e) -> goToView(Views.ACCOUNT_DETAILS, ClinicApplication.getUser())));
+                c.add(buttonForNavigationMenu("Moje dane", (e) -> goToView(Views.MY_ACCOUNT, ClinicApplication.getUser())));
             }
 
             if (role == User.Role.PATIENT) {
@@ -176,6 +185,9 @@ public class MainWindowController implements Initializable {
                     // Log-out is necessary here, even tho there already is `setOnCloseRequest` for the stage,
                     // as it just catches window event.
                     if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
+                    if(PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) return;
+                    if(RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) return;
+                    if(MyAccount.getEditState() && !MyAccount.exitConfirm()) return;
                     ClinicApplication.logOut();
                     getStage().close();
                 });
@@ -202,11 +214,18 @@ public class MainWindowController implements Initializable {
      * @param context Additional context parameter(s).
      */
     public void goToViewRaw(Views which, Object... context) {
+        System.out.println(which);
         final var newView = getView(which);
         final var oldView = getPreviousView();
 
         if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
         ReferralDetailsView.setEditState(false);
+        if(PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) return;
+        PrescriptionDetailsView.setEditState(false);
+        if(RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) return;
+        RegisterDialog.setEditState(false);
+        if(MyAccount.getEditState() && !MyAccount.exitConfirm()) return;
+        MyAccount.setEditState(false);
 
         if (oldView != null && oldView.controller != null) {
             oldView.controller.dispose();

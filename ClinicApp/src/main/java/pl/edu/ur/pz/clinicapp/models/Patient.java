@@ -1,6 +1,11 @@
 package pl.edu.ur.pz.clinicapp.models;
 
+import org.hibernate.Session;
+import pl.edu.ur.pz.clinicapp.ClinicApplication;
+import javafx.collections.ObservableList;
 import javax.persistence.*;
+import java.util.Comparator;
+import java.util.List;
 
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
 
@@ -8,6 +13,12 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
 @Table(name = "patients")
 @NamedQueries({
         @NamedQuery(name = "patients",  query = "FROM Patient p LEFT JOIN FETCH p.user")
+})
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "createPatient", query = "INSERT INTO public.patients "
+                +"(building, city, pesel, post_city, post_code, street, id) "
+                +"VALUES (:building, :city, :pesel, :post_city, :post_code, :street, :id)",
+                resultClass = Patient.class)
 })
 public class Patient {
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -163,4 +174,25 @@ public class Patient {
         builder.append(postCity);
         return builder.toString();
     }
+
+
+
+    static public Patient getCurrent() {
+        // FIXME: use global user and then asPatient
+        return ClinicApplication.getEntityManager().createNamedQuery("patients.current", Patient.class).getSingleResult();
+    }
+
+    public static List getAll(Class c) {
+        // FIXME: prefer named queries to allow prefetching and avoid N+1 problems
+        Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
+        return session.createCriteria(c).list();
+    }
+
+    public static Comparator<Patient> patientNameComparator = new Comparator<Patient>() {
+        public int compare(Patient patient1, Patient patient2) {
+            String patientName1 = patient1.getDisplayName().toUpperCase();
+            String patientName2 = patient2.getDisplayName().toUpperCase();
+            return patientName1.compareTo(patientName2);
+        }
+    };
 }

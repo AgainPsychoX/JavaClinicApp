@@ -9,6 +9,7 @@ module pl.edu.ur.pz.clinicapp {
     requires java.naming;
     requires java.desktop;
 
+
     exports pl.edu.ur.pz.clinicapp;
     exports pl.edu.ur.pz.clinicapp.models;
 
@@ -17,4 +18,6 @@ module pl.edu.ur.pz.clinicapp {
     opens pl.edu.ur.pz.clinicapp.models to org.hibernate.orm.core;
     opens pl.edu.ur.pz.clinicapp.utils to org.hibernate.orm.core, javafx.fxml;
     opens pl.edu.ur.pz.clinicapp.views to javafx.fxml;
+
+
 }

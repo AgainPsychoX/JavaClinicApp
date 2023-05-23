@@ -9,6 +9,7 @@ import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -16,6 +17,7 @@ import javafx.util.Duration;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Patient;
+import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.net.URL;
@@ -23,6 +25,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class PatientsView extends ChildControllerBase<MainWindowController> implements Initializable {
+
+    @FXML
+    protected Button registerButton;
     @FXML
     protected TableView<Patient> table;
     @FXML
@@ -39,6 +44,8 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
     protected TableColumn<Patient, String> addressCol;
     @FXML
     protected TextField searchTextField;
+    @FXML
+    protected Button detailsButton;
 
     protected ObservableList<Patient> patients = FXCollections.observableArrayList();
     protected FilteredList<Patient> filteredPatients = new FilteredList<>(patients, b -> true);
@@ -58,6 +65,9 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
         searchDebounce = new PauseTransition(Duration.millis(250));
         searchDebounce.setOnFinished(this::searchAction);
 
+        table.getSelectionModel().selectedItemProperty().addListener(observable ->
+                detailsButton.setDisable(table.getSelectionModel().getSelectedItem() == null));
+
         searchTextField.textProperty().addListener((observable, oldValue, newValue) -> searchDebounce.playFromStart());
     }
 
@@ -69,6 +79,7 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
     public void populate(Object... context) {
         patients.setAll(getAllPatients());
         table.getItems().setAll(patients);
+        table.getSelectionModel().clearSelection();
     }
 
     @Override
@@ -96,4 +107,23 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
         table.setItems(sortedPatients);
         table.refresh();
     }
+
+
+    /**
+     * Opens details view of the chosen referral in DETAILS mode.
+     */
+
+    @FXML
+    protected void detailsAction(ActionEvent event){
+        this.getParentController().goToView(MainWindowController.Views.PATIENT_DETAILS,
+                PatientDetailsView.RefMode.DETAILS, table.getSelectionModel().getSelectedItem());
+
+    }
+
+    public void register() {
+        this.getParentController().goToView(MainWindowController.Views.REGISTER,
+                "INDIRECT");
+    }
+
+
 }

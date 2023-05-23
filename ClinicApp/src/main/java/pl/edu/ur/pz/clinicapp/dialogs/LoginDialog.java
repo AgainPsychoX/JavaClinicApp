@@ -3,6 +3,7 @@ package pl.edu.ur.pz.clinicapp.dialogs;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -14,6 +15,7 @@ import javafx.stage.Stage;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
 import javax.security.auth.login.LoginException;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,7 +33,9 @@ public class LoginDialog extends Stage {
     @FXML protected PasswordField passwordField;
     @FXML protected Text errorText;
 
-    final protected BorderPane pane;
+    protected static Scene loginScene;
+    protected static Scene registerScene;
+    protected BorderPane pane;
 
     public LoginDialog() {
         this(null, null);
@@ -45,11 +49,11 @@ public class LoginDialog extends Stage {
         pane = new BorderPane();
         var fxml = ClinicApplication.class.getResource("dialogs/LoginDialog.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
-        fxmlLoader.setRoot(pane);
+//        fxmlLoader.setRoot(pane);
         fxmlLoader.setController(this);
 
         try {
-            fxmlLoader.load();
+            pane = fxmlLoader.load();
         }
         catch (IOException exception) {
             Logger.getGlobal().log(
@@ -69,24 +73,25 @@ public class LoginDialog extends Stage {
             // TODO: make it separate control as well
         }};
 
-        if (rememberedUser != null) {
+        if (rememberedUser != null && !rememberedUser.isBlank()) {
             identityTextField.setText(rememberedUser);
 
-            if (rememberedPassword != null) {
+            if (rememberedPassword != null && !rememberedPassword.isBlank()) {
                 runDelayed(200, () -> {
                     logInUsingRememberedData(rememberedUser, rememberedPassword);
                 });
             }
         }
 
-        initModality(Modality.APPLICATION_MODAL);
+//        initModality(Modality.APPLICATION_MODAL);
         minWidthProperty().bind(pane.minWidthProperty());
         maxWidthProperty().bind(pane.maxWidthProperty());
         minHeightProperty().bind(pane.minHeightProperty());
         maxHeightProperty().bind(pane.maxHeightProperty());
 //        setWidth(pane.getMinWidth());
 //        setHeight(pane.getMinHeight());
-        setScene(new Scene(pane));
+        loginScene = new Scene(pane);
+        setScene(loginScene);
     }
 
     @Override
@@ -148,4 +153,23 @@ public class LoginDialog extends Stage {
     protected void passwordEnterAction(ActionEvent event) {
         logInUsingFormData();
     }
+
+    @FXML
+    void openRegisterView() throws IOException {
+        final var stage = new Stage();
+        final var loader = new FXMLLoader(ClinicApplication.class.getResource("dialogs/RegisterDialog.fxml"));
+        BorderPane BPane = loader.load();
+        registerScene = new Scene(BPane);
+        stage.setTitle("Rejestracja");
+        stage.setScene(registerScene);
+        stage.minWidthProperty().bind(BPane.minWidthProperty());
+        stage.maxWidthProperty().bind(BPane.maxWidthProperty());
+        stage.minHeightProperty().bind(BPane.minHeightProperty());
+        stage.maxHeightProperty().bind(BPane.maxHeightProperty());
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.initOwner(this.getScene().getWindow());
+
+        stage.showAndWait();
+    }
+
 }

@@ -38,6 +38,7 @@ import java.util.Optional;
 public class PrescriptionDetailsView extends ChildControllerBase<MainWindowController> {
 
     private static final BooleanProperty editState = new SimpleBooleanProperty(false);
+
     @FXML
     protected HBox buttonBox;
     @FXML
@@ -56,6 +57,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
     protected Button ikpButton;
     @FXML
     protected Button deleteButton;
+
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
     Query editQuery = session.getNamedQuery("editPrescription");
     Query deleteQuery = session.getNamedQuery("deletePrescription");
