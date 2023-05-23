@@ -146,7 +146,7 @@ public class Timetable implements Comparable<Timetable> {
     }
 
     @Embeddable
-    public static class Entry implements WeekPane.Entry, Comparable<Entry> {
+    public static class Entry implements WeekPane.Entry {
         /**
          * Weekday in SQL is integer as Sunday (0) to Saturday (6).
          *
@@ -241,15 +241,6 @@ public class Timetable implements Comparable<Timetable> {
         @Override
         public int hashCode() {
             return Objects.hash(weekday, startMinute, endMinute);
-        }
-
-        @Override
-        public int compareTo(@NotNull Timetable.Entry other) {
-            if (this.weekday < other.weekday) return -1;
-            if (this.weekday > other.weekday) return 1;
-            if (this.startMinute < other.startMinute) return -1;
-            if (this.startMinute > other.startMinute) return -1;
-            return 0; // kinda illegal state
         }
     }
 }

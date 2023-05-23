@@ -18,6 +18,7 @@ import javafx.scene.control.Skin;
 import javafx.scene.control.skin.CellSkinBase;
 import javafx.scene.layout.*;
 import javafx.util.Callback;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -29,13 +30,22 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
     /**
      * Interface for entries to be placed on WeekPane.
      */
-    public interface Entry {
+    public interface Entry extends Comparable<Entry> {
         DayOfWeek getDayOfWeek();
         int getStartMinute();
         int getEndMinute();
 
         default int getDurationMinutes() {
             return getEndMinute() - getStartMinute();
+        }
+
+        @Override
+        default int compareTo(@NotNull Entry other) {
+            if (this.getDayOfWeek().ordinal() < other.getDayOfWeek().ordinal()) return -1;
+            if (this.getDayOfWeek().ordinal() > other.getDayOfWeek().ordinal()) return 1;
+            if (this.getStartMinute() < other.getStartMinute()) return -1;
+            if (this.getStartMinute() > other.getStartMinute()) return -1;
+            return 0; // kinda illegal state (overlapping)
         }
 
         // TODO: what about entries longer than day or across midnight?
@@ -105,10 +115,10 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             final var oldEntries = weakEntriesRef.get();
             weakEntriesRef = new WeakReference<>(newEntries);
             if (oldEntries != null) {
-                oldEntries.removeListener(entriesSetChangeListener);
+                oldEntries.removeListener(entriesListChangeListener);
             }
             if (newEntries != null) {
-                getValue().addListener(entriesSetChangeListener);
+                getValue().addListener(entriesListChangeListener);
             }
             // TODO: make there are enough rows
             WeekPane.this.layoutEntries();
@@ -129,9 +139,32 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
         return entries.get();
     }
 
-    private final WeakListChangeListener<? super T> entriesSetChangeListener =
+    private final WeakListChangeListener<T> entriesListChangeListener =
             new WeakListChangeListener<>(c -> {
-                WeekPane.this.layoutEntries();
+                // TODO: ensure entries sorted:
+                //  + if single entry added - insert at binary searched index
+                //  + if more entries added - full sort
+
+                boolean needSorting = false;
+                boolean needRelayout = false;
+                while (c.next()) {
+                    if (c.wasAdded()) {
+                        needSorting = true;
+                        needRelayout = true;
+                    }
+                    if (c.wasRemoved()) {
+                        for (final var entry : c.getRemoved()) {
+                            gridPane.getChildren().remove(findEntryCell(entry));
+                        }
+                    }
+                }
+
+                if (needSorting) {
+                    WeekPane.this.getEntries().sort(WeekPane.Entry::compareTo);
+                }
+                if (needRelayout) {
+                    WeekPane.this.layoutEntries();
+                }
                 WeekPane.this.updateWeekendColumns();
             });
 

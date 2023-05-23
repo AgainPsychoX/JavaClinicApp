@@ -109,9 +109,12 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
             {
                 setOnMouseClicked(event -> {
                     if (event.getButton() == MouseButton.PRIMARY) {
-                        weekPaneSelectionModel.select(getItem());
+                        final var entry = getItem();
+                        weekPaneSelectionModel.select(entry);
                         if (event.getClickCount() == 2) {
-                            // TODO: edit entry
+                            if (getMode() == Mode.EDIT) {
+                                showAddOrEditEntryDialog(entry);
+                            }
                         }
                     }
                 });
@@ -899,22 +902,39 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
         interactionGuard.end();
     }
 
+    /**
+     * Shows dialog for adding new entry or existing old entry (delete button included).
+     * @param existingEntry Entry to edit, or null if adding new one.
+     */
+    protected void showAddOrEditEntryDialog(Timetable.Entry existingEntry) {
+        /* The week pane holds entries as observable list over currently selected timetable,
+         * so adding/removing to it makes directly changes to original timetable collection,
+         * so we don't need to manage the timetable on our own/in the dialog itself.
+         */
+        final var dialog = new TimetableEntryEditDialog(existingEntry, null);
+        dialog.showAndWait();
+        switch (dialog.getState()) {
+            case NEW_COMMITTED -> {
+                weekPane.getEntries().add(dialog.getEntry());
+            }
+            case EDIT_COMMITTED -> {
+                final var weekPaneEntries = weekPane.getEntries();
+                weekPaneEntries.set(weekPaneEntries.indexOf(existingEntry), dialog.getEntry());
+            }
+            case DELETE_COMMITTED -> {
+                weekPane.getEntries().remove(dialog.getEntry());
+            }
+        }
+    }
+
     @FXML
     protected void addEntryAction(ActionEvent actionEvent) {
         if (interactionGuard.begin()) return;
 
         // TODO: warning about problems with editing past/already effective timetable,
         //  prefer adding new (only once in edit session)
-        final var dialog = new TimetableEntryEditDialog(null, getTimetable());
-        dialog.showAndWait();
-        switch (dialog.getState()) {
-            case NEW_COMMITTED, EDIT_COMMITTED, DELETE_COMMITTED -> {
-                // TODO: change for weekPane.refresh() or something even more specific
-                //  to avoid re-rendering/resetting all rows/columns etc.
-                // TODO: add to week pane and sort-in-weekpane
-                weekPane.setEntries(getTimetable().getEntries());
-            }
-        }
+
+        showAddOrEditEntryDialog(null);
 
         interactionGuard.end();
     }
@@ -930,6 +950,11 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
         // TODO: best thing would be having controls under the week pane instead separate dialog,
         //  allowing for previewing the changes; and allow user to drag to resize/move the entries,
         //  but it's advanced stuff and im not paid nor hyped for the project...
+
+        final var entry = weekPaneSelectionModel.getSelectedItem();
+        if (entry != null) {
+            showAddOrEditEntryDialog(entry);
+        }
 
         interactionGuard.end();
     }
@@ -1060,4 +1085,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
 
         interactionGuard.end();
     }
+
+
+
 }

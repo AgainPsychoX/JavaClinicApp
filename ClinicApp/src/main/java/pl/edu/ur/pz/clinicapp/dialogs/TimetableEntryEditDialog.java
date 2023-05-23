@@ -5,7 +5,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ChoiceBox;
 import javafx.util.StringConverter;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.controls.LocalTimeSpinner;
 import pl.edu.ur.pz.clinicapp.models.Timetable;
@@ -19,15 +19,34 @@ public class TimetableEntryEditDialog extends BaseEditDialog {
     @FXML private LocalTimeSpinner startSpinner;
     @FXML private LocalTimeSpinner endSpinner;
 
-    private final Timetable.Entry oldEntry; // keep to replace old entry when editing
+    private Timetable.Entry entry;
+
+    /**
+     * Before saved, or if deleted: it keeps old entry (to remove it when adding new one).
+     * After saved: holds newly created entry, to ease referencing it outside the dialog.
+     * @return the entry
+     */
+    public Timetable.Entry getEntry() {
+        return entry;
+    }
+
+
     private final Timetable timetable;
 
     /**
-     * Constructor for timetable entry related dialog.
-     * @param entry Entry to affect or null for creating new entry.
-     * @param timetable Timetable to affect.
+     * @return Timetable to be affected, or null if detached from timetable.
      */
-    public TimetableEntryEditDialog(Timetable.Entry entry, @NotNull Timetable timetable) {
+    @Nullable
+    public Timetable getTimetable() {
+        return timetable;
+    }
+
+    /**
+     * Constructor for timetable entry related dialog.
+     * @param entry Entry to affect, or null for creating new entry.
+     * @param timetable Timetable to affect, or null if detached from timetable.
+     */
+    public TimetableEntryEditDialog(Timetable.Entry entry, Timetable timetable) {
         super(ClinicApplication.class.getResource("dialogs/TimetableEntryEditDialog.fxml"),
                 entry == null ? Mode.NEW : Mode.EDIT);
 
@@ -38,11 +57,11 @@ public class TimetableEntryEditDialog extends BaseEditDialog {
         }
 
         if (mode == Mode.NEW) {
-            this.oldEntry = null;
+            this.entry = null;
             setTitle("Dodawanie wpisu harmonogramu");
         }
         else {
-            this.oldEntry = entry; // keep to replace old entry when editing
+            this.entry = entry; // keep to replace old entry when editing
             setTitle("Edytowanie wpisu harmonogramu");
         }
 
@@ -78,19 +97,25 @@ public class TimetableEntryEditDialog extends BaseEditDialog {
             return false;
         }
 
-        // Timetable entries are immutable (start minute is part of composite key),
-        // so we remove existing one and create new one.
-        if (oldEntry != null) {
-            timetable.remove(oldEntry);
+        // Remove existing one and create new one to auto-merge entries if possible
+        if (entry != null) {
+            if (timetable != null) {
+                timetable.remove(entry);
+            }
         }
-        timetable.add(newEntry);
+        entry = newEntry;
+        if (timetable != null) {
+            timetable.add(newEntry);
+        }
         return true;
     }
 
     @Override
     protected boolean delete() {
         // No confirm: it's simple to just create new entry & the delete button is hidden away from the timetable view.
-        timetable.remove(oldEntry);
+        if (timetable != null) {
+            timetable.remove(entry);
+        }
         return true;
     }
 }
