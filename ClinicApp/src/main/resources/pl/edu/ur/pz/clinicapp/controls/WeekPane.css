@@ -23,9 +23,21 @@
     -fx-border-style: solid;
 }
 .week-pane .rows.grid .entry {
-    -fx-background-color: #A4C2FD;
+    -entry-color: #A4C2FD;
+    -fx-background-color: -entry-color;
 
-    -fx-border-color: #ccc;
-    -fx-border-width: 0 0 1 1;
+    -fx-border-color: -entry-color #ccc #ccc -entry-color;
+    -fx-border-width: 1 1 1 1;
     -fx-border-style: solid;
+
+    -fx-alignment: top-center;
+}
+
+/* TODO: move view specific styles to other file(s)? */
+.week-pane .rows.grid .entry:selected {
+    -fx-background-color: derive(-entry-color, +20%);
+
+    -fx-border-color: black;
+    -fx-border-width: 1 1 1 1;
+    -fx-border-style: dashed;
 }

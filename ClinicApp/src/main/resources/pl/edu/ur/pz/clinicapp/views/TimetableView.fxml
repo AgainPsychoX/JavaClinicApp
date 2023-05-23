@@ -45,7 +45,7 @@
             <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" spacing="8.0" HBox.hgrow="ALWAYS">
                <children>
                   <Button fx:id="addEntryButton" mnemonicParsing="false" onAction="#addEntryAction" text="Dodaj wpis" />
-                  <Button fx:id="editEntryButton" mnemonicParsing="false" onAction="#editEntryButton" text="Edytuj lub usuń wpis" />
+                  <Button fx:id="editEntryButton" mnemonicParsing="false" onAction="#editEntryAction" text="Edytuj lub usuń wpis" />
                </children>
             </HBox>
             <HBox alignment="CENTER_RIGHT" spacing="8.0" HBox.hgrow="SOMETIMES">

@@ -6,15 +6,20 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
+import javafx.util.StringConverter;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
+import pl.edu.ur.pz.clinicapp.controls.WeekPaneSelectionModel;
 import pl.edu.ur.pz.clinicapp.dialogs.TimetableEntryEditDialog;
 import pl.edu.ur.pz.clinicapp.models.Timetable;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DirtyFixes;
+import pl.edu.ur.pz.clinicapp.utils.DurationUtils;
 import pl.edu.ur.pz.clinicapp.utils.InteractionGuard;
 
 import java.net.URL;
@@ -43,7 +48,7 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
  *      2. navigate timetables --- DONE
  *      3. dialog to add/edit/remove entries (reuse pattern from old project) --- DONE? (test editing)
  *      4. warning for unsaved changes (add fresh/dirty tracking)
- *      5. double click (or enter on focused) entry to edit
+ *      5. double click (or enter on focused) entry to edit <<<<<<<<<<<<<<<<<<<<<<
  *      6. properly make use of populate interface -- DONE?
  *      7. finishing touches (like jumping to schedule)
  *  long term steps:
@@ -56,6 +61,9 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
  *      + enforce UI/UX consistency and code quality again (maybe tweak auto-formatting tool?)
  */
 
+/**
+ * Main window view controller to display and manage timetables for the user.
+ */
 public class TimetableView extends ChildControllerBase<MainWindowController> implements Initializable {
     private static final Logger logger = Logger.getLogger(TimetableView.class.getName());
 
@@ -75,6 +83,8 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
 
     @FXML protected WeekPane<Timetable.Entry> weekPane;
 
+    protected WeekPaneSelectionModel<Timetable.Entry> weekPaneSelectionModel;
+
     @FXML protected Button addEntryButton;
     @FXML protected Button editEntryButton;
 
@@ -92,9 +102,54 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
             // no need to fix startDatePicker as it's always editable anyway
         });
 
-        // TODO: set custom entry factory to week pane that informs us about selected/edited entries
+        weekPaneSelectionModel = new WeekPaneSelectionModel<>(weekPane);
 
-        effectiveDatePicker.setDayCellFactory(param -> new DateCell() {
+        // TODO: set custom entry factory to week pane that informs us about selected/edited entries
+        weekPane.setEntryCellFactory(weekPane -> new WeekPane.EntryCell<>() {
+            {
+                setOnMouseClicked(event -> {
+                    if (event.getButton() == MouseButton.PRIMARY) {
+                        weekPaneSelectionModel.select(getItem());
+                        if (event.getClickCount() == 2) {
+                            // TODO: edit entry
+                        }
+                    }
+                });
+            }
+
+            private static final StringConverter<Integer> shortDurationConverter =
+                    DurationUtils.getStringConverterForDuration(
+                            DurationUtils.Format.WORDS_SHORT, DurationUtils.Precision.MINUTE);
+
+            private static final StringConverter<Integer> longDurationConverter =
+                    DurationUtils.getStringConverterForDuration(
+                            DurationUtils.Format.WORDS_LONG, DurationUtils.Precision.MINUTE);
+
+            @Override
+            public void updateItem(Timetable.Entry item, boolean empty) {
+                super.updateItem(item, empty);
+
+                setTextAlignment(TextAlignment.CENTER);
+                boolean isLong = this.getPrefHeight() > 32;
+
+                if (empty || item == null) {
+                    setText("?");
+                }
+                else {
+                    setText("%s - %s%s(%s)".formatted(
+                            item.startAsLocalTime().toString().replaceFirst("^0+(?!$)", ""),
+                            item.endAsLocalTime(),
+                            (isLong ? "\n" : " "),
+                            (isLong ? longDurationConverter : shortDurationConverter)
+                                    .toString(item.getDurationMinutes() * 60 * 1000)
+                    ));
+                }
+            }
+
+
+        });
+
+        effectiveDatePicker.setDayCellFactory(datePicker -> new DateCell() {
             @Override
             public void updateItem(LocalDate item, boolean empty) {
                 super.updateItem(item, empty);
@@ -856,6 +911,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
             case NEW_COMMITTED, EDIT_COMMITTED, DELETE_COMMITTED -> {
                 // TODO: change for weekPane.refresh() or something even more specific
                 //  to avoid re-rendering/resetting all rows/columns etc.
+                // TODO: add to week pane and sort-in-weekpane
                 weekPane.setEntries(getTimetable().getEntries());
             }
         }
@@ -864,7 +920,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
     }
 
     @FXML
-    protected void editEntryButton(ActionEvent actionEvent) {
+    protected void editEntryAction(ActionEvent actionEvent) {
         if (interactionGuard.begin()) return;
 
         // TODO: warning about problems with editing past/already effective timetable,

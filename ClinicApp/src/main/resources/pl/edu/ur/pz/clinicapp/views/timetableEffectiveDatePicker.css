@@ -61,7 +61,7 @@
 .date-picker-popup > * > .today:hover,
 .date-picker-popup > * > .today.selected {
     -fx-background-color: -my-fg,
-                          -my-fg, 20%), -20%),
+                          -my-fg,
                           -my-fg;
 }
 .date-picker-popup > * > .day-cell:focused,

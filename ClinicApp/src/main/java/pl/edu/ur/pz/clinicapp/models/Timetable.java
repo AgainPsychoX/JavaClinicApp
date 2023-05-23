@@ -7,9 +7,7 @@ import javax.persistence.*;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
@@ -30,7 +28,6 @@ public class Timetable implements Comparable<Timetable> {
     }
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-//    @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
     private User user;
     public User getUser() {
         return user;
@@ -53,8 +50,9 @@ public class Timetable implements Comparable<Timetable> {
     }
 
     @ElementCollection
-    private Set<Entry> entries;
-    public Set<Entry> getEntries() {
+    @OrderBy("weekday, startMinute")
+    private List<Entry> entries;
+    public List<Entry> getEntries() {
         return entries;
     }
 
@@ -105,10 +103,10 @@ public class Timetable implements Comparable<Timetable> {
     }
 
     public Timetable(ZonedDateTime effectiveDate) {
-        this(effectiveDate, new HashSet<>(7));
+        this(effectiveDate, new ArrayList<>());
     }
 
-    public Timetable(ZonedDateTime effectiveDate, Set<Entry> entries) {
+    public Timetable(ZonedDateTime effectiveDate, List<Entry> entries) {
         this.effectiveDate = effectiveDate;
         this.entries = entries;
     }
@@ -148,7 +146,7 @@ public class Timetable implements Comparable<Timetable> {
     }
 
     @Embeddable
-    public static class Entry implements WeekPane.Entry {
+    public static class Entry implements WeekPane.Entry, Comparable<Entry> {
         /**
          * Weekday in SQL is integer as Sunday (0) to Saturday (6).
          *
@@ -243,6 +241,15 @@ public class Timetable implements Comparable<Timetable> {
         @Override
         public int hashCode() {
             return Objects.hash(weekday, startMinute, endMinute);
+        }
+
+        @Override
+        public int compareTo(@NotNull Timetable.Entry other) {
+            if (this.weekday < other.weekday) return -1;
+            if (this.weekday > other.weekday) return 1;
+            if (this.startMinute < other.startMinute) return -1;
+            if (this.startMinute > other.startMinute) return -1;
+            return 0; // kinda illegal state
         }
     }
 }

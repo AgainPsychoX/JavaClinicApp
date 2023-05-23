@@ -3,25 +3,27 @@ package pl.edu.ur.pz.clinicapp.controls;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableSet;
-import javafx.collections.WeakSetChangeListener;
+import javafx.collections.ObservableList;
+import javafx.collections.WeakListChangeListener;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
+import javafx.scene.Node;
+import javafx.scene.control.Cell;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Skin;
+import javafx.scene.control.skin.CellSkinBase;
 import javafx.scene.layout.*;
-import javafx.scene.text.Text;
-import javafx.scene.text.TextFlow;
 import javafx.util.Callback;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.time.DayOfWeek;
+import java.util.List;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 public class WeekPane<T extends WeekPane.Entry> extends VBox {
     /**
@@ -91,11 +93,11 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
      * type that must match the type of the WeekPane itself.
      * @return the entries property
      */
-    public final ObjectProperty<ObservableSet<T>> entriesProperty() {
+    public final ObjectProperty<ObservableList<T>> entriesProperty() {
         return entries;
     }
-    private final ObjectProperty<ObservableSet<T>> entries = new SimpleObjectProperty<>(this, "entries") {
-        private WeakReference<ObservableSet<T>> weakEntriesRef = new WeakReference<>(null);
+    private final ObjectProperty<ObservableList<T>> entries = new SimpleObjectProperty<>(this, "entries") {
+        private WeakReference<ObservableList<T>> weakEntriesRef = new WeakReference<>(null);
 
         @Override
         protected void invalidated() {
@@ -113,22 +115,22 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             WeekPane.this.updateWeekendColumns();
         }
     };
-    public final void setEntries(ObservableSet<T> value) {
+    public final void setEntries(ObservableList<T> value) {
         entriesProperty().set(value);
     }
-    public final void setEntries(Set<T> value) {
-        entriesProperty().set(FXCollections.observableSet(value));
+    public final void setEntries(List<T> value) {
+        entriesProperty().set(FXCollections.observableList(value));
     }
     /**
-     * Provides access observable set of entries. Where possible use {@link WeekPane#setEntries}.
-     * @return observable set of entries
+     * Provides access observable list of entries. Where possible use {@link WeekPane#setEntries}.
+     * @return observable list of entries
      */
-    public final ObservableSet<T> getEntries() {
+    public final ObservableList<T> getEntries() {
         return entries.get();
     }
 
-    private final WeakSetChangeListener<? super T> entriesSetChangeListener =
-            new WeakSetChangeListener<>(c -> {
+    private final WeakListChangeListener<? super T> entriesSetChangeListener =
+            new WeakListChangeListener<>(c -> {
                 WeekPane.this.layoutEntries();
                 WeekPane.this.updateWeekendColumns();
             });
@@ -136,32 +138,50 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
     /**
      * Setting cell factory allows to customize entry cell creation.
      *
-     * Why {@link Region} is used? To allow both controls and more complex panes.
-     * while also allowing manipulation of size and margin to position the cell.
-     *
      * @return the cell factory property
      */
-    public final ObjectProperty<Callback<T, Region>> entriesDisplayFactoryProperty() {
-        return entriesDisplayFactory;
+    public final ObjectProperty<Callback<WeekPane<T>, EntryCell<T>>> entryCellFactoryProperty() {
+        return entryCellFactory;
     }
-    private final ObjectProperty<Callback<T, Region>> entriesDisplayFactory =
-            new SimpleObjectProperty<>(this, "displayFactory", new BaseEntryDisplayFactory<T>());
-    public final void setEntriesDisplayFactory(Callback<T, Region> value) {
-        entriesDisplayFactoryProperty().set(value);
+    private final ObjectProperty<Callback<WeekPane<T>, EntryCell<T>>> entryCellFactory =
+            new SimpleObjectProperty<>(this, "displayFactory", new DefaultEntryCellFactory<T>());
+    public final void setEntryCellFactory(Callback<WeekPane<T>, EntryCell<T>> value) {
+        entryCellFactoryProperty().set(value);
     }
-    public final Callback<T, Region> getEntriesDisplayFactory() {
-        return entriesDisplayFactory.get();
+    public final Callback<WeekPane<T>, EntryCell<T>> getEntryCellFactory() {
+        return entryCellFactory.get();
     }
 
-    static public class BaseEntryDisplayFactory<T extends WeekPane.Entry> implements Callback<T, Region> {
+    public static class EntryCell<T> extends Cell<T> {
         @Override
-        public Region call(T entry) {
-            final var box = new VBox();
-            box.setPadding(new Insets(4));
-            box.getChildren().setAll(
-                    new TextFlow(new Text(entry.toString()))
-            );
-            return box;
+        protected Skin<?> createDefaultSkin() {
+            return new CellSkinBase<>(this);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public void updateItem(T item, boolean empty) {
+            super.updateItem(item, empty);
+        }
+    }
+
+    static public class DefaultEntryCellFactory<T extends WeekPane.Entry>
+            implements Callback<WeekPane<T>, EntryCell<T>> {
+        @Override
+        public EntryCell<T> call(WeekPane<T> entry) {
+            return new EntryCell<>() {
+                @Override
+                public void updateItem(T item, boolean empty) {
+                    super.updateItem(item, empty);
+
+                    if (empty || item == null) {
+                        setText("");
+                    }
+                    else {
+                        setText(entry.toString());
+                    }
+                }
+            };
         }
     }
 
@@ -170,10 +190,9 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
     /**
      * Creates default WeekPane with default rows from 7 AM to 7 PM every 15 minutes.
      */
-    @SuppressWarnings("unchecked") // TODO: WHY THE FUCK? ListView has no such issue...
     public WeekPane() {
         this(
-                FXCollections.<T>observableSet(),
+                FXCollections.observableArrayList(),
                 new RowGenerationParams(7 * 60, 19 * 60, 15, 20)
         );
     }
@@ -182,7 +201,7 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
      * Creates WeekPane provided configuration and parameters.
      * @param rowGenerationParams Initial row generation params, required early to avoid recreating rows multiple times.
      */
-    public WeekPane(ObservableSet<T> entries, RowGenerationParams rowGenerationParams) {
+    public WeekPane(ObservableList<T> entries, RowGenerationParams rowGenerationParams) {
         ResourceBundle resourceBundle = ResourceBundle.getBundle(WeekPane.class.toString().substring(6));
         FXMLLoader fxmlLoader = new FXMLLoader(WeekPane.class.getResource("WeekPane.fxml"), resourceBundle);
         fxmlLoader.setRoot(this);
@@ -265,19 +284,20 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
     protected void layoutEntries() {
         // TODO: instead removing & recreating all the entries cells remove/recreate only changed ones
 
-        gridPane.getChildren().removeIf(n -> n.getStyleClass().contains("entry"));
+        gridPane.getChildren().removeIf(n -> n instanceof Cell);
         if (getEntries() == null) return;
 
-        final var displayFactory = getEntriesDisplayFactory();
+        final var cellFactory = getEntryCellFactory();
         for (final var entry : getEntries()) {
-            final var display = displayFactory.call(entry);
-            display.getStyleClass().add("entry");
-            display.setMinSize(USE_PREF_SIZE, USE_PREF_SIZE);
-            display.setPrefSize(DEFAULT_DAY_COLUMN_WIDTH, calculateEntryHeight(entry));
-            display.setMaxSize(Double.MAX_VALUE, USE_PREF_SIZE);
-            gridPane.add(display, entry.getDayOfWeek().ordinal() + 1, calculateRowIndex(entry.getStartMinute()));
-            GridPane.setValignment(display, VPos.TOP);
-            GridPane.setMargin(display, new Insets(calculateRowOffset(entry.getStartMinute()), 0, 0, 0));
+            final var cell = cellFactory.call(this);
+            cell.getStyleClass().add("entry");
+            cell.setMinSize(USE_PREF_SIZE, USE_PREF_SIZE);
+            cell.setPrefSize(DEFAULT_DAY_COLUMN_WIDTH, calculateEntryHeight(entry));
+            cell.setMaxSize(Double.MAX_VALUE, USE_PREF_SIZE);
+            gridPane.add(cell, entry.getDayOfWeek().ordinal() + 1, calculateRowIndex(entry.getStartMinute()));
+            GridPane.setValignment(cell, VPos.TOP);
+            GridPane.setMargin(cell, new Insets(calculateRowOffset(entry.getStartMinute()), 0, 0, 0));
+            cell.updateItem(entry, false); // late, to allow overriding and querying size
         }
     }
 
@@ -294,6 +314,42 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
     protected double calculateEntryHeight(Entry entry) {
         final var rgp = getRowGenerationParams();
         return (double) entry.getDurationMinutes() / rgp.stepInMinutes * rgp.rowHeight;
+    }
+
+    /**
+     * @return Modifiable list of children of whole week pane (not really useful unless extending the class)
+     */
+    @Override
+    public ObservableList<Node> getChildren() {
+        return super.getChildren();
+    }
+
+    /**
+     * @return Unmodifiable list of entries cells on the grid, ordering not guaranteed.
+     */
+    @SuppressWarnings("unchecked")
+    public List<EntryCell<T>> getEntriesCells() {
+        return gridPane.getChildren().stream()
+                .filter(node -> node instanceof WeekPane.EntryCell<?>)
+                .map(node -> (EntryCell<T>) node)
+                .toList();
+    }
+
+    /**
+     * Tries to find the entry cell for given entry.
+     * @param item entry to look cell for.
+     * @return entry cell representing the entry, or null if not found
+     */
+    @SuppressWarnings("unchecked")
+    public EntryCell<T> findEntryCell(T item) {
+        for (final var node : gridPane.getChildren()) {
+            if (node instanceof WeekPane.EntryCell<?> cell) {
+                if (cell.getItem().equals(item)) {
+                    return (EntryCell<T>) cell;
+                }
+            }
+        }
+        return null;
     }
 
     public void scrollToRow(int index) {
