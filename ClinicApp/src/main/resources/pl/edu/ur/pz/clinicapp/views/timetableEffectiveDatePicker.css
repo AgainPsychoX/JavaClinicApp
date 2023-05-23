@@ -21,15 +21,15 @@
 
 /* Groups */
 
-.date-picker-popup .day-cell.fancy1 { -my-bg: hsb(0,   7%, 100%); -my-fg: hsb(0,   67%, 88%); }
-.date-picker-popup .day-cell.fancy2 { -my-bg: hsb(36,  7%, 100%); -my-fg: hsb(36,  67%, 88%); }
-.date-picker-popup .day-cell.fancy3 { -my-bg: hsb(72,  7%, 100%); -my-fg: hsb(72,  67%, 88%); }
-.date-picker-popup .day-cell.fancy4 { -my-bg: hsb(108, 7%, 100%); -my-fg: hsb(108, 67%, 88%); }
-.date-picker-popup .day-cell.fancy5 { -my-bg: hsb(144, 7%, 100%); -my-fg: hsb(144, 67%, 88%); }
-.date-picker-popup .day-cell.fancy6 { -my-bg: hsb(180, 7%, 100%); -my-fg: hsb(180, 67%, 88%); }
-.date-picker-popup .day-cell.fancy7 { -my-bg: hsb(216, 7%, 100%); -my-fg: hsb(216, 67%, 88%); }
-.date-picker-popup .day-cell.fancy8 { -my-bg: hsb(252, 7%, 100%); -my-fg: hsb(252, 67%, 88%); }
-.date-picker-popup .day-cell.fancy9 { -my-bg: hsb(288, 7%, 100%); -my-fg: hsb(288, 67%, 88%); }
+.date-picker-popup .day-cell.fancy1 { -my-bg: hsb(0,   10%, 100%); -my-fg: hsb(0,   67%, 88%); }
+.date-picker-popup .day-cell.fancy2 { -my-bg: hsb(36,  10%, 100%); -my-fg: hsb(36,  67%, 88%); }
+.date-picker-popup .day-cell.fancy3 { -my-bg: hsb(72,  10%, 100%); -my-fg: hsb(72,  67%, 88%); }
+.date-picker-popup .day-cell.fancy4 { -my-bg: hsb(108, 10%, 100%); -my-fg: hsb(108, 67%, 88%); }
+.date-picker-popup .day-cell.fancy5 { -my-bg: hsb(144, 10%, 100%); -my-fg: hsb(144, 67%, 88%); }
+.date-picker-popup .day-cell.fancy6 { -my-bg: hsb(180, 10%, 100%); -my-fg: hsb(180, 67%, 88%); }
+.date-picker-popup .day-cell.fancy7 { -my-bg: hsb(216, 10%, 100%); -my-fg: hsb(216, 67%, 88%); }
+.date-picker-popup .day-cell.fancy8 { -my-bg: hsb(252, 10%, 100%); -my-fg: hsb(252, 67%, 88%); }
+.date-picker-popup .day-cell.fancy9 { -my-bg: hsb(288, 10%, 100%); -my-fg: hsb(288, 67%, 88%); }
 
 
 

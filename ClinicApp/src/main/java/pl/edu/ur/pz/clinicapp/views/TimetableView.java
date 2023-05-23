@@ -34,21 +34,14 @@ import java.util.logging.Logger;
 import static pl.edu.ur.pz.clinicapp.utils.JPAUtils.transaction;
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
 
-/* TODO: WIP
- *  modes:
- *      view = show new/edit, hide cancel/save and entries add/edit, lock effective date, lock end date
- *      edit = hide new/edit, show cancel/save and entries add/edit, unlock dates
- *      new = similar to edit
- *  notes:
- *      + Hide date pickers icon button: https://stackoverflow.com/questions/63454031/styling-datepicker-arrowbutton-in-javafx
- *      + Filter date pickers (or make them auto-correct on wrong date): https://stackoverflow.com/questions/35907325/how-to-set-minimum-and-maximum-date-in-datepicker-calander-in-javafx8
+/* TODO:
  *  steps:
  *      0. map FXML elements as fields -- DONE
  *      1. base modes switching -- DONE
  *      2. navigate timetables --- DONE
- *      3. dialog to add/edit/remove entries (reuse pattern from old project) --- DONE? (test editing)
+ *      3. dialog to add/edit/remove entries (reuse pattern from old project) --- DONE
  *      4. warning for unsaved changes (add fresh/dirty tracking)
- *      5. double click (or enter on focused) entry to edit <<<<<<<<<<<<<<<<<<<<<<
+ *      5. double click (or enter on focused) entry to edit --- DONE
  *      6. properly make use of populate interface -- DONE?
  *      7. finishing touches (like jumping to schedule)
  *  long term steps:
@@ -104,7 +97,6 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
 
         weekPaneSelectionModel = new WeekPaneSelectionModel<>(weekPane);
 
-        // TODO: set custom entry factory to week pane that informs us about selected/edited entries
         weekPane.setEntryCellFactory(weekPane -> new WeekPane.EntryCell<>() {
             {
                 setOnMouseClicked(event -> {
@@ -148,8 +140,6 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
                     ));
                 }
             }
-
-
         });
 
         effectiveDatePicker.setDayCellFactory(datePicker -> new DateCell() {
@@ -169,10 +159,24 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
             }
         });
 
-        // TODO: custom date pickers factories:
-        //  start (effective) -> ? (DONE?)
-        //  end -> disallow changing before start date
-        //  + maybe show timetables by colors? (DONE)
+        endDatePicker.setDayCellFactory(datePicker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (!empty) {
+                    final var zonedDateTime = item.atStartOfDay(ZoneId.systemDefault());
+                    final var index = findEffectiveTimetableIndex(zonedDateTime);
+
+                    getStyleClass().removeIf(s -> s.startsWith("fancy"));
+                    if (index != -1) {
+                        getStyleClass().add("fancy" + (index % 9 + 1));
+                    }
+
+                    setDisable(zonedDateTime.isBefore(getTimetable().getEffectiveDate()));
+                }
+            }
+        });
     }
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

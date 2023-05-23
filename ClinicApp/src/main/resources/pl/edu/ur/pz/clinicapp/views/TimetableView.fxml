@@ -31,7 +31,7 @@
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Efektywny od" />
                   <DatePicker fx:id="effectiveDatePicker" onAction="#effectiveDatePickerAction" prefWidth="108.0" promptText="zawsze" styleClass="prompt-text-as-regular" stylesheets="@timetableEffectiveDatePicker.css" />
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" text="do" />
-                  <DatePicker fx:id="endDatePicker" onAction="#endDatePickerAction" prefWidth="108.0" promptText="zawsze" styleClass="prompt-text-as-regular" />
+                  <DatePicker fx:id="endDatePicker" onAction="#endDatePickerAction" prefWidth="108.0" promptText="zawsze" styleClass="prompt-text-as-regular" stylesheets="@timetableEffectiveDatePicker.css" />
                   <Button fx:id="resetEndDateButton" mnemonicParsing="false" onAction="#resetEndDateAction" text="∞" />
                </children>
             </HBox>
