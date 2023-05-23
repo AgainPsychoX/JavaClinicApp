@@ -189,10 +189,15 @@ public class MainWindowController implements Initializable {
                 this.setOnAction((e) -> {
                     // Log-out is necessary here, even tho there already is `setOnCloseRequest` for the stage,
                     // as it just catches window event.
+                    //TODO: write the checks as function
                     if (ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
+                    ReferralDetailsView.setEditState(false);
                     if (PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) return;
+                    PrescriptionDetailsView.setEditState(false);
                     if (RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) return;
+                    RegisterDialog.setEditState(false);
                     if(MyAccount.getEditState() && !MyAccount.exitConfirm()) return;
+                    MyAccount.setEditState(false);
                     ClinicApplication.logOut();
                     getStage().close();
                 });
