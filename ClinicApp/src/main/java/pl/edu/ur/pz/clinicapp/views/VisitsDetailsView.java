@@ -260,7 +260,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             if(ClinicApplication.getUser().getRole().name().equals("DOCTOR")) {
                 doctors.add(ClinicApplication.getUser());
                 doctorCombo.getItems().addAll(doctors);
-                doctorCombo.setValue((Doctor) ClinicApplication.getUser());
+                doctorCombo.setValue(ClinicApplication.getUser().asDoctor());
             } else {
                 doctors = Patient.getAll(Doctor.class);
                 doctorCombo.getItems().addAll(doctors);
@@ -273,8 +273,8 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
 
             if(ClinicApplication.getUser().getRole().name().equals("PATIENT")) {
                 patients.add(ClinicApplication.getUser());
-                patientCombo.getItems().add((Patient) ClinicApplication.getUser());
-                patientCombo.setValue((Patient) ClinicApplication.getUser());
+                patientCombo.getItems().add(ClinicApplication.getUser().asPatient());
+                patientCombo.setValue(ClinicApplication.getUser().asPatient());
             } else
                 patients = Patient.getAll(Patient.class);
             patients.sort(Patient.patientNameComparator);

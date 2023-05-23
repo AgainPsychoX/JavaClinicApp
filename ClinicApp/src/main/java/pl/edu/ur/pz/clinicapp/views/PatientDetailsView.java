@@ -5,17 +5,19 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
-import pl.edu.ur.pz.clinicapp.models.Notification;
 import pl.edu.ur.pz.clinicapp.models.Patient;
-import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+
 import java.util.Optional;
 
 
@@ -145,7 +147,7 @@ public class PatientDetailsView extends ChildControllerBase<MainWindowController
             // in case the referral was edited while app is running
             ClinicApplication.getEntityManager().refresh(pat);
 
-            if (role != User.Role.ADMIN && pat != ClinicApplication.getUser()) {
+            if (role != User.Role.ADMIN && pat.getId() != ClinicApplication.getUser().getId()) {
                 buttonBox.getChildren().remove(saveButton);
                 buttonBox.getChildren().remove(deleteButton);
             } else {

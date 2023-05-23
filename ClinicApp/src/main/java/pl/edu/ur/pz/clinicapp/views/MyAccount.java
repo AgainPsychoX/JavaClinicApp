@@ -15,7 +15,6 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
-import pl.edu.ur.pz.clinicapp.models.Notification;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
@@ -40,7 +39,7 @@ public class MyAccount extends ChildControllerBase<MainWindowController> impleme
 
     private static final BooleanProperty editState = new SimpleBooleanProperty(false);
 
-    Patient currPat = Patient.getCurrent();
+    Patient currPat = ClinicApplication.getUser().asPatient();
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
 
     /**

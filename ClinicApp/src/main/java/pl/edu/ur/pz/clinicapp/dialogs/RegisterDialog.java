@@ -1,31 +1,22 @@
 package pl.edu.ur.pz.clinicapp.dialogs;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
-import javafx.stage.Stage;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
-import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.jpa.TypedParameterValue;
 import org.hibernate.query.Query;
 import org.hibernate.type.StandardBasicTypes;
-import org.hibernate.type.Type;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -145,6 +136,7 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
                 newUser.setSurname(surnameField.getText().trim());
 
                 session.persist(newUser);
+                // FIXME: instead of using query to create patient data, let's use hibernate
 
                 createPatientQuery.setParameter("building", (buildingField.getText() == null
                         || buildingField.getText().isBlank())

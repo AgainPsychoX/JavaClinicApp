@@ -39,11 +39,11 @@ public final class User {
 
         public String toString() {
             // TODO: when we have localization it will look much nicer
-            if (this == PATIENT)   return "PATIENT"; //FIXME
-            if (this == RECEPTION) return "Recepcja";
-            if (this == NURSE)     return "Pielęgniarka";
-            if (this == DOCTOR)    return "Lekarz";
-            if (this == ADMIN)     return "Administrator";
+            if (this == PATIENT)   return "PATIENT"; // FIXME: ...!
+            if (this == RECEPTION) return "RECEPTION";
+            if (this == NURSE)     return "NURSE";
+            if (this == DOCTOR)    return "DOCTOR";
+            if (this == ADMIN)     return "ADMIN";
             return this.name();
         }
     }
@@ -52,6 +52,9 @@ public final class User {
     @Column(nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    public Integer getId() {
+        return id;
+    }
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, columnDefinition = "user_role") // custom enum type
@@ -102,14 +105,14 @@ public final class User {
     }
 
     @OneToMany(mappedBy = "sourceUser", fetch = FetchType.LAZY)
-    @OrderBy("sentDate DESC ")
+    @OrderBy("sentDate DESC")
     private List<Notification> allSentNotifications;
     public List<Notification> getAllSentNotifications() {
         return allSentNotifications;
     }
 
     @OneToMany(mappedBy = "destinationUser", fetch = FetchType.LAZY)
-    @OrderBy("sentDate DESC ")
+    @OrderBy("sentDate DESC")
     private List<Notification> allReceivedNotifications;
     public List<Notification> getAllReceivedNotifications() {
         return allReceivedNotifications;

@@ -2,7 +2,7 @@ package pl.edu.ur.pz.clinicapp.models;
 
 import org.hibernate.Session;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import javafx.collections.ObservableList;
+
 import javax.persistence.*;
 import java.util.Comparator;
 import java.util.List;
@@ -27,6 +27,9 @@ public class Patient {
 
     @Id
     private Integer id;
+    public int getId() {
+        return id;
+    }
 
     @OneToOne(optional = false, orphanRemoval = true, cascade = CascadeType.REFRESH, fetch = FetchType.EAGER)
     @MapsId // same ID as user
@@ -176,11 +179,6 @@ public class Patient {
     }
 
 
-
-    static public Patient getCurrent() {
-        // FIXME: use global user and then asPatient
-        return ClinicApplication.getEntityManager().createNamedQuery("patients.current", Patient.class).getSingleResult();
-    }
 
     public static List getAll(Class c) {
         // FIXME: prefer named queries to allow prefetching and avoid N+1 problems

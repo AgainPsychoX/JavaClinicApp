@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
-import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.getStageFromEvent;
-
 public class MainWindowController implements Initializable {
     public enum Views {
         WELCOME,
@@ -214,7 +212,6 @@ public class MainWindowController implements Initializable {
      * @param context Additional context parameter(s).
      */
     public void goToViewRaw(Views which, Object... context) {
-        System.out.println(which);
         final var newView = getView(which);
         final var oldView = getPreviousView();
 
