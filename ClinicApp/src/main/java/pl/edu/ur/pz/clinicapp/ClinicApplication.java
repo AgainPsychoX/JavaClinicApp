@@ -15,7 +15,6 @@ import pl.edu.ur.pz.clinicapp.dialogs.LoginDialog;
 import pl.edu.ur.pz.clinicapp.dialogs.RegisterDialog;
 import pl.edu.ur.pz.clinicapp.localization.JavaFxBuiltInsLocalizationFix;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.views.MyAccount;
 import pl.edu.ur.pz.clinicapp.views.PrescriptionDetailsView;
 import pl.edu.ur.pz.clinicapp.views.ReferralDetailsView;
 
@@ -249,8 +248,7 @@ public class ClinicApplication extends Application {
         stage.setOnCloseRequest(we -> {
             if((ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm())
             || (PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm())
-            || (RegisterDialog.getEditState() && !RegisterDialog.exitConfirm())
-                    || (MyAccount.getEditState() && !MyAccount.exitConfirm())){
+            || (RegisterDialog.getEditState() && !RegisterDialog.exitConfirm())){
                 we.consume();
             }else {
                 logOut();

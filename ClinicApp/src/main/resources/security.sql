@@ -449,8 +449,8 @@ CREATE POLICY select_as_staff ON public.users FOR SELECT TO gp_receptionists, gp
 
 GRANT UPDATE ON TABLE public.users TO gp_patients, gp_receptionists, gp_nurses, gp_doctors;
 
-DROP POLICY IF EXISTS update_own_as_patient ON public.users;
-CREATE POLICY update_own_as_patient ON public.users FOR UPDATE TO gp_patients
+DROP POLICY IF EXISTS update_own ON public.users;
+CREATE POLICY update_own ON public.users FOR UPDATE TO PUBLIC
     USING (internal_name = CURRENT_USER);
 
 DROP POLICY IF EXISTS select_asdf ON public.users;
