@@ -4,13 +4,11 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
-import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -27,7 +25,7 @@ import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.awt.*;
-import java.io.*;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
@@ -221,7 +219,7 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
             feedbackArea.setText(null);
             codeField.setText(null);
             tagsField.setText(null);
-            targetPatient = (Patient) context[1];
+            targetPatient = ((User) context[1]).asPatient();
             editState.setValue(true);
 
             patientField.setText("Pacjent: " + targetPatient.getDisplayName());

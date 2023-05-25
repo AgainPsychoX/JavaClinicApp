@@ -170,7 +170,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
             notesTextField.setText(null);
             codeTextField.setText(null);
             tagsTextField.setText(null);
-            targetPatient = (Patient) context[1];
+            targetPatient = ((User) context[1]).asPatient();
             editState.setValue(true);
 
             patientTextField.setText(targetPatient.getDisplayName());
@@ -200,7 +200,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                         Alert alert = new Alert(Alert.AlertType.ERROR);
                         alert.setTitle("Błąd zapisu");
                         alert.setHeaderText("Nie wypełniono wymaganych pól");
-                        alert.setContentText("Wszytkie pola są wymagane.");
+                        alert.setContentText("Wszystkie pola są wymagane.");
                         alert.showAndWait();
                         editState.setValue(!editState.getValue());
                     } else {
