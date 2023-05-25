@@ -129,6 +129,8 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
      */
     @Override
     public void populate(Object... context) {
+        final var entityManger = ClinicApplication.getEntityManager();
+
         datePicker.valueProperty().removeListener(listener);
         editState.addListener((observableValue, before, after) -> {
             if (after) {
@@ -255,29 +257,30 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             notesTextField.setEditable(true);
             if (!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
 
-            List doctors = new ArrayList<>();
+            List<Doctor> doctors = new ArrayList<>();
 
-            if(ClinicApplication.getUser().getRole().name().equals("DOCTOR")) {
-                doctors.add(ClinicApplication.getUser());
+            if (ClinicApplication.getUser().getRole() == User.Role.DOCTOR) {
+                doctors.add(ClinicApplication.getUser().asDoctor());
                 doctorCombo.getItems().addAll(doctors);
                 doctorCombo.setValue(ClinicApplication.getUser().asDoctor());
             } else {
-                doctors = Patient.getAll(Doctor.class);
+                doctors = entityManger.createNamedQuery("patients", Doctor.class).getResultList();
                 doctorCombo.getItems().addAll(doctors);
             }
-            doctors.sort(Patient.patientNameComparator);
+            doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
             notesTextField.setText(null);
             editState.setValue(true);
 
-            List patients = new ArrayList<>();
+            List<Patient> patients = new ArrayList<>();
 
-            if(ClinicApplication.getUser().getRole().name().equals("PATIENT")) {
-                patients.add(ClinicApplication.getUser());
+            if (ClinicApplication.getUser().getRole() == User.Role.PATIENT) {
+                patients.add(ClinicApplication.getUser().asPatient());
                 patientCombo.getItems().add(ClinicApplication.getUser().asPatient());
                 patientCombo.setValue(ClinicApplication.getUser().asPatient());
-            } else
-                patients = Patient.getAll(Patient.class);
-            patients.sort(Patient.patientNameComparator);
+            } else {
+                patients = entityManger.createNamedQuery("patients", Patient.class).getResultList();
+            }
+            doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
             patientCombo.getItems().addAll(patients);
 
             datePicker.valueProperty().addListener(listener);
