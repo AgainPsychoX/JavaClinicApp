@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
@@ -51,21 +50,21 @@ public class MainWindowController implements Initializable {
         return ClinicApplication.class.getResource(resourcePath);
     }
 
-    private static final EnumMap<Views, URL> viewToResource = new EnumMap<>(Map.of(
-        Views.NOTIFICATIONS,        getViewResource("views/NotificationsView.fxml"),
-        Views.ACCOUNTS,             getViewResource("views/AccountsView.fxml"),
-        Views.ACCOUNT_DETAILS,      getViewResource("views/AccountDetailsView.fxml"),
-        Views.VISITS,               getViewResource("views/VisitsView.fxml"),
-        Views.VISIT_DETAILS,        getViewResource("views/VisitsDetailsView.fxml"),
-        Views.PATIENTS,             getViewResource("views/PatientsView.fxml"),
-        Views.PATIENT_DETAILS,      getViewResource("views/PatientDetailsView.fxml"),
-        Views.REFERRALS,            getViewResource("views/ReferralsView.fxml"),
-        Views.REFERRAL_DETAILS,     getViewResource("views/ReferralDetailsView.fxml"),
-        Views.PRESCRIPTIONS,        getViewResource("views/PrescriptionsView.fxml"),
-        Views.PRESCRIPTION_DETAILS, getViewResource("views/PrescriptionDetailsView.fxml"),
-        Views.TIMETABLE,            getViewResource("views/TimetableView.fxml"),
-        Views.REGISTER,             getViewResource("dialogs/RegisterDialog.fxml")
-    ));
+    private static final EnumMap<Views, URL> viewToResource = new EnumMap<>(Views.class) {{
+            put(Views.NOTIFICATIONS,        getViewResource("views/NotificationsView.fxml"));
+            put(Views.ACCOUNTS,             getViewResource("views/AccountsView.fxml"));
+            put(Views.ACCOUNT_DETAILS,      getViewResource("views/AccountDetailsView.fxml"));
+            put(Views.VISITS,               getViewResource("views/VisitsView.fxml"));
+            put(Views.VISIT_DETAILS,        getViewResource("views/VisitsDetailsView.fxml"));
+            put(Views.PATIENTS,             getViewResource("views/PatientsView.fxml"));
+            put(Views.PATIENT_DETAILS,      getViewResource("views/PatientDetailsView.fxml"));
+            put(Views.REFERRALS,            getViewResource("views/ReferralsView.fxml"));
+            put(Views.REFERRAL_DETAILS,     getViewResource("views/ReferralDetailsView.fxml"));
+            put(Views.PRESCRIPTIONS,        getViewResource("views/PrescriptionsView.fxml"));
+            put(Views.PRESCRIPTION_DETAILS, getViewResource("views/PrescriptionDetailsView.fxml"));
+            put(Views.TIMETABLE,            getViewResource("views/TimetableView.fxml"));
+            put(Views.REGISTER,             getViewResource("dialogs/RegisterDialog.fxml"));
+    }};
 
     static class ViewDefinition {
         public Node node;

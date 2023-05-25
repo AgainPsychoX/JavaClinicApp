@@ -3,7 +3,6 @@ package pl.edu.ur.pz.clinicapp.dialogs;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -15,7 +14,6 @@ import javafx.stage.Stage;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
 import javax.security.auth.login.LoginException;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -47,10 +45,8 @@ public class LoginDialog extends Stage {
     }
 
     public LoginDialog(String rememberedUser, String rememberedPassword) {
-        pane = new BorderPane();
         var fxml = ClinicApplication.class.getResource("dialogs/LoginDialog.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
-//        fxmlLoader.setRoot(pane);
         fxmlLoader.setController(this);
 
         try {

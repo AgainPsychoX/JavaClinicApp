@@ -56,12 +56,12 @@ public class VisitsView extends ChildControllerBase<MainWindowController> {
                             return appointment.getDate().toString().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
                                     appointment.getNotes().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
                                     appointment.getDoctor().getDisplayName().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
-                                    appointment.getDoctor().getSpeciality().getName().toLowerCase().contains(searchTextField.getText().toLowerCase());
+                                    appointment.getDoctor().getSpeciality().toLowerCase().contains(searchTextField.getText().toLowerCase());
                         } else {
                             return appointment.getDate().toString().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
                                     appointment.getNotes().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
                                     appointment.getDoctor().getDisplayName().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
-                                    appointment.getDoctor().getSpeciality().getName().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
+                                    appointment.getDoctor().getSpeciality().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
                                     appointment.getPatient().getDisplayName().toLowerCase().contains(searchTextField.getText().toLowerCase());
                         }
                     });
@@ -134,7 +134,7 @@ public class VisitsView extends ChildControllerBase<MainWindowController> {
                     }
                 }
                 doctorCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getDoctor().getDisplayName()));
-                specCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getDoctor().getSpeciality().getName()));
+                specCol.setCellValueFactory(cellData -> new ReadOnlyStringWrapper(cellData.getValue().getDoctor().getSpeciality()));
 
             }
             firstRun = false;
@@ -164,8 +164,8 @@ public class VisitsView extends ChildControllerBase<MainWindowController> {
                     FilteredList<Appointment> appointmentFilteredList = new FilteredList<>(appointments);
                     appointmentFilteredList.setPredicate(appointment -> {
                         return filter.getValue().equals("Nadchodzące wizyty") ?
-                                appointment.getDate().compareTo(Timestamp.valueOf(LocalDateTime.now())) > 0
-                                : appointment.getDate().compareTo(Timestamp.valueOf(LocalDateTime.now())) < 0;
+                                appointment.getDate().compareTo(Timestamp.valueOf(LocalDateTime.now()).toInstant()) > 0
+                                : appointment.getDate().compareTo(Timestamp.valueOf(LocalDateTime.now()).toInstant()) < 0;
                     });
                     table.setItems(appointmentFilteredList);
                 }

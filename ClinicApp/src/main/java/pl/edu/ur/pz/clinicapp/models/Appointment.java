@@ -25,7 +25,7 @@ import java.time.Instant;
                 query = "FROM Appointment a WHERE a.doctor = :doctor AND a.date BETWEEN :from AND :to"),
         /* Any */
         @NamedQuery(name = "appointments_as_user_between_dates",
-                query = "FROM Appointment a WHERE (a.doctor = :user OR a.patient = :user) AND a.date BETWEEN :from AND :to")
+                query = "FROM Appointment a WHERE (a.doctor = :user OR a.patient = :user) AND a.date BETWEEN :from AND :to"),
         /* Other */
         // TODO: check if required
         @NamedQuery(name = "appointments",  query = "FROM Appointment"),

@@ -6,9 +6,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.event.ActionEvent;
 import javafx.scene.control.*;
 import javafx.util.Duration;
 import org.hibernate.Session;
@@ -21,7 +21,8 @@ import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.Date;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -30,7 +31,7 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
 
     @FXML protected TextField searchTextField;
     @FXML protected TableView<Notification> table;
-    @FXML protected TableColumn<Notification, Date> dateCol;
+    @FXML protected TableColumn<Notification, ZonedDateTime> dateCol;
     @FXML protected TableColumn<Notification, String> fromCol;
     @FXML protected TableColumn<Notification, String> contentCol;
     @FXML protected TableColumn<Notification, Boolean> readCol;
@@ -47,7 +48,7 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSentDate()));
+        dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSentDate().atZone(ZoneId.systemDefault())));
         fromCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSourceUser().getDisplayName()));
         contentCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getContent()));
         readCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().wasRead()));
@@ -103,7 +104,7 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
             if(text.isBlank()) return true;
             if(notification.getSourceUser().getName().toLowerCase().contains(text)) return true;
             if(notification.getSourceUser().getSurname().toLowerCase().contains(text)) return true;
-            if(notification.getSentDate().toLocalDateTime().toString().toLowerCase().contains(text)) return true;
+            if(notification.getSentDate().toString().toLowerCase().contains(text)) return true;
             if(notification.getContent().toLowerCase().contains(text)) return true;
             return false;
         });
@@ -126,7 +127,7 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
             notification.setReadDate(null);
             session.update(notification);
         }else {
-            notification.setReadDate(Timestamp.valueOf(LocalDateTime.now()));
+            notification.setReadDate(Timestamp.valueOf(LocalDateTime.now()).toInstant());
             session.update(notification);
         }
 
