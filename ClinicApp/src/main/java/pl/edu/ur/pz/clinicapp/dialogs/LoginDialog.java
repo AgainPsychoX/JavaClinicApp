@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrBlank;
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.runDelayed;
 
 /**
@@ -67,16 +68,14 @@ public class LoginDialog extends Stage {
         errorText.setVisible(false);
         errorText.setManaged(false);
 
-        loadingView = new VBox(new Text("Logowanie...")) {{
-            setSpacing(8);
-            // TODO: add generic loading spinner control
-            // TODO: make it separate control as well
-        }};
+        loadingView = new VBox(new Text("Logowanie..."));
+        loadingView.setSpacing(8);
+        // TODO: add generic loading spinner control
 
-        if (rememberedUser != null && !rememberedUser.isBlank()) {
+        if (!isStringNullOrBlank(rememberedUser)) {
             identityTextField.setText(rememberedUser);
 
-            if (rememberedPassword != null && !rememberedPassword.isBlank()) {
+            if (!isStringNullOrBlank(rememberedUser)) {
                 runDelayed(200, () -> {
                     logInUsingRememberedData(rememberedUser, rememberedPassword);
                 });

@@ -12,7 +12,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import org.hibernate.Session;
@@ -23,39 +22,25 @@ import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.List;
 
 public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
-    @FXML
-    protected Button addButton;
-    @FXML
-    protected Button ikpButton;
-    @FXML
-    protected Button detailsButton;
-    @FXML
-    protected TextField searchTextField;
-    @FXML
-    protected VBox vBox;
-    @FXML
-    protected TableView<Referral> table;
-    @FXML
-    protected TableColumn<Referral, Timestamp> fulDateCol;
-    @FXML
-    protected TableColumn<Referral, String> interestCol;
-    @FXML
-    protected TableColumn<Referral, String> tagsCol;
-    @FXML
-    protected TableColumn<Referral, String> notesCol;
-    @FXML
-    protected TableColumn<Referral, String> feedbackCol;
-    @FXML
-    protected TableColumn<Referral, String> codeCol;
-    @FXML
-    protected TableColumn<Referral, Timestamp> dateCol;
-    @FXML
-    protected TableColumn<Referral, String> doctorCol;
+    @FXML protected Button addButton;
+    @FXML protected Button ikpButton;
+    @FXML protected Button detailsButton;
+    @FXML protected TextField searchTextField;
+    @FXML protected VBox vBox;
+    @FXML protected TableView<Referral> table;
+    @FXML protected TableColumn<Referral, Instant> fulDateCol;
+    @FXML protected TableColumn<Referral, String> interestCol;
+    @FXML protected TableColumn<Referral, String> tagsCol;
+    @FXML protected TableColumn<Referral, String> notesCol;
+    @FXML protected TableColumn<Referral, String> feedbackCol;
+    @FXML protected TableColumn<Referral, String> codeCol;
+    @FXML protected TableColumn<Referral, Instant> dateCol;
+    @FXML protected TableColumn<Referral, String> doctorCol;
 
     protected ObservableList<Referral> referrals = FXCollections.observableArrayList();
     protected FilteredList<Referral> filteredReferrals = new FilteredList<>(referrals, b -> true);

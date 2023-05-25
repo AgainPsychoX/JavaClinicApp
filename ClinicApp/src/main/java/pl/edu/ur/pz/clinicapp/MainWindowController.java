@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
@@ -42,23 +43,29 @@ public class MainWindowController implements Initializable {
         PRESCRIPTIONS,
         PRESCRIPTION_DETAILS,
         REPORTS,
+        TIMETABLE,
         REGISTER
     }
 
-    private static final EnumMap<Views, URL> viewToResource = new EnumMap<>(Views.class) {{
-        put(Views.NOTIFICATIONS, ClinicApplication.class.getResource("views/NotificationsView.fxml"));
-        put(Views.ACCOUNTS, ClinicApplication.class.getResource("views/AccountsView.fxml"));
-        put(Views.ACCOUNT_DETAILS, ClinicApplication.class.getResource("views/AccountDetailsView.fxml"));
-        put(Views.VISITS, ClinicApplication.class.getResource("views/VisitsView.fxml"));
-        put(Views.VISIT_DETAILS, ClinicApplication.class.getResource("views/VisitsDetailsView.fxml"));
-        put(Views.PATIENTS, ClinicApplication.class.getResource("views/PatientsView.fxml"));
-        put(Views.REFERRALS, ClinicApplication.class.getResource("views/ReferralsView.fxml"));
-        put(Views.REFERRAL_DETAILS, ClinicApplication.class.getResource("views/ReferralDetailsView.fxml"));
-        put(Views.PRESCRIPTIONS, ClinicApplication.class.getResource("views/PrescriptionsView.fxml"));
-        put(Views.PRESCRIPTION_DETAILS, ClinicApplication.class.getResource("views/PrescriptionDetailsView.fxml"));
-        put(Views.REGISTER, ClinicApplication.class.getResource("dialogs/RegisterDialog.fxml"));
-        put(Views.PATIENT_DETAILS, ClinicApplication.class.getResource("views/PatientDetailsView.fxml"));
-    }};
+    private static URL getViewResource(String resourcePath) {
+        return ClinicApplication.class.getResource(resourcePath);
+    }
+
+    private static final EnumMap<Views, URL> viewToResource = new EnumMap<>(Map.of(
+        Views.NOTIFICATIONS,        getViewResource("views/NotificationsView.fxml"),
+        Views.ACCOUNTS,             getViewResource("views/AccountsView.fxml"),
+        Views.ACCOUNT_DETAILS,      getViewResource("views/AccountDetailsView.fxml"),
+        Views.VISITS,               getViewResource("views/VisitsView.fxml"),
+        Views.VISIT_DETAILS,        getViewResource("views/VisitsDetailsView.fxml"),
+        Views.PATIENTS,             getViewResource("views/PatientsView.fxml"),
+        Views.PATIENT_DETAILS,      getViewResource("views/PatientDetailsView.fxml"),
+        Views.REFERRALS,            getViewResource("views/ReferralsView.fxml"),
+        Views.REFERRAL_DETAILS,     getViewResource("views/ReferralDetailsView.fxml"),
+        Views.PRESCRIPTIONS,        getViewResource("views/PrescriptionsView.fxml"),
+        Views.PRESCRIPTION_DETAILS, getViewResource("views/PrescriptionDetailsView.fxml"),
+        Views.TIMETABLE,            getViewResource("views/TimetableView.fxml"),
+        Views.REGISTER,             getViewResource("dialogs/RegisterDialog.fxml")
+    ));
 
     static class ViewDefinition {
         public Node node;
@@ -133,6 +140,22 @@ public class MainWindowController implements Initializable {
         return button;
     }
 
+    private Button buttonForLogout() {
+        final var button = new Button("Wyloguj się");
+        button.getStyleClass().addAll("navigation-menu-button", "log-out");
+        button.setOnAction((e) -> {
+            if (ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
+            if (PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) return;
+            if (RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) return;
+
+            // Log-out is necessary here, even tho there already is `setOnCloseRequest` for the stage,
+            // as it just catches window event.
+            ClinicApplication.logOut();
+            getStage().close();
+        });
+        return button;
+    }
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         // Initialize views cache map and history tracker
@@ -140,12 +163,13 @@ public class MainWindowController implements Initializable {
         historyTracker = new HistoryTracker<>();
 
         // Update displayed names if any
-        final var displayName = ClinicApplication.getUser().getDisplayName();
-        final var role = ClinicApplication.getUser().getRole();
+        final var loggedInUser = ClinicApplication.requireUser();
+        final var displayName = loggedInUser.getDisplayName();
+        final var role = loggedInUser.getRole();
         if (displayName != null) {
             loggedAsText.setText("Zalogowany jako " + displayName);
         }
-        roleText.setText(ClinicApplication.getUser().getRole().toString());
+        roleText.setText(loggedInUser.getRole().toString());
 
         // Populate navigation menu
         {
@@ -154,11 +178,19 @@ public class MainWindowController implements Initializable {
             // TODO: notifications button should include red dot when there are any unread
             c.add(buttonForNavigationMenu("Powiadomienia", (e) -> goToView(Views.NOTIFICATIONS)));
             if (!role.isGroupUser()) {
-                c.add(buttonForNavigationMenu("Moje dane", (e) -> goToView(Views.ACCOUNT_DETAILS)));
+                c.add(buttonForNavigationMenu("Moje dane", (e) -> goToView(Views.ACCOUNT_DETAILS, loggedInUser)));
+            }
+
+            if (role == User.Role.DOCTOR) {
+//                c.add(buttonForNavigationMenu("Terminarz", (e) -> goToView(Views.SCHEDULE)));
+                // TODO: instead having direct button to timetable, there should be button in schedule,
+                //      as timetable isn't that interesting to be checked every time and the info will be
+                //      most likely already included on the schedule too.
+                c.add(buttonForNavigationMenu("Harmonogram", (e) -> goToView(Views.TIMETABLE)));
             }
 
             if (role == User.Role.PATIENT) {
-                c.add(buttonForNavigationMenu("Wizyty", (e) -> goToView(Views.VISITS, ClinicApplication.getUser())));
+                c.add(buttonForNavigationMenu("Wizyty", (e) -> goToView(Views.VISITS, loggedInUser)));
                 c.add(buttonForNavigationMenu("Recepty", (e) -> goToView(Views.PRESCRIPTIONS)));
                 c.add(buttonForNavigationMenu("Skierowania", (e) -> goToView(Views.REFERRALS)));
             }
@@ -174,18 +206,7 @@ public class MainWindowController implements Initializable {
                 c.add(buttonForNavigationMenu("Raporty", (e) -> goToView(Views.REPORTS)));
             }
 
-            c.add(new Button("Wyloguj się") {{
-                this.getStyleClass().addAll("navigation-menu-button", "log-out");
-                this.setOnAction((e) -> {
-                    // Log-out is necessary here, even tho there already is `setOnCloseRequest` for the stage,
-                    // as it just catches window event.
-                    if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
-                    if(PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) return;
-                    if(RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) return;
-                    ClinicApplication.logOut();
-                    getStage().close();
-                });
-            }});
+            c.add(buttonForLogout());
         }
 
         // Choose initial view
@@ -211,7 +232,9 @@ public class MainWindowController implements Initializable {
         final var newView = getView(which);
         final var oldView = getPreviousView();
 
-        if(ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
+        // TODO: might be good idea to make it more generic behaviour of view, maybe providing new interface
+        //      and checking if (oldView instanceof NavigationAware np) { if (np.onNavigation(new)) {...} }
+        if (ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
         ReferralDetailsView.setEditState(false);
         if(PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) return;
         PrescriptionDetailsView.setEditState(false);

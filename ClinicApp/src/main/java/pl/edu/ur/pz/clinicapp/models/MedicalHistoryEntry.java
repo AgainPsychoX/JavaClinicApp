@@ -2,11 +2,8 @@ package pl.edu.ur.pz.clinicapp.models;
 
 
 import javax.persistence.*;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.time.Instant;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @MappedSuperclass
 public abstract class MedicalHistoryEntry {
@@ -77,11 +74,11 @@ public abstract class MedicalHistoryEntry {
      * Date when entry was added.
      */
     @Column(nullable = false)
-    private Timestamp addedDate;
-    public Timestamp getAddedDate() {
+    private Instant addedDate;
+    public Instant getAddedDate() {
         return addedDate;
     }
-    public void setAddedDate(Timestamp addedDate) {
+    public void setAddedDate(Instant addedDate) {
         this.addedDate = addedDate;
     }
 }

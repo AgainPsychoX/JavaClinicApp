@@ -167,14 +167,6 @@ CREATE POLICY delete_own_as_doctor ON public.appointments FOR DELETE TO gp_docto
 -- TODO: policy to allow patients to add appointments only if they fit in schedule properly
 -- TODO: trigger to generate notifications (if configured) on insert/update/delete
 
-
---------------------------------------------------------------------------------
--- `doctor_specialities`
-
---ALTER TABLE public.doctor_specialities ENABLE ROW LEVEL SECURITY;
-GRANT ALL ON TABLE public.doctor_specialities TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
--- TODO: rethink if we want to keep it separate or move to doctors table
-
 --------------------------------------------------------------------------------
 -- `doctors`
 
@@ -401,11 +393,24 @@ CREATE POLICY update_own_as_doctor ON public.referrals FOR UPDATE TO gp_doctors
 -- TODO: should doctors be able to delete?
 
 --------------------------------------------------------------------------------
--- `schedule_entries`
+-- `schedule_simple_entries`
 
---ALTER TABLE public.schedule_entries ENABLE ROW LEVEL SECURITY;
-GRANT ALL ON TABLE public.schedule_entries TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
--- TODO: rethink whole schedule/timetable systems
+--ALTER TABLE public.schedule_simple_entries ENABLE ROW LEVEL SECURITY;
+GRANT ALL ON TABLE public.schedule_simple_entries TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
+
+--------------------------------------------------------------------------------
+-- `timetable`
+
+--ALTER TABLE public.timetables ENABLE ROW LEVEL SECURITY;
+GRANT ALL ON TABLE public.timetables TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
+
+--------------------------------------------------------------------------------
+-- `timetable_entries`
+
+--ALTER TABLE public.timetable_entries ENABLE ROW LEVEL SECURITY;
+GRANT ALL ON TABLE public.timetable_entries TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
+
+-- TODO: fix & test permissions, make all those rules easier to read/maintain
 
 --------------------------------------------------------------------------------
 -- `users`

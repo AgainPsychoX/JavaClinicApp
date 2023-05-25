@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.util.Optional;
 
 public class ReferralDetailsView extends ChildControllerBase<MainWindowController> {
@@ -234,16 +235,16 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
         doctorField.setText(ref.getDoctorName());
         fulDatePicker.setValue((ref.getFulfilmentDate() == null)
                 ? null
-                : ref.getFulfilmentDate().toLocalDateTime().toLocalDate());
+                : ref.getFulfilmentDate().atZone(ZoneId.systemDefault()).toLocalDate());
         fulDateTimeField.setText((ref.getFulfilmentDate() == null)
                 ? null
-                : ref.getFulfilmentDate().toLocalDateTime().toLocalTime().toString());
+                : ref.getFulfilmentDate().atZone(ZoneId.systemDefault()).toLocalTime().toString());
         datePicker.setValue((ref.getAddedDate() == null)
                 ? null
-                : ref.getAddedDate().toLocalDateTime().toLocalDate());
+                : ref.getAddedDate().atZone(ZoneId.systemDefault()).toLocalDate());
         dateTimeField.setText((ref.getAddedDate() == null)
                 ? null
-                : ref.getAddedDate().toLocalDateTime().toLocalTime().toString());
+                : ref.getAddedDate().atZone(ZoneId.systemDefault()).toLocalTime().toString());
         interestField.setText(ref.getPointOfInterest());
         notesArea.setText(ref.getNotes());
         feedbackArea.setText(ref.getFeedback());
@@ -325,15 +326,13 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
                     transaction = session.beginTransaction();
                     Referral newRef = new Referral();
                     newRef.setAddedBy(ClinicApplication.getUser());
-                    String newAddedDate = dateVal + " " + dateTimeVal;
+                    String newAddedDate = dateVal + " " + dateTimeVal + (dateTimeVal.length() != 8 ? ":00" : "");
                     String newFulDate = fulDateVal + " " + fulDateTimeVal;
-                    newRef.setAddedDate(Timestamp.valueOf((dateTimeVal.length() != 8)
-                            ? newAddedDate + ":00" : newAddedDate));
+                    newRef.setAddedDate(Timestamp.valueOf(newAddedDate).toInstant());
                     if (fulDateVal == null) {
                         newRef.setFulfilmentDate(null);
                     } else {
-                        newRef.setFulfilmentDate(Timestamp.valueOf((fulDateTimeVal.length() != 8)
-                                ? newFulDate + ":00" : newFulDate));
+                        newRef.setFulfilmentDate(Timestamp.valueOf(newFulDate).toInstant());
                     }
                     newRef.setPointOfInterest((interestField.getText() == null
                             || interestField.getText().isBlank())

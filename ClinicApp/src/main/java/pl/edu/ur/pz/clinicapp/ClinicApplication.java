@@ -16,6 +16,7 @@ import pl.edu.ur.pz.clinicapp.dialogs.RegisterDialog;
 import pl.edu.ur.pz.clinicapp.localization.JavaFxBuiltInsLocalizationFix;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.views.PrescriptionDetailsView;
+import pl.edu.ur.pz.clinicapp.utils.ExampleDataSeeder;
 import pl.edu.ur.pz.clinicapp.views.ReferralDetailsView;
 
 import javax.persistence.EntityManager;
@@ -29,11 +30,12 @@ import java.io.InputStream;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrBlank;
 
 public class ClinicApplication extends Application {
     private static final Logger logger = Logger.getLogger(ClinicApplication.class.getName());
@@ -46,16 +48,49 @@ public class ClinicApplication extends Application {
 
     static private ClinicApplication instance;
 
+    /**
+     * Provides access to application-wide properties/configuration/settings.
+     * @return Properties object.
+     */
     public static Properties getProperties() {
         return instance.properties;
     }
 
+    /**
+     * Provides access to the entity manager that allows operating persistable data,
+     * connected with login details of current user, or anonymous if no one logged-in.
+     * @return Entity manager.
+     */
     public static EntityManager getEntityManager() {
         return instance.entityManager;
     }
 
+    /**
+     * Provides access to currently logged-in user. Makes sure the instance is managed by the entity manager.
+     * @return Currently logged-in user, or null if no one logged-in.
+     */
     public static User getUser() {
+        if (instance.user == null) {
+            return null;
+        }
+        final var em = getEntityManager();
+        if (!em.contains(instance.user)) {
+            em.refresh(instance.user);
+        }
         return instance.user;
+    }
+
+    /**
+     * Provides access to currently logged-in user or throws if no one logged-in.
+     * @throws IllegalStateException When no user is logged-in.
+     * @return Currently logged-in user
+     */
+    public static User requireUser() throws IllegalStateException {
+        final var user = getUser();
+        if (user == null) {
+            throw new IllegalStateException("");
+        }
+        return user;
     }
 
     @Override
@@ -74,9 +109,8 @@ public class ClinicApplication extends Application {
 
         // Load app properties
         try (InputStream inputStream = ClassLoader.getSystemResourceAsStream("app.default.properties")) {
-            final var defaults = new Properties() {{
-                load(inputStream);
-            }};
+            final var defaults = new Properties();
+            defaults.load(inputStream);
             properties = new Properties(defaults);
         }
         try (FileInputStream appPropertiesFile = new FileInputStream("app.properties")) {
@@ -140,7 +174,7 @@ public class ClinicApplication extends Application {
     }
 
     private boolean isSeedingAvailable() {
-        return !isStringNullOrEmpty(properties.getProperty("seeding.username"));
+        return !isStringNullOrBlank(properties.getProperty("seeding.username"));
     }
 
     private boolean showConfirmSeedingDialog() {
@@ -160,6 +194,7 @@ public class ClinicApplication extends Application {
     }
 
     private void seedDatabase() {
+        // TODO: allow migration only (minimalist/structure only seeding - no example data)
         disconnectFromDatabase();
         logger.fine("----------------------------------------------------------------");
         logger.info("Seeding database...");
@@ -171,6 +206,25 @@ public class ClinicApplication extends Application {
                     Map.entry("hibernate.hbm2ddl.auto", "create")
             ));
             entityManager = entityManagerFactory.createEntityManager();
+
+            // Reconnect after running HBM2DDL & SQLs; required as Hibernate is blind after permissions changes
+            logger.finer("Reconnecting (planned)");
+            entityManager.close();
+            entityManagerFactory.close();
+            entityManagerFactory = Persistence.createEntityManagerFactory("default", Map.ofEntries(
+                    Map.entry("hibernate.connection.username", properties.getProperty("seeding.username")),
+                    Map.entry("hibernate.connection.password", properties.getProperty("seeding.password"))
+            ));
+            entityManager = entityManagerFactory.createEntityManager();
+
+            // Invoke example data seeder
+            long seed = new Random().nextLong();
+            final var seedString = properties.getProperty("seeding.seed");
+            if (!isStringNullOrBlank(seedString)) {
+                seed = Long.parseLong(seedString);
+            }
+            new ExampleDataSeeder(entityManager, seed).run();
+
             logger.info("Finished seeding!");
         }
         catch (Exception e) {

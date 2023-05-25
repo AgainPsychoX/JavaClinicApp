@@ -1,7 +1,7 @@
 package pl.edu.ur.pz.clinicapp.models;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Entity
 @Table(name = "notifications")
@@ -49,11 +49,11 @@ public class Notification {
      * Date the notification was sent.
      */
     @Column(nullable = false)
-    private Timestamp sentDate;
-    public Timestamp getSentDate() {
+    private Instant sentDate;
+    public Instant getSentDate() {
         return sentDate;
     }
-    public void setSentDate(Timestamp sentDate) {
+    public void setSentDate(Instant sentDate) {
         this.sentDate = sentDate;
     }
 
@@ -61,11 +61,11 @@ public class Notification {
      * Date the notification was read.
      */
     @Column(nullable = true)
-    private Timestamp readDate;
-    public Timestamp getReadDate() {
+    private Instant readDate;
+    public Instant getReadDate() {
         return readDate;
     }
-    public void setReadDate(Timestamp readDate) {
+    public void setReadDate(Instant readDate) {
         this.readDate = readDate;
     }
 

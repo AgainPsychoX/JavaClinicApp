@@ -1,6 +1,9 @@
 package pl.edu.ur.pz.clinicapp.models;
 
+import pl.edu.ur.pz.clinicapp.utils.DurationMinutesConverter;
+
 import javax.persistence.*;
+import java.time.Duration;
 
 @Entity
 @Table(name = "doctors")
@@ -12,7 +15,8 @@ public class Doctor {
     @Id
     private Integer id;
 
-    @OneToOne(optional = false, orphanRemoval = true, cascade = CascadeType.REFRESH, fetch = FetchType.LAZY)
+    @OneToOne(optional = false, orphanRemoval = true,
+            cascade = {CascadeType.REFRESH, CascadeType.MERGE}, fetch = FetchType.LAZY)
     @MapsId // same ID as user
     @JoinColumn(name = "id")
     private User user;
@@ -64,21 +68,37 @@ public class Doctor {
         return null;
     }
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "speciality_id", referencedColumnName = "id", nullable = false)
-    public DoctorSpecialty speciality;
-    public DoctorSpecialty getSpeciality() {
+    @Column(nullable = true)
+    private String speciality;
+    public String getSpeciality() {
         return speciality;
     }
-    public void setSpeciality(DoctorSpecialty speciality) {
+    public void setSpeciality(String speciality) {
         this.speciality = speciality;
     }
 
-    @Embedded
-    private WeeklyTimetable weeklyTimetable;
-    public WeeklyTimetable getWeeklyTimetable() {
-        return weeklyTimetable;
+    @Column(nullable = false, columnDefinition = "int default 30")
+    @Convert(converter = DurationMinutesConverter.class)
+    private Duration defaultVisitDuration;
+    public Duration getDefaultVisitDuration() {
+        return defaultVisitDuration;
+    }
+    public void setDefaultVisitDuration(Duration defaultVisitDuration) {
+        this.defaultVisitDuration = defaultVisitDuration;
     }
 
+    /**
+     * Specifies how many days in advance can appointment be scheduled by patients & receptionist,
+     * the doctor themselves can bypass this check.
+     */
+    @Column(nullable = false, columnDefinition = "int default 60")
+    private int maxDaysInAdvance;
+    public int getMaxDaysInAdvance() {
+        return maxDaysInAdvance;
+    }
+    public void setMaxDaysInAdvance(int maxDaysInAdvance) {
+        this.maxDaysInAdvance = maxDaysInAdvance;
+    }
+    
     // TODO: get doctor schedule
 }
