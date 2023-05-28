@@ -125,4 +125,6 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
     }
 
 
+    public void report(ActionEvent event) {
+    }
 }

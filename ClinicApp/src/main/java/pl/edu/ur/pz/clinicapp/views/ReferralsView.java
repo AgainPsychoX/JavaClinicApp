@@ -9,19 +9,17 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
-import pl.edu.ur.pz.clinicapp.models.Appointment;
+import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
-import java.net.URL;
 import java.sql.Timestamp;
 import java.util.EnumMap;
 import java.util.List;
@@ -230,7 +228,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
             if (referral.getNotes().toLowerCase().contains(text.trim())) return true;
             if (referral.getFeedback() != null && referral.getFeedback().toLowerCase().contains(text.trim()))
                 return true;
-            if (referral.getStringTags().toLowerCase().contains(text.trim())) return true;
+            if (referral.getTags().toLowerCase().contains(text.trim())) return true;
             return referral.getGovernmentId() != null && referral.getGovernmentId().contains(text.trim());
         });
 
@@ -252,4 +250,11 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS,
                 ReferralDetailsView.RefMode.CREATE, ClinicApplication.getUser());
     }
+
+    @FXML
+    public void printReferrals(){
+        this.getParentController().goToView(MainWindowController.Views.REPORTS, ReportDialog.ReportMode.REFERRAL, referrals);
+    }
+
+
 }

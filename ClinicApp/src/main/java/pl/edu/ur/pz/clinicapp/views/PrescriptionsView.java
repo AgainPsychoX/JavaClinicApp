@@ -13,13 +13,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
@@ -44,7 +44,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     @FXML
     protected TableColumn<Prescription, String> doctorCol;
     @FXML
-    protected TableColumn<Prescription, Integer> codeCol;
+    protected TableColumn<Prescription, String> codeCol;
     @FXML
     protected TableColumn<Prescription, String> tagsCol;
     @FXML
@@ -80,8 +80,8 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
 
         doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getDoctorName()));
         patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatientName()));
-        codeCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getId()));
-        tagsCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getStringTags()));
+        codeCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getGovernmentId()));
+        tagsCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getTags()));
         dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddedDate().toString()));
 
         table.getSelectionModel().selectedItemProperty().addListener(observable ->
@@ -162,7 +162,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
             if (referral.getAddedDate().toString().contains(text.trim())) return true;
             if (referral.getDoctorName().toLowerCase().contains(text.trim())) return true;
             if (referral.getNotes().toLowerCase().contains(text.trim())) return true;
-            if (referral.getStringTags().toLowerCase().contains(text.trim())) return true;
+            if (referral.getTags().toLowerCase().contains(text.trim())) return true;
             return referral.getGovernmentId() != null && referral.getGovernmentId().contains(text.trim());
         });
 
@@ -197,5 +197,11 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    protected void printPrescriptions() {
+        this.getParentController().goToView(MainWindowController.Views.REPORTS, ReportDialog.ReportMode.PRESCRIPTION, prescriptions);
+
     }
 }

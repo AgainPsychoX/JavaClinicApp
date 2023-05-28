@@ -1,5 +1,11 @@
 package pl.edu.ur.pz.clinicapp.views;
 
+import com.itextpdf.html2pdf.ConverterProperties;
+import com.itextpdf.html2pdf.HtmlConverter;
+import com.itextpdf.html2pdf.resolver.font.DefaultFontProvider;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
@@ -10,6 +16,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.jpa.TypedParameterValue;
@@ -21,13 +29,18 @@ import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.DateUtils;
 
 import java.awt.*;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TimeZone;
 
 
 /**
@@ -184,7 +197,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
     public void refresh() {
         doctorTextField.setText(prescription.getDoctorName());
         notesTextField.setText(prescription.getNotes());
-        tagsTextField.setText(prescription.getStringTags());
+        tagsTextField.setText(prescription.getTags());
         codeTextField.setText(prescription.getGovernmentId());
         patientTextField.setText(prescription.getPatientName());
     }
@@ -294,6 +307,66 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML
+    protected void prescriptionReport() throws IOException, URISyntaxException {
+        Configuration configuration = new Configuration(Configuration.VERSION_2_3_32);
+
+        ConverterProperties properties = new ConverterProperties();
+        DefaultFontProvider fontProvider = new DefaultFontProvider(true, true, true);
+
+        fontProvider.addFont(String.valueOf(ClinicApplication.class.getResource("fonts/calibri.ttf")));
+
+        properties.setFontProvider(fontProvider);
+        properties.setCharset("UTF-8");
+
+        URL templatesURL = ClinicApplication.class.getResource("templates");
+
+        try {
+            configuration.setDirectoryForTemplateLoading(new File(templatesURL.toURI()));
+            configuration.setDefaultEncoding("UTF-8");
+            configuration.setSQLDateAndTimeTimeZone(TimeZone.getDefault());
+            configuration.setSharedVariable("DateUtils", new DateUtils());
+
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Zapisywanie recepty");
+            fileChooser.setInitialFileName("prescription.pdf");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Pliki PDF",
+                    "*.pdf"));
+            File file = fileChooser.showSaveDialog(new Stage());
+
+            Template template = configuration.getTemplate("prescriptionDetailsTemplate.ftl");
+            File outputFile = new File("output.html");
+            Writer writer = new FileWriter(outputFile);
+
+            Map<String, Object> dataModel = new HashMap<>();
+
+            dataModel.put("prescription", prescription);
+
+            template.process(dataModel, writer);
+
+            writer.close();
+
+            HtmlConverter.convertToPdf(new FileInputStream("output.html"),
+                    new FileOutputStream(file), properties);
+
+            outputFile.delete();
+            showAlert(Alert.AlertType.INFORMATION, "Generowanie recepty", "Utworzono receptę", "");
+
+        } catch (FileNotFoundException | TemplateException e) {
+            showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Wystąpił błąd.",
+                    e.getLocalizedMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void showAlert(Alert.AlertType type, String title, String header, String text) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(text);
+        alert.showAndWait();
     }
 
     public enum PrMode {DETAILS, CREATE}

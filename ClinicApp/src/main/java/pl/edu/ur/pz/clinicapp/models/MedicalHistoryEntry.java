@@ -32,10 +32,10 @@ public abstract class MedicalHistoryEntry {
      */
     @Column(nullable = false, length = 255)
     private String tags;
-    public String getStringTags(){return tags;}
-    private List<String> getTags() {
-        return List.of(tags.split(","));
-    }
+    public String getTags(){return tags;}
+//    private List<String> getTags() {
+//        return List.of(tags.split(","));
+//    }
     public void setStringTags(String tags){
         this.tags = tags;
     }
