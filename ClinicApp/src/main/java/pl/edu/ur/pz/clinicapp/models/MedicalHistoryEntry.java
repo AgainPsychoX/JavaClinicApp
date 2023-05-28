@@ -58,6 +58,13 @@ public abstract class MedicalHistoryEntry {
     }
 
     /**
+     * Name and surname of the patient.
+     */
+    public String getPatientName() {
+        return this.getPatient().getDisplayName();
+    }
+
+    /**
      * User who added the entry.
      */
     @ManyToOne(fetch = FetchType.EAGER, optional = false, targetEntity = User.class)

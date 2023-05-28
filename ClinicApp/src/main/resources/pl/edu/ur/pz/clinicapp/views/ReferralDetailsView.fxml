@@ -190,17 +190,17 @@
             <children>
                 <HBox fx:id="buttonBox" alignment="CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
                     <children>
-                        <Button fx:id="editButton" mnemonicParsing="false" onAction="#editSave" prefWidth="200.0" text="Edytuj">
+                        <Button fx:id="editButton" mnemonicParsing="false" onAction="#editSave" prefWidth="200.0" text="Edytuj" styleClass="my-primary-button" >
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
-                  <Button fx:id="deleteButton" layoutX="106.0" layoutY="44.0" mnemonicParsing="false" onAction="#delete" prefWidth="200.0" text="Usuń">
+                  <Button fx:id="deleteButton" layoutX="106.0" layoutY="44.0" mnemonicParsing="false" onAction="#delete" prefWidth="200.0" text="Usuń" styleClass="my-primary-button" >
                      <padding>
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>
                   </Button>
-                        <Button fx:id="IKPButton" mnemonicParsing="false" onAction="#sendToIKP" prefWidth="200.0" text="Przejdź do e-skierowania (IKP)">
+                        <Button fx:id="IKPButton" mnemonicParsing="false" onAction="#sendToIKP" prefWidth="200.0" text="Przejdź do e-skierowania (IKP)" styleClass="my-primary-button" >
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>

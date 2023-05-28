@@ -9,6 +9,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 import org.hibernate.Session;
@@ -20,7 +21,6 @@ import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
-import java.time.Instant;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.util.EnumMap;
@@ -28,21 +28,39 @@ import java.util.List;
 
 public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
-    @FXML protected ComboBox filter;
-    @FXML protected Button addButton;
-    @FXML protected Button ikpButton;
-    @FXML protected Button detailsButton;
-    @FXML protected TextField searchTextField;
-    @FXML protected VBox vBox;
-    @FXML protected TableView<Referral> table;
-    @FXML protected TableColumn<Referral, Instant> fulDateCol;
-    @FXML protected TableColumn<Referral, String> interestCol;
-    @FXML protected TableColumn<Referral, String> tagsCol;
-    @FXML protected TableColumn<Referral, String> notesCol;
-    @FXML protected TableColumn<Referral, String> feedbackCol;
-    @FXML protected TableColumn<Referral, String> codeCol;
-    @FXML protected TableColumn<Referral, Instant> dateCol;
-    @FXML protected TableColumn<Referral, String> doctorCol;
+
+    @FXML
+    protected ComboBox filter;
+    @FXML
+    protected Button addButton;
+    @FXML
+    protected Button ikpButton;
+    @FXML
+    protected Button detailsButton;
+    @FXML
+    protected TextField searchTextField;
+    @FXML
+    protected VBox vBox;
+    @FXML
+    protected TableView<Referral> table;
+    @FXML
+    protected TableColumn<Referral, Timestamp> fulDateCol;
+    @FXML
+    protected TableColumn<Referral, String> interestCol;
+    @FXML
+    protected TableColumn<Referral, String> tagsCol;
+    @FXML
+    protected TableColumn<Referral, String> notesCol;
+    @FXML
+    protected TableColumn<Referral, String> feedbackCol;
+    @FXML
+    protected TableColumn<Referral, String> codeCol;
+    @FXML
+    protected TableColumn<Referral, Timestamp> dateCol;
+    @FXML
+    protected TableColumn<Referral, String> doctorCol;
+    @FXML
+    protected TableColumn<Referral, String> patientCol;
 
     protected ObservableList<Referral> referrals = FXCollections.observableArrayList();
     protected FilteredList<Referral> filteredReferrals = new FilteredList<>(referrals, b -> true);
@@ -122,6 +140,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         dateCol.setCellValueFactory(new PropertyValueFactory<>("addedDate"));
         fulDateCol.setCellValueFactory(new PropertyValueFactory<>("fulfilmentDate"));
         interestCol.setCellValueFactory(new PropertyValueFactory<>("pointOfInterest"));
+        patientCol.setCellValueFactory(new PropertyValueFactory<>("doctorName"));
         doctorCol.setCellValueFactory(new PropertyValueFactory<>("doctorName"));
         notesCol.setCellValueFactory(new PropertyValueFactory<>("notes"));
         feedbackCol.setCellValueFactory(new PropertyValueFactory<>("feedback"));
@@ -145,17 +164,20 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         setCurrQuery(currUserRole);
         setFilterVals(currUserRole);
 
+        if(currUserRole == User.Role.PATIENT){
+            table.getColumns().remove(patientCol);
+        }
+
+        if(currUserRole == User.Role.NURSE){
+            table.getColumns().remove(interestCol);
+        }
+
         if(currQuery == allReferrals) filter.setValue(filterModeToString.get(filterMode.ALL));
         else if(currQuery == createdReferrals) filter.setValue(filterModeToString.get(filterMode.CREATED));
         else if(currQuery == findUsersReferrals) filter.setValue(filterModeToString.get(filterMode.OWN));
         else filter.setValue(filterModeToString.get(filterMode.NURSES));
 
         refresh();
-
-        // if search field is not empty, perform search again - for user's convenience (no need to hit enter/type again)
-        if (searchTextField.getText() != null && !searchTextField.getText().trim().equals("")) {
-            searchAction(new ActionEvent());
-        }
     }
 
     /**
@@ -172,6 +194,11 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         }
         referrals.setAll(currQuery.getResultList());
         table.setItems(referrals);
+
+        // if search field is not empty, perform search again - for user's convenience (no need to hit enter/type again)
+        if (searchTextField.getText() != null && !searchTextField.getText().trim().equals("")) {
+            searchAction(new ActionEvent());
+        }
     }
 
     // Changes items according to selected filter mode.

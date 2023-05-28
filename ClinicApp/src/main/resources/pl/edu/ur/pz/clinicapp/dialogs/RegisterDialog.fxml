@@ -169,7 +169,7 @@
                   </Text>
                </children>
             </GridPane>
-            <Button fx:id="registerButton" mnemonicParsing="false" onAction="#register" prefWidth="200.0" stylesheets="@../common.css" text="Zarejestruj się" textFill="WHITE">
+            <Button fx:id="registerButton" mnemonicParsing="false" onAction="#register" prefWidth="200.0" stylesheets="@../common.css" text="Zarejestruj się" textFill="WHITE" styleClass="my-primary-button" >
                <VBox.margin>
                   <Insets />
                </VBox.margin>
