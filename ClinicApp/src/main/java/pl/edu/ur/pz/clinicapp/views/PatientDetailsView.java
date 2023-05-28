@@ -107,6 +107,19 @@ public class PatientDetailsView extends ChildControllerBase<MainWindowController
 
     @Override
     public void populate(Object... context) {
+
+        saveButton.setText("Edytuj");
+        nameField.setEditable(false);
+        surnameField.setEditable(false);
+        PESELField.setEditable(false);
+        emailField.setEditable(false);
+        phoneField.setEditable(false);
+        cityField.setEditable(false);
+        postCityField.setEditable(false);
+        postCodeField.setEditable(false);
+        streetField.setEditable(false);
+        buildingField.setEditable(false);
+
         editState.addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observableValue, Boolean before, Boolean after) {
