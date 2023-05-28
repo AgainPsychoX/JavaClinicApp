@@ -178,6 +178,7 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
                 newUser.setSurname(surnameField.getText().trim());
 
                 session.persist(newUser);
+                // FIXME: instead of using query to create patient data, let's use hibernate
 
                 createPatientQuery.setParameter("building", (buildingField.getText() == null
                         || buildingField.getText().isBlank())

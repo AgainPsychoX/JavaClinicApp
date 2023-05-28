@@ -33,7 +33,7 @@
                   <Insets />
                </VBox.margin>
             </Text>
-            <Button fx:id="loginButton" mnemonicParsing="false" onAction="#logInAction" prefWidth="200.0" stylesheets="@../common.css" text="Zaloguj" textFill="WHITE">
+            <Button fx:id="loginButton" mnemonicParsing="false" onAction="#logInAction" prefWidth="200.0" styleClass="my-primary-button" stylesheets="@../common.css" text="Zaloguj" textFill="WHITE">
                <VBox.margin>
                   <Insets />
                </VBox.margin>

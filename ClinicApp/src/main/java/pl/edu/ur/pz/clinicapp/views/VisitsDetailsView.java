@@ -25,6 +25,7 @@ import java.sql.Timestamp;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -129,6 +130,8 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
      */
     @Override
     public void populate(Object... context) {
+        final var entityManger = ClinicApplication.getEntityManager();
+
         datePicker.valueProperty().removeListener(listener);
         editState.addListener((observableValue, before, after) -> {
             if (after) {
@@ -173,7 +176,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
                         if (item == null || empty) {
                             setGraphic(null);
                         } else {
-                            setText(item.getDisplayName() + ", " + item.getSpeciality().getName());
+                            setText(item.getDisplayName() + ", " + item.getSpeciality());
                         }
                     }
                 };
@@ -217,22 +220,22 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             patientCombo.getItems().clear();
             doctorCombo.getItems().clear();
             hourPicker.getItems().clear();
-            patientCombo.getItems().add(((Appointment) context[1]).getPatient());
-            patientCombo.setValue(((Appointment) context[1]).getPatient());
-            doctorCombo.getItems().add(((Appointment) context[1]).getDoctor());
-            doctorCombo.setValue(((Appointment) context[1]).getDoctor());
-            datePicker.setValue(((Appointment) context[1]).getDate().toLocalDateTime().toLocalDate());
+            patientCombo.getItems().add(appointment.getPatient());
+            patientCombo.setValue(appointment.getPatient());
+            doctorCombo.getItems().add(appointment.getDoctor());
+            doctorCombo.setValue(appointment.getDoctor());
+            datePicker.setValue(appointment.getDate().atZone(ZoneId.systemDefault()).toLocalDate());
             datePicker.setDisable(true);
             datePicker.setOpacity(1);
             datePicker.getEditor().setOpacity(1);
 
-            LocalDateTime hourLDT = ((Appointment) context[1]).getDate().toLocalDateTime();
+            LocalDateTime hourLDT = appointment.getDate().atZone(ZoneId.systemDefault()).toLocalDateTime();
             int hour = hourLDT.getHour()*60 + hourLDT.getMinute();
             hourPicker.getItems().add(hour);
             hourPicker.setValue(hour);
             hourPicker.getSelectionModel().select(0);
             notesTextField.setEditable(false);
-            notesTextField.setText(((Appointment) context[1]).getNotes());
+            notesTextField.setText(appointment.getNotes());
             // in case the referral was edited while app is running
             ClinicApplication.getEntityManager().refresh(appointment);
 
@@ -255,29 +258,30 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             notesTextField.setEditable(true);
             if (!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
 
-            List doctors = new ArrayList<>();
+            List<Doctor> doctors = new ArrayList<>();
 
-            if(ClinicApplication.getUser().getRole().name().equals("DOCTOR")) {
-                doctors.add(ClinicApplication.getUser());
+            if (ClinicApplication.getUser().getRole() == User.Role.DOCTOR) {
+                doctors.add(ClinicApplication.getUser().asDoctor());
                 doctorCombo.getItems().addAll(doctors);
-                doctorCombo.setValue((Doctor) ClinicApplication.getUser());
+                doctorCombo.setValue(ClinicApplication.getUser().asDoctor());
             } else {
-                doctors = Patient.getAll(Doctor.class);
+                doctors = entityManger.createNamedQuery("patients", Doctor.class).getResultList();
                 doctorCombo.getItems().addAll(doctors);
             }
-            doctors.sort(Patient.patientNameComparator);
+            doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
             notesTextField.setText(null);
             editState.setValue(true);
 
-            List patients = new ArrayList<>();
+            List<Patient> patients = new ArrayList<>();
 
-            if(ClinicApplication.getUser().getRole().name().equals("PATIENT")) {
-                patients.add(ClinicApplication.getUser());
-                patientCombo.getItems().add((Patient) ClinicApplication.getUser());
-                patientCombo.setValue((Patient) ClinicApplication.getUser());
-            } else
-                patients = Patient.getAll(Patient.class);
-            patients.sort(Patient.patientNameComparator);
+            if (ClinicApplication.getUser().getRole() == User.Role.PATIENT) {
+                patients.add(ClinicApplication.getUser().asPatient());
+                patientCombo.getItems().add(ClinicApplication.getUser().asPatient());
+                patientCombo.setValue(ClinicApplication.getUser().asPatient());
+            } else {
+                patients = entityManger.createNamedQuery("patients", Patient.class).getResultList();
+            }
+            doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
             patientCombo.getItems().addAll(patients);
 
             datePicker.valueProperty().addListener(listener);
@@ -291,79 +295,80 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
         final int[] dayHours = {-1, -1};
         hours.clear();
         hourPicker.getItems().clear();
-        Doctor doctor = doctorCombo.getValue();
-        switch (newValue.getDayOfWeek()) {
-            case MONDAY -> {
-                try {
-                    dayHours[0] = doctor.getWeeklyTimetable().getMondayStart();
-                    dayHours[1] = doctor.getWeeklyTimetable().getMondayEnd();
-                } catch (Exception ignored){}
-            }
-            case TUESDAY -> {
-                try {
-                    dayHours[0] = doctor.getWeeklyTimetable().getTuesdayStart();
-                    dayHours[1] = doctor.getWeeklyTimetable().getTuesdayEnd();
-                } catch (Exception ignored){}
-            }
-            case WEDNESDAY -> {
-                try {
-                    dayHours[0] = doctor.getWeeklyTimetable().getWednesdayStart();
-                    dayHours[1] = doctor.getWeeklyTimetable().getWednesdayEnd();
-                } catch (Exception ignored){}
-            }
-            case THURSDAY -> {
-                try {
-                    dayHours[0] = doctor.getWeeklyTimetable().getThursdayStart();
-                    dayHours[1] = doctor.getWeeklyTimetable().getThursdayEnd();
-                } catch (Exception ignored){}
-            }
-            case FRIDAY -> {
-                try {
-                    dayHours[0] = doctor.getWeeklyTimetable().getFridayStart();
-                    dayHours[1] = doctor.getWeeklyTimetable().getFridayEnd();
-                } catch (Exception ignored){}
-            }
-        }
-        ArrayList<Integer> occupiedHours = new ArrayList<>();
-        if(dayHours[0] != -1){
-            if (localAppointment != null) {
-                List<Appointment> appointments = ClinicApplication.getEntityManager().createNamedQuery("allAppointmentsForDoctor", Appointment.class)
-                        .setParameter("doctor", localAppointment.getDoctor())
-                        .setParameter("id", localAppointment.getId())
-                        .getResultList();
-                for (Appointment local : appointments) {
-                    occupiedHours.add(local.getDate().toLocalDateTime().getHour() * 60 +
-                            local.getDate().toLocalDateTime().getMinute());
-                }
-            } else {
-                List<Appointment> appointments = ClinicApplication.getEntityManager().createNamedQuery("allAppointmentsForDoctor", Appointment.class)
-                        .setParameter("doctor", doctorCombo.getValue())
-                        .setParameter("id", -1)
-                        .getResultList();
-                for (Appointment local : appointments) {
-                    occupiedHours.add(local.getDate().toLocalDateTime().getHour() * 60 +
-                            local.getDate().toLocalDateTime().getMinute());
-                }
-            }
-        }
-
-        while (dayHours[0] != -1 && dayHours[0] <= dayHours[1]) {
-            if(localAppointment != null) {
-                if(occupiedHours.contains(dayHours[0]) && dayHours[0] != localAppointment.getDate().toLocalDateTime().getHour() * 60 + localAppointment.getDate().toLocalDateTime().getMinute()) {
-                    dayHours[0] += localAppointment.getDoctor().getSpeciality().defaultVisitTime;
-                    continue;
-                }
-                hours.add(dayHours[0]);
-                dayHours[0] += localAppointment.getDoctor().getSpeciality().defaultVisitTime;
-            } else {
-                if(occupiedHours.contains(dayHours[0])) {
-                    dayHours[0] += doctorCombo.getValue().getSpeciality().defaultVisitTime;
-                    continue;
-                }
-                hours.add(dayHours[0]);
-                dayHours[0] += doctorCombo.getValue().getSpeciality().defaultVisitTime;
-            }
-        }
+        // TODO: resolve this cluster-fuck
+//        Doctor doctor = doctorCombo.getValue();
+//        switch (newValue.getDayOfWeek()) {
+//            case MONDAY -> {
+//                try {
+//                    dayHours[0] = doctor.getWeeklyTimetable().getMondayStart();
+//                    dayHours[1] = doctor.getWeeklyTimetable().getMondayEnd();
+//                } catch (Exception ignored){}
+//            }
+//            case TUESDAY -> {
+//                try {
+//                    dayHours[0] = doctor.getWeeklyTimetable().getTuesdayStart();
+//                    dayHours[1] = doctor.getWeeklyTimetable().getTuesdayEnd();
+//                } catch (Exception ignored){}
+//            }
+//            case WEDNESDAY -> {
+//                try {
+//                    dayHours[0] = doctor.getWeeklyTimetable().getWednesdayStart();
+//                    dayHours[1] = doctor.getWeeklyTimetable().getWednesdayEnd();
+//                } catch (Exception ignored){}
+//            }
+//            case THURSDAY -> {
+//                try {
+//                    dayHours[0] = doctor.getWeeklyTimetable().getThursdayStart();
+//                    dayHours[1] = doctor.getWeeklyTimetable().getThursdayEnd();
+//                } catch (Exception ignored){}
+//            }
+//            case FRIDAY -> {
+//                try {
+//                    dayHours[0] = doctor.getWeeklyTimetable().getFridayStart();
+//                    dayHours[1] = doctor.getWeeklyTimetable().getFridayEnd();
+//                } catch (Exception ignored){}
+//            }
+//        }
+//        ArrayList<Integer> occupiedHours = new ArrayList<>();
+//        if(dayHours[0] != -1){
+//            if (localAppointment != null) {
+//                List<Appointment> appointments = ClinicApplication.getEntityManager().createNamedQuery("allAppointmentsForDoctor", Appointment.class)
+//                        .setParameter("doctor", localAppointment.getDoctor())
+//                        .setParameter("id", localAppointment.getId())
+//                        .getResultList();
+//                for (Appointment local : appointments) {
+//                    occupiedHours.add(local.getDate().toLocalDateTime().getHour() * 60 +
+//                            local.getDate().toLocalDateTime().getMinute());
+//                }
+//            } else {
+//                List<Appointment> appointments = ClinicApplication.getEntityManager().createNamedQuery("allAppointmentsForDoctor", Appointment.class)
+//                        .setParameter("doctor", doctorCombo.getValue())
+//                        .setParameter("id", -1)
+//                        .getResultList();
+//                for (Appointment local : appointments) {
+//                    occupiedHours.add(local.getDate().toLocalDateTime().getHour() * 60 +
+//                            local.getDate().toLocalDateTime().getMinute());
+//                }
+//            }
+//        }
+//
+//        while (dayHours[0] != -1 && dayHours[0] <= dayHours[1]) {
+//            if(localAppointment != null) {
+//                if(occupiedHours.contains(dayHours[0]) && dayHours[0] != localAppointment.getDate().toLocalDateTime().getHour() * 60 + localAppointment.getDate().toLocalDateTime().getMinute()) {
+//                    dayHours[0] += localAppointment.getDoctor().getSpeciality().defaultVisitTime;
+//                    continue;
+//                }
+//                hours.add(dayHours[0]);
+//                dayHours[0] += localAppointment.getDoctor().getSpeciality().defaultVisitTime;
+//            } else {
+//                if(occupiedHours.contains(dayHours[0])) {
+//                    dayHours[0] += doctorCombo.getValue().getSpeciality().defaultVisitTime;
+//                    continue;
+//                }
+//                hours.add(dayHours[0]);
+//                dayHours[0] += doctorCombo.getValue().getSpeciality().defaultVisitTime;
+//            }
+//        }
         hourPicker.setDisable(hours.isEmpty());
     }
 
@@ -423,17 +428,17 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
                 } else {
                     transaction = session.beginTransaction();
                     Appointment newVisit = new Appointment();
-                    newVisit.setAddedDate(Timestamp.valueOf(LocalDateTime.now()));
+                    newVisit.setAddedDate(Timestamp.valueOf(LocalDateTime.now()).toInstant());
                     newVisit.setAddedBy(ClinicApplication.getUser());
                     newVisit.setNotes((notesTextField.getText() == null)
                             ? null : notesTextField.getText().trim());
                     newVisit.setPatient(patientCombo.getValue());
-                    newVisit.setDuration(doctorCombo.getValue().getSpeciality().defaultVisitTime);
+                    newVisit.setDuration(doctorCombo.getValue().getDefaultVisitDuration());
                     newVisit.setDoctor(doctorCombo.getValue());
                     newVisit.setStringTags(" ");
                     int hour = (int) Math.floor((double) hourPicker.getValue() /60);
                     int minutes = hourPicker.getValue() - (hour * 60);
-                    newVisit.setDate(Timestamp.valueOf(datePicker.getValue().atTime(hour, minutes)));
+                    newVisit.setDate(Timestamp.valueOf(datePicker.getValue().atTime(hour, minutes)).toInstant());
                     session.persist(newVisit);
                     transaction.commit();
                     editState.setValue(!editState.getValue());

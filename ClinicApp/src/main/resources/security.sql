@@ -167,14 +167,6 @@ CREATE POLICY delete_own_as_doctor ON public.appointments FOR DELETE TO gp_docto
 -- TODO: policy to allow patients to add appointments only if they fit in schedule properly
 -- TODO: trigger to generate notifications (if configured) on insert/update/delete
 
-
---------------------------------------------------------------------------------
--- `doctor_specialities`
-
---ALTER TABLE public.doctor_specialities ENABLE ROW LEVEL SECURITY;
-GRANT ALL ON TABLE public.doctor_specialities TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
--- TODO: rethink if we want to keep it separate or move to doctors table
-
 --------------------------------------------------------------------------------
 -- `doctors`
 
@@ -205,6 +197,9 @@ CREATE POLICY update_own_as_doctor ON public.doctors FOR UPDATE TO gp_doctors
     USING (id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER))
     WITH CHECK (id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
+-- TODO: make sure names are the same as related user (yes, redundant by design)
+-- TODO: test if setter in Java is coordinated (first user, then doctors table
+
 --------------------------------------------------------------------------------
 -- `notifications`
 
@@ -224,6 +219,8 @@ GRANT INSERT ON TABLE public.notifications TO PUBLIC;
 DROP POLICY IF EXISTS insert_as_source ON public.notifications;
 CREATE POLICY insert_as_source ON public.notifications FOR INSERT TO PUBLIC
     WITH CHECK (source_user_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
+
+-- TODO: check if names are the same as related user (yes, redundant by design)
 
 ----------------------------------------
 -- SELECT
@@ -413,11 +410,24 @@ CREATE POLICY delete_own_as_doctor ON public.referrals FOR DELETE TO gp_doctors
 -- TODO: rules to validate update/inserts
 
 --------------------------------------------------------------------------------
--- `schedule_entries`
+-- `schedule_simple_entries`
 
---ALTER TABLE public.schedule_entries ENABLE ROW LEVEL SECURITY;
-GRANT ALL ON TABLE public.schedule_entries TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
--- TODO: rethink whole schedule/timetable systems
+--ALTER TABLE public.schedule_simple_entries ENABLE ROW LEVEL SECURITY;
+GRANT ALL ON TABLE public.schedule_simple_entries TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
+
+--------------------------------------------------------------------------------
+-- `timetable`
+
+--ALTER TABLE public.timetables ENABLE ROW LEVEL SECURITY;
+GRANT ALL ON TABLE public.timetables TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
+
+--------------------------------------------------------------------------------
+-- `timetable_entries`
+
+--ALTER TABLE public.timetable_entries ENABLE ROW LEVEL SECURITY;
+GRANT ALL ON TABLE public.timetable_entries TO gp_patients, gp_receptionists, gp_nurses, gp_doctors, gp_admins;
+
+-- TODO: fix & test permissions, make all those rules easier to read/maintain
 
 --------------------------------------------------------------------------------
 -- `users`
@@ -465,8 +475,8 @@ CREATE POLICY select_as_staff ON public.users FOR SELECT TO gp_receptionists, gp
 
 GRANT UPDATE ON TABLE public.users TO gp_patients, gp_receptionists, gp_nurses, gp_doctors;
 
-DROP POLICY IF EXISTS update_own_as_patient ON public.users;
-CREATE POLICY update_own_as_patient ON public.users FOR UPDATE TO gp_patients
+DROP POLICY IF EXISTS update_own ON public.users;
+CREATE POLICY update_own ON public.users FOR UPDATE TO PUBLIC
     USING (internal_name = CURRENT_USER);
 
 DROP POLICY IF EXISTS select_asdf ON public.users;

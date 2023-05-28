@@ -1,33 +1,81 @@
 package pl.edu.ur.pz.clinicapp.models;
 
-import org.hibernate.Session;
-import pl.edu.ur.pz.clinicapp.ClinicApplication;
-
-import javafx.collections.ObservableList;
-
 import javax.persistence.*;
 
-import java.util.Comparator;
-import java.util.List;
-
-import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrEmpty;
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrBlank;
 
 @Entity
 @Table(name = "patients")
-@Inheritance(strategy = InheritanceType.JOINED)
 @NamedQueries({
-        @NamedQuery(name = "patients",  query = "FROM Patient"),
-        @NamedQuery(name = "patients.current", query = "SELECT patient FROM Patient patient WHERE patient.databaseUsername = FUNCTION('CURRENT_USER')")
+        @NamedQuery(name = "patients",  query = "FROM Patient p LEFT JOIN FETCH p.user")
 })
-
 @NamedNativeQueries({
         @NamedNativeQuery(name = "createPatient", query = "INSERT INTO public.patients "
                 +"(building, city, pesel, post_city, post_code, street, id) "
                 +"VALUES (:building, :city, :pesel, :post_city, :post_code, :street, :id)",
                 resultClass = Patient.class)
 })
+public class Patient {
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Patients are users
+     */
 
-public class Patient extends User{
+    @Id
+    private Integer id;
+    public int getId() {
+        return id;
+    }
+
+    @OneToOne(optional = false, orphanRemoval = true,
+            cascade = {CascadeType.REFRESH, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @MapsId // same ID as user
+    @JoinColumn(name = "id")
+    private User user;
+    public User asUser() {
+        return user;
+    }
+
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Patient data
+     */
+
+    public String getEmail() {
+        return asUser().getEmail();
+    }
+    public void setEmail(String email) {
+        asUser().setEmail(email);
+    }
+
+    public String getPhone() {
+        return asUser().getPhone();
+    }
+    public void setPhone(String phone) {
+        asUser().setPhone(phone);
+    }
+
+
+    public String getName() {
+        return asUser().getName();
+    }
+    public void setName(String name) {
+        asUser().setName(name);
+    }
+
+    public String getSurname() {
+        return asUser().getSurname();
+    }
+    public void setSurname(String surname) {
+        asUser().setSurname(surname);
+    }
+
+    public String getDisplayName() {
+        return asUser().getDisplayName();
+    }
+
+
     @Column(nullable = false, length = 11, unique = true)
     private String pesel;
     public String getPESEL() {
@@ -37,8 +85,12 @@ public class Patient extends User{
         this.pesel = pesel;
     }
 
-    /* * * * * * * * * * * * * * * * * * * * *
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Address
+     *
+     * TODO: Separate it out, even if it's the only place we use it.
      */
 
     @Column(length = 40)
@@ -93,7 +145,7 @@ public class Patient extends User{
     public String getAddressDisplayShort() {
         final var builder = new StringBuilder(80);
         builder.append(city);
-        if (!isStringNullOrEmpty(street)) {
+        if (!isStringNullOrBlank(street)) {
             builder.append(" ul. ");
             builder.append(street);
         }
@@ -109,7 +161,7 @@ public class Patient extends User{
     public String getAddressDisplayLong() {
         final var builder = new StringBuilder(80);
         builder.append(city);
-        if (!isStringNullOrEmpty(street)) {
+        if (!isStringNullOrBlank(street)) {
             builder.append(" ul. ");
             builder.append(street);
         }
@@ -121,23 +173,4 @@ public class Patient extends User{
         builder.append(postCity);
         return builder.toString();
     }
-
-    static public Patient getCurrent() {
-        return ClinicApplication.getEntityManager().createNamedQuery("patients.current", Patient.class).getSingleResult();
-    }
-
-    public static List getAll(Class c) {
-        Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
-        return session.createCriteria(c).list();
-    }
-
-    public static Comparator<Patient> patientNameComparator = new Comparator<Patient>() {
-        public int compare(Patient patient1, Patient patient2) {
-
-            String patientName1 = patient1.getDisplayName().toUpperCase();
-            String patientName2 = patient2.getDisplayName().toUpperCase();
-            return patientName1.compareTo(patientName2);
-        }
-
-    };
 }

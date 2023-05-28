@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class PatientsView extends ChildControllerBase<MainWindowController> implements Initializable {
+
     @FXML
     protected Button registerButton;
     @FXML
@@ -42,6 +43,8 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
     protected TableColumn<Patient, String> addressCol;
     @FXML
     protected TextField searchTextField;
+    @FXML
+    protected Button detailsButton;
 
     protected ObservableList<Patient> patients = FXCollections.observableArrayList();
     protected FilteredList<Patient> filteredPatients = new FilteredList<>(patients, b -> true);
@@ -61,6 +64,9 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
         searchDebounce = new PauseTransition(Duration.millis(250));
         searchDebounce.setOnFinished(this::searchAction);
 
+        table.getSelectionModel().selectedItemProperty().addListener(observable ->
+                detailsButton.setDisable(table.getSelectionModel().getSelectedItem() == null));
+
         searchTextField.textProperty().addListener((observable, oldValue, newValue) -> searchDebounce.playFromStart());
     }
 
@@ -72,6 +78,7 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
     public void populate(Object... context) {
         patients.setAll(getAllPatients());
         table.getItems().setAll(patients);
+        table.getSelectionModel().clearSelection();
     }
 
     @Override
@@ -100,8 +107,22 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
         table.refresh();
     }
 
+
+    /**
+     * Opens details view of the chosen referral in DETAILS mode.
+     */
+
+    @FXML
+    protected void detailsAction(ActionEvent event){
+        this.getParentController().goToView(MainWindowController.Views.PATIENT_DETAILS,
+                PatientDetailsView.RefMode.DETAILS, table.getSelectionModel().getSelectedItem());
+
+    }
+
     public void register() {
         this.getParentController().goToView(MainWindowController.Views.REGISTER,
                 "INDIRECT");
     }
+
+
 }

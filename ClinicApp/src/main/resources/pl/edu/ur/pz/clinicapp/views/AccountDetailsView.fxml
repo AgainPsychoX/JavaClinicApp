@@ -1,188 +1,212 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
-<VBox fx:id="vBox" prefHeight="540.0" prefWidth="600.0" spacing="8.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.AccountDetailsView">
-    <children>
-        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Dane ogólne" VBox.vgrow="ALWAYS">
-            <VBox.margin>
-                <Insets left="8.0" right="8.0" top="8.0" />
-            </VBox.margin>
-            <font>
-                <Font size="16.0" />
-            </font>
-        </Text>
-        <GridPane maxHeight="1000.0" maxWidth="1000.0" prefHeight="175.0" prefWidth="600.0" VBox.vgrow="ALWAYS">
-            <columnConstraints>
-                <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" minWidth="10.0" percentWidth="33.0" />
-                <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" minWidth="10.0" percentWidth="33.0" prefWidth="100.0" />
-                <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" minWidth="10.0" percentWidth="33.0" prefWidth="100.0" />
-            </columnConstraints>
-            <rowConstraints>
-                <RowConstraints minHeight="10.0" vgrow="NEVER" />
-                <RowConstraints minHeight="10.0" vgrow="NEVER" />
-                <RowConstraints minHeight="10.0" vgrow="NEVER" />
-                <RowConstraints minHeight="10.0" vgrow="NEVER" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
-                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
-            </rowConstraints>
-            <children>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Imię" GridPane.halignment="LEFT" >
-                    <GridPane.margin>
-                        <Insets left="8.0" right="8.0" top="8.0" />
-                    </GridPane.margin>
-                </Text>
-                <TextField fx:id="name" text="Adam" GridPane.rowIndex="1">
-                    <GridPane.margin>
-                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
-                    </GridPane.margin>
-                </TextField>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Nazwisko" GridPane.columnIndex="1" GridPane.halignment="LEFT">
-                    <GridPane.margin>
-                        <Insets left="8.0" right="8.0" top="8.0" />
-                    </GridPane.margin>
-                </Text>
-                <TextField fx:id="surname" text="Kwaśniewski" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                    <GridPane.margin>
-                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
-                    </GridPane.margin>
-                </TextField>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="PESEL" GridPane.columnIndex="2" GridPane.halignment="LEFT">
-                    <GridPane.margin>
-                        <Insets left="8.0" right="8.0" top="8.0" />
-                    </GridPane.margin>
-                </Text>
-                <TextField fx:id="pesel" text="88080808088" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                    <GridPane.margin>
-                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
-                    </GridPane.margin>
-                </TextField>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Adres" GridPane.halignment="LEFT" GridPane.rowIndex="2">
-                    <GridPane.margin>
-                        <Insets left="8.0" right="8.0" top="8.0" />
-                    </GridPane.margin>
-                </Text>
-                <TextField fx:id="address" text="Rzeszów, ul. Nieistniejąca 17/6 " GridPane.columnSpan="2" GridPane.rowIndex="3">
-                    <GridPane.margin>
-                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
-                    </GridPane.margin>
-                </TextField>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Poczta" GridPane.columnIndex="2" GridPane.halignment="LEFT" GridPane.rowIndex="2">
-                    <GridPane.margin>
-                        <Insets left="8.0" right="8.0" top="8.0" />
-                    </GridPane.margin>
-                </Text>
-                <TextField fx:id="post" text="Rzeszów 35-123" GridPane.columnIndex="2" GridPane.rowIndex="3">
-                    <GridPane.margin>
-                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
-                    </GridPane.margin>
-                </TextField>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Telefon" GridPane.halignment="LEFT" GridPane.rowIndex="4">
-                    <GridPane.margin>
-                        <Insets left="8.0" right="8.0" top="8.0" />
-                    </GridPane.margin>
-                </Text>
-                <TextField fx:id="phone" text="+48 731 731 731" GridPane.rowIndex="5">
-                    <GridPane.margin>
-                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
-                    </GridPane.margin>
-                </TextField>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="E-mail" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="4">
-                    <GridPane.margin>
-                        <Insets left="8.0" right="8.0" top="8.0" />
-                    </GridPane.margin>
-                </Text>
-                <TextField fx:id="email" text="adam.kwasniewski@example.com" GridPane.columnIndex="1" GridPane.rowIndex="5">
-                    <GridPane.margin>
-                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
-                    </GridPane.margin>
-                </TextField>
-            </children>
-            <VBox.margin>
-                <Insets bottom="8.0" />
-            </VBox.margin>
-        </GridPane>
-        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Dane medyczne" VBox.vgrow="ALWAYS">
-            <font>
-                <Font size="16.0" />
-            </font>
-            <VBox.margin>
-                <Insets left="8.0" right="8.0" top="8.0" />
-            </VBox.margin>
-        </Text>
-        <GridPane maxHeight="500.0" maxWidth="1000.0" prefHeight="58.0" prefWidth="600.0" VBox.vgrow="ALWAYS">
-            <columnConstraints>
-                <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" minWidth="10.0" percentWidth="33.0" />
-                <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" minWidth="10.0" percentWidth="33.0" prefWidth="100.0" />
-                <ColumnConstraints halignment="CENTER" hgrow="ALWAYS" minWidth="10.0" percentWidth="33.0" prefWidth="100.0" />
-            </columnConstraints>
-            <rowConstraints>
-                <RowConstraints minHeight="10.0" vgrow="NEVER" />
-                <RowConstraints minHeight="10.0" vgrow="NEVER" />
-            </rowConstraints>
-            <children>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Grupa krwi" GridPane.halignment="LEFT">
-                    <GridPane.margin>
-                        <Insets left="8.0" right="8.0" top="8.0" />
-                    </GridPane.margin>
-                </Text>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Wzrost (cm)" GridPane.columnIndex="1" GridPane.halignment="LEFT">
-                    <GridPane.margin>
-                        <Insets left="8.0" right="8.0" top="8.0" />
-                    </GridPane.margin>
-                </Text>
-                <TextField text="180" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                    <GridPane.margin>
-                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
-                    </GridPane.margin>
-                </TextField>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Waga (kg)" GridPane.columnIndex="2" GridPane.halignment="LEFT">
-                    <GridPane.margin>
-                        <Insets left="8.0" right="8.0" top="8.0" />
-                    </GridPane.margin>
-                </Text>
-                <TextField text="94" GridPane.columnIndex="2" GridPane.rowIndex="1">
-                    <GridPane.margin>
-                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
-                    </GridPane.margin>
-                </TextField>
-                <ComboBox promptText="(Nie wybrano)" GridPane.halignment="LEFT" GridPane.rowIndex="1" GridPane.valignment="CENTER">
-                    <GridPane.margin>
-                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
-                    </GridPane.margin>
-                </ComboBox>
-            </children>
-        </GridPane>
-        <HBox alignment="CENTER_LEFT" maxHeight="100.0" maxWidth="1000.0" prefHeight="30.0" prefWidth="600.0" VBox.vgrow="ALWAYS">
+<BorderPane minHeight="400.0" minWidth="600.0" prefHeight="540.0" prefWidth="720.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.AccountDetailsView">
+   <center>
+      <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="4.0" stylesheets="@../common.css">
+          <children>
+              <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Dane ogólne" VBox.vgrow="ALWAYS">
+                  <VBox.margin>
+                      <Insets />
+                  </VBox.margin>
+                  <font>
+                      <Font size="16.0" />
+                  </font>
+              </Text>
+              <GridPane hgap="4.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" vgap="4.0">
+                  <columnConstraints>
+                      <ColumnConstraints hgrow="ALWAYS" minWidth="100.0" percentWidth="33.0" prefWidth="100.0" />
+                      <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="100.0" percentWidth="33.0" prefWidth="100.0" />
+                      <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="100.0" percentWidth="33.0" prefWidth="100.0" />
+                  </columnConstraints>
+                  <rowConstraints>
+                      <RowConstraints minHeight="10.0" vgrow="NEVER" />
+                      <RowConstraints minHeight="10.0" valignment="TOP" vgrow="NEVER" />
+                      <RowConstraints minHeight="10.0" vgrow="NEVER" />
+                      <RowConstraints minHeight="10.0" valignment="TOP" vgrow="NEVER" />
+                  </rowConstraints>
+                  <children>
+                      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Imię" GridPane.halignment="LEFT">
+                          <GridPane.margin>
+                              <Insets />
+                          </GridPane.margin>
+                      </Text>
+                      <TextField fx:id="nameField" text="Adam" GridPane.rowIndex="1">
+                          <GridPane.margin>
+                              <Insets bottom="8.0" />
+                          </GridPane.margin>
+                      </TextField>
+                      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Nazwisko" GridPane.columnIndex="1" GridPane.halignment="LEFT">
+                          <GridPane.margin>
+                              <Insets />
+                          </GridPane.margin>
+                      </Text>
+                      <TextField fx:id="surnameField" text="Kwaśniewski" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                          <GridPane.margin>
+                              <Insets bottom="8.0" />
+                          </GridPane.margin>
+                      </TextField>
+                      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="PESEL" GridPane.columnIndex="2" GridPane.halignment="LEFT">
+                          <GridPane.margin>
+                              <Insets />
+                          </GridPane.margin>
+                      </Text>
+                      <TextField fx:id="peselField" text="91011754321" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                          <GridPane.margin>
+                              <Insets bottom="8.0" />
+                          </GridPane.margin>
+                      </TextField>
+                      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="E-mail" GridPane.halignment="LEFT" GridPane.rowIndex="2">
+                          <GridPane.margin>
+                              <Insets />
+                          </GridPane.margin>
+                      </Text>
+                      <TextField fx:id="emailField" text="adam.kwasniewski@example.com" GridPane.rowIndex="3">
+                          <GridPane.margin>
+                              <Insets bottom="8.0" />
+                          </GridPane.margin>
+                      </TextField>
+                      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Telefon" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="2">
+                          <GridPane.margin>
+                              <Insets />
+                          </GridPane.margin>
+                      </Text>
+                      <TextField fx:id="phoneField" text="+48 731 731 731" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                          <GridPane.margin>
+                              <Insets bottom="8.0" />
+                          </GridPane.margin>
+                      </TextField>
+                  </children>
+                  <VBox.margin>
+                      <Insets bottom="8.0" />
+                  </VBox.margin>
+              </GridPane>
+              <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Adres" VBox.vgrow="ALWAYS">
+                  <font>
+                      <Font size="16.0" />
+                  </font>
+                  <VBox.margin>
+                      <Insets />
+                  </VBox.margin>
+              </Text>
+              <GridPane hgap="4.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" vgap="4.0">
+                  <columnConstraints>
+                      <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="100.0" percentWidth="33.0" prefWidth="100.0" />
+                      <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="100.0" percentWidth="33.0" prefWidth="100.0" />
+                      <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="100.0" percentWidth="33.0" prefWidth="100.0" />
+                  </columnConstraints>
+                  <rowConstraints>
+                      <RowConstraints minHeight="10.0" vgrow="NEVER" />
+                  <RowConstraints minHeight="10.0" valignment="TOP" vgrow="NEVER" />
+                  <RowConstraints minHeight="10.0" valignment="TOP" vgrow="NEVER" />
+                  <RowConstraints minHeight="10.0" valignment="TOP" vgrow="NEVER" />
+                  </rowConstraints>
+               <children>
+                      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Miasto" textAlignment="CENTER">
+                          <GridPane.margin>
+                              <Insets />
+                          </GridPane.margin>
+                      </Text>
+                      <TextField fx:id="cityField" text="Rzeszów" GridPane.rowIndex="1">
+                          <GridPane.margin>
+                              <Insets bottom="8.0" />
+                          </GridPane.margin>
+                      </TextField>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Ulica" GridPane.columnIndex="1">
+                     <GridPane.margin>
+                        <Insets />
+                     </GridPane.margin>
+                  </Text>
+                  <TextField fx:id="streetField" text="Nieistniejąca" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                     <GridPane.margin>
+                        <Insets bottom="8.0" />
+                     </GridPane.margin>
+                  </TextField>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Numer bundynku (i mieszkania)" GridPane.columnIndex="2">
+                     <GridPane.margin>
+                        <Insets />
+                     </GridPane.margin>
+                  </Text>
+                  <TextField fx:id="buildingField" text="17a/6" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                     <GridPane.margin>
+                        <Insets bottom="8.0" />
+                     </GridPane.margin>
+                  </TextField>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Kod pocztowy" textAlignment="CENTER" GridPane.rowIndex="2" />
+                  <TextField fx:id="postalCodeField" text="35-123" GridPane.rowIndex="3">
+                     <GridPane.margin>
+                        <Insets bottom="8.0" />
+                     </GridPane.margin>
+                  </TextField>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Miasto poczty" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <TextField fx:id="postalCityField" text="Rzeszów" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                     <GridPane.margin>
+                        <Insets bottom="8.0" />
+                     </GridPane.margin>
+                  </TextField>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="8.0" />
+               </VBox.margin>
+              </GridPane>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Dane lekarza" visible="false" VBox.vgrow="ALWAYS">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </Text>
+          </children>
+         <opaqueInsets>
+            <Insets />
+         </opaqueInsets>
+      </VBox>
+   </center>
+   <bottom>
+        <HBox alignment="CENTER_LEFT" maxHeight="100.0" maxWidth="1000.0" prefHeight="30.0" prefWidth="600.0" BorderPane.alignment="CENTER">
             <children>
                 <HBox alignment="CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
                     <children>
-                        <Button fx:id="markUnreadButton1" mnemonicParsing="false" prefWidth="200.0" text="Edytuj">
+                        <Button fx:id="goToVisitsButton" mnemonicParsing="false" onAction="#goToVisitsAction" prefWidth="200.0" text="Przejdź do wizyt">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
-                        <Button fx:id="markUnreadButton11" mnemonicParsing="false" prefWidth="200.0" text="Przejdź do wizyt">
+                        <Button fx:id="goToPrescriptionsButton" mnemonicParsing="false" onAction="#goToPrescriptionsAction" prefWidth="200.0" text="Przejdź do recept">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
-                        <Button fx:id="markUnreadButton111" mnemonicParsing="false" prefWidth="200.0" text="Przejdź do recept">
+                        <Button fx:id="goToReferralsButton" mnemonicParsing="false" onAction="#goToReferralsAction" prefWidth="200.0" text="Przejdź do skierowań">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
-                        <Button fx:id="markUnreadButton112" mnemonicParsing="false" prefWidth="200.0" text="Przejdź do skierowań">
+                        <Button fx:id="editButton" mnemonicParsing="false" onAction="#editAction" prefWidth="200.0" text="Edytuj">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
+                  <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveButton" prefWidth="200.0" text="Zapisz">
+                     <padding>
+                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                     </padding>
+                  </Button>
                     </children>
                 </HBox>
             </children>
         </HBox>
-    </children>
-</VBox>
+   </bottom>
+   <padding>
+      <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+   </padding>
+</BorderPane>

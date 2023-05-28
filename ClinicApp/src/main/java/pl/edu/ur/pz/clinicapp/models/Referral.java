@@ -1,7 +1,7 @@
 package pl.edu.ur.pz.clinicapp.models;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @NamedNativeQueries(
         {
@@ -59,7 +59,7 @@ public class Referral extends MedicalHistoryEntry {
      * Doctor who created the referral.
      */
     public Doctor getDoctor() {
-        return (Doctor) getAddedBy();
+        return getAddedBy().asDoctor();
     }
 
     /**
@@ -86,7 +86,7 @@ public class Referral extends MedicalHistoryEntry {
     /**
      * Date of request (referral added/start date).
      */
-    public Timestamp getRequestDate() {
+    public Instant getRequestDate() {
         return getAddedDate();
     }
 
@@ -94,13 +94,13 @@ public class Referral extends MedicalHistoryEntry {
      * Date of fulfilment of the referral (when extra medical examinations took place). Null if unknown or not fulfilled yet.
      */
     @Column(nullable = true)
-    private Timestamp fulfilmentDate;
+    private Instant fulfilmentDate;
 
-    public Timestamp getFulfilmentDate() {
+    public Instant getFulfilmentDate() {
         return fulfilmentDate;
     }
 
-    public void setFulfilmentDate(Timestamp fulfilmentDate) {
+    public void setFulfilmentDate(Instant fulfilmentDate) {
         this.fulfilmentDate = fulfilmentDate;
     }
 

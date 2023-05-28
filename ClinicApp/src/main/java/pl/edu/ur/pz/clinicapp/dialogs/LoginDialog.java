@@ -3,7 +3,6 @@ package pl.edu.ur.pz.clinicapp.dialogs;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -15,11 +14,11 @@ import javafx.stage.Stage;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
 import javax.security.auth.login.LoginException;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrBlank;
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.runDelayed;
 
 /**
@@ -50,10 +49,8 @@ public class LoginDialog extends Stage {
     }
 
     public LoginDialog(String rememberedUser, String rememberedPassword) {
-        pane = new BorderPane();
         var fxml = ClinicApplication.class.getResource("dialogs/LoginDialog.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
-//        fxmlLoader.setRoot(pane);
         fxmlLoader.setController(this);
 
         try {
@@ -70,16 +67,14 @@ public class LoginDialog extends Stage {
         errorText.setVisible(false);
         errorText.setManaged(false);
 
-        loadingView = new VBox(new Text("Logowanie...")) {{
-            setSpacing(8);
-            // TODO: add generic loading spinner control
-            // TODO: make it separate control as well
-        }};
+        loadingView = new VBox(new Text("Logowanie..."));
+        loadingView.setSpacing(8);
+        // TODO: add generic loading spinner control
 
-        if (rememberedUser != null && !rememberedUser.isBlank()) {
+        if (!isStringNullOrBlank(rememberedUser)) {
             identityTextField.setText(rememberedUser);
 
-            if (rememberedPassword != null && !rememberedPassword.isBlank()) {
+            if (!isStringNullOrBlank(rememberedUser)) {
                 runDelayed(200, () -> {
                     logInUsingRememberedData(rememberedUser, rememberedPassword);
                 });

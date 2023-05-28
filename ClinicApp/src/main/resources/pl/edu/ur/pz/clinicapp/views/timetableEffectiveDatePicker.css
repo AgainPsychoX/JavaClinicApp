@@ -1,0 +1,99 @@
+
+/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ * Following styles allow timetable-related date pickers to vaguely point out when next timetable effective dates are.
+ * Custom date picker cell factory is meant to add tags (`fancy[1-9]`) to the cells, selecting the base colors.
+ */
+
+
+
+/* Base */
+
+/* For testing inside Scene builder comment here */
+.date-picker-popup .day-cell {
+    -my-bg: derive(-fx-base,80%);
+    -my-fg: -fx-accent;
+}
+/* and uncomment here
+.date-picker-popup { -my-bg: hsb(108, 7%, 100%); -my-fg: hsb(108, 67%, 88%); }
+/**/
+
+
+
+/* Groups */
+
+.date-picker-popup .day-cell.fancy1 { -my-bg: hsb(0,   10%, 100%); -my-fg: hsb(0,   67%, 88%); }
+.date-picker-popup .day-cell.fancy2 { -my-bg: hsb(36,  10%, 100%); -my-fg: hsb(36,  67%, 88%); }
+.date-picker-popup .day-cell.fancy3 { -my-bg: hsb(72,  10%, 100%); -my-fg: hsb(72,  67%, 88%); }
+.date-picker-popup .day-cell.fancy4 { -my-bg: hsb(108, 10%, 100%); -my-fg: hsb(108, 67%, 88%); }
+.date-picker-popup .day-cell.fancy5 { -my-bg: hsb(144, 10%, 100%); -my-fg: hsb(144, 67%, 88%); }
+.date-picker-popup .day-cell.fancy6 { -my-bg: hsb(180, 10%, 100%); -my-fg: hsb(180, 67%, 88%); }
+.date-picker-popup .day-cell.fancy7 { -my-bg: hsb(216, 10%, 100%); -my-fg: hsb(216, 67%, 88%); }
+.date-picker-popup .day-cell.fancy8 { -my-bg: hsb(252, 10%, 100%); -my-fg: hsb(252, 67%, 88%); }
+.date-picker-popup .day-cell.fancy9 { -my-bg: hsb(288, 10%, 100%); -my-fg: hsb(288, 67%, 88%); }
+
+
+
+/* Restyling */
+
+.date-picker-popup > * > .day-cell {
+    -fx-border-color: derive(lightgray, 60%);
+    -fx-background: -my-bg;
+    -fx-background-color: -fx-background;
+    -fx-text-fill: -fx-text-background-color;
+}
+
+.date-picker-popup > * > .today {
+    -fx-background-color: -my-bg,
+                          derive(derive(-my-fg, 20%), -20%),
+                          -my-bg;
+    -fx-background-insets: 1, 2, 3;
+}
+.date-picker-popup > * > .day-cell:hover,
+.date-picker-popup > * > .selected,
+.date-picker-popup > * > .previous-month.selected,
+.date-picker-popup > * > .next-month.selected {
+    -fx-background: -my-fg;
+}
+.date-picker-popup > * > .previous-month:hover,
+.date-picker-popup > * > .next-month:hover {
+    -fx-background: derive(-my-fg, 20%);
+}
+.date-picker-popup > * > .today:hover,
+.date-picker-popup > * > .today.selected {
+    -fx-background-color: -my-fg,
+                          -my-fg,
+                          -my-fg;
+}
+.date-picker-popup > * > .day-cell:focused,
+.date-picker-popup > * > .today:focused {
+    -fx-background-color: -my-bg,
+                          derive(-my-fg, 30%),
+                          -my-bg;
+    -fx-background-insets: 1, 2, 3;
+}
+.date-picker-popup > * > .day-cell:focused:hover,
+.date-picker-popup > * > .today:focused:hover,
+.date-picker-popup > * > .selected:focused,
+.date-picker-popup > * > .today.selected:focused {
+    -fx-background-color: -my-fg,
+                          derive(-my-fg, 30%),
+                          -my-fg;
+}
+.date-picker-popup > * > .previous-month,
+.date-picker-popup > * > .next-month {
+    -fx-background: derive(-my-bg, -5%);
+}
+.date-picker-popup > * > .previous-month.today,
+.date-picker-popup > * > .next-month.today {
+    -fx-background-color: derive(-my-bg, -5%),
+                          -my-fg,
+                          derive(-my-bg, -5%);
+}
+.date-picker-popup > * > .previous-month.today:hover,
+.date-picker-popup > * > .next-month.today:hover {
+    -fx-background-color: derive(-my-fg, 20%),
+                          -my-fg,
+                          derive(-my-fg, 20%);
+}
+
+

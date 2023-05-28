@@ -26,7 +26,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 
 
@@ -39,15 +39,24 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
 
     private static final BooleanProperty editState = new SimpleBooleanProperty(false);
 
-    @FXML protected HBox buttonBox;
-    @FXML protected TextField patientTextField;
-    @FXML protected TextField doctorTextField;
-    @FXML protected TextArea notesTextField;
-    @FXML protected TextField tagsTextField;
-    @FXML protected TextField codeTextField;
-    @FXML protected Button editButton;
-    @FXML protected Button ikpButton;
-    @FXML protected Button deleteButton;
+    @FXML
+    protected HBox buttonBox;
+    @FXML
+    protected TextField patientTextField;
+    @FXML
+    protected TextField doctorTextField;
+    @FXML
+    protected TextArea notesTextField;
+    @FXML
+    protected TextField tagsTextField;
+    @FXML
+    protected TextField codeTextField;
+    @FXML
+    protected Button editButton;
+    @FXML
+    protected Button ikpButton;
+    @FXML
+    protected Button deleteButton;
 
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
     Query editQuery = session.getNamedQuery("editPrescription");
@@ -161,7 +170,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
             notesTextField.setText(null);
             codeTextField.setText(null);
             tagsTextField.setText(null);
-            targetPatient = (Patient) context[1];
+            targetPatient = ((User) context[1]).asPatient();
             editState.setValue(true);
 
             patientTextField.setText(targetPatient.getDisplayName());
@@ -191,7 +200,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                         Alert alert = new Alert(Alert.AlertType.ERROR);
                         alert.setTitle("Błąd zapisu");
                         alert.setHeaderText("Nie wypełniono wymaganych pól");
-                        alert.setContentText("Wszytkie pola są wymagane.");
+                        alert.setContentText("Wszystkie pola są wymagane.");
                         alert.showAndWait();
                         editState.setValue(!editState.getValue());
                     } else {
@@ -231,7 +240,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                     newPr.setGovernmentId((codeTextField.getText() == null)
                             ? null : codeTextField.getText().trim());
                     newPr.setPatient(targetPatient);
-                    newPr.setAddedDate(new Timestamp(System.currentTimeMillis()));
+                    newPr.setAddedDate(Instant.now());
                     session.persist(newPr);
                     transaction.commit();
                     editState.setValue(!editState.getValue());

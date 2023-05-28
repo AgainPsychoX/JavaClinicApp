@@ -8,12 +8,14 @@ module pl.edu.ur.pz.clinicapp {
     requires org.controlsfx.controls;
     requires java.naming;
     requires java.desktop;
+    requires org.jetbrains.annotations;
 
 
     exports pl.edu.ur.pz.clinicapp;
     exports pl.edu.ur.pz.clinicapp.models;
 
     opens pl.edu.ur.pz.clinicapp to javafx.fxml;
+    opens pl.edu.ur.pz.clinicapp.controls to javafx.fxml;
     opens pl.edu.ur.pz.clinicapp.dialogs to javafx.fxml;
     opens pl.edu.ur.pz.clinicapp.models to org.hibernate.orm.core;
     opens pl.edu.ur.pz.clinicapp.utils to org.hibernate.orm.core, javafx.fxml;
