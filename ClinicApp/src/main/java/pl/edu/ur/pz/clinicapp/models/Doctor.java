@@ -7,6 +7,9 @@ import java.time.Duration;
 
 @Entity
 @Table(name = "doctors")
+@NamedQueries({
+        @NamedQuery(name = "doctors",  query = "FROM Doctor d LEFT JOIN FETCH d.user")
+})
 public class Doctor {
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Doctors are users
