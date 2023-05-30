@@ -196,7 +196,8 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
             if (currMode == PrMode.DETAILS) {
                 if (editState.getValue()) {
                     if (notesTextField.getText().trim().equals("") || tagsTextField.getText() == null ||
-                            tagsTextField.getText().trim().equals("")) {
+                            tagsTextField.getText().trim().equals("") || codeTextField.getText() == null ||
+                            codeTextField.getText().trim().equals("")) {
                         Alert alert = new Alert(Alert.AlertType.ERROR);
                         alert.setTitle("Błąd zapisu");
                         alert.setHeaderText("Nie wypełniono wymaganych pól");
@@ -221,8 +222,9 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                     }
                 }
             } else {
-                if (notesTextField.getText().trim().equals("")
-                        || tagsTextField.getText() == null || tagsTextField.getText().trim().equals("")) {
+                if (notesTextField.getText().trim().equals("") || notesTextField.getText() == null
+                        || tagsTextField.getText() == null || tagsTextField.getText().trim().equals("")
+                || codeTextField.getText().trim().equals("") || codeTextField.getText() == null) {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setTitle("Błąd zapisu");
                     alert.setHeaderText("Nie wypełniono wymaganych pól");

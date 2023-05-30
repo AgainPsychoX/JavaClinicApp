@@ -44,7 +44,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     @FXML
     protected TableColumn<Prescription, String> doctorCol;
     @FXML
-    protected TableColumn<Prescription, Integer> codeCol;
+    protected TableColumn<Prescription, String> codeCol;
     @FXML
     protected TableColumn<Prescription, String> tagsCol;
     @FXML
@@ -80,7 +80,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
 
         doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getDoctorName()));
         patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatientName()));
-        codeCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getId()));
+        codeCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getGovernmentId()));
         tagsCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getStringTags()));
         dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddedDate().toString()));
 
