@@ -101,6 +101,9 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
 //        if((availableFields != null) && selectedFields != null && selectedFieldsListView.getItems() != null && availableFieldsListView.getItems() != null){
 //            dispose();
 //        }
+        if(context.length == 0 ){
+
+        }
         currMode = (ReportMode) context[0];
         refresh();
         saveButton.setOnAction(event -> {

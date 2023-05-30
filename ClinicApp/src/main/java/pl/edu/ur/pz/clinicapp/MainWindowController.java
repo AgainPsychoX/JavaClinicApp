@@ -209,7 +209,7 @@ public class MainWindowController implements Initializable {
 
             if (role == User.Role.ADMIN) {
                 c.add(buttonForNavigationMenu("Zarządzanie kontami", (e) -> goToView(Views.ACCOUNTS)));
-                c.add(buttonForNavigationMenu("Raporty", (e) -> goToView(Views.REPORTS)));
+//                c.add(buttonForNavigationMenu("Raporty", (e) -> goToView(Views.REPORTS)));
             }
 
             c.add(buttonForLogout());

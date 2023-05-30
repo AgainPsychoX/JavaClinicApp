@@ -101,7 +101,7 @@
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
-                        <Button fx:id="ikpButton" mnemonicParsing="false" onAction="#moveToIKP" prefWidth="200.0" text="Przejdź do e-recepty (IKP)">
+                        <Button fx:id="ikpButton" mnemonicParsing="false" onAction="#sendToIKP" prefWidth="200.0" text="Przejdź do e-recepty (IKP)">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>

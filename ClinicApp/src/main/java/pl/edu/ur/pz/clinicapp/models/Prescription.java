@@ -13,7 +13,11 @@ import javax.persistence.*;
         ),
         @NamedNativeQuery(
                 name = "editPrescription",
-                query = "UPDATE prescriptions SET notes = :notes, tags = :tags, government_id = :governmentID WHERE id = :prId",
+                query = "UPDATE prescriptions " +
+                        "SET notes = :notes, " +
+                        "tags = :tags, " +
+                        "government_id = :governmentID " +
+                        "WHERE id = :prId",
                 resultClass = Prescription.class
         ),
 
@@ -23,6 +27,17 @@ import javax.persistence.*;
                 resultClass = Prescription.class
         )
 })
+
+@NamedQueries({
+            @NamedQuery(
+                    name = "allPrescriptions",
+                    query = "FROM Prescription"
+            ),
+            @NamedQuery(
+                    name = "createdPrescriptions",
+                    query = "FROM Prescription  WHERE addedBy = :user"
+            ),
+        })
 
 public class Prescription extends MedicalHistoryEntry {
     @Id
@@ -50,10 +65,6 @@ public class Prescription extends MedicalHistoryEntry {
      */
     public String getDoctorName() {
         return this.getAddedBy().getDisplayName();
-    }
-
-    public String getPatientName(){
-        return this.getPatient().getDisplayName();
     }
 
     public Integer getId(){

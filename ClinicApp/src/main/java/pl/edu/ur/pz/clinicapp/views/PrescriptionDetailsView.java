@@ -50,7 +50,15 @@ import java.util.TimeZone;
 
 public class PrescriptionDetailsView extends ChildControllerBase<MainWindowController> {
 
-    private static final BooleanProperty editState = new SimpleBooleanProperty(false);
+    /**
+     * Available window modes (details of existing prescription or creation of a new one).
+     */
+
+    public enum PrMode {DETAILS, CREATE}
+    /**
+     * Current view mode.
+     */
+    private PrMode currMode;
 
     @FXML
     protected HBox buttonBox;
@@ -70,14 +78,16 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
     protected Button ikpButton;
     @FXML
     protected Button deleteButton;
+    @FXML
+    protected Button printButton;
+
+    private static final BooleanProperty editState = new SimpleBooleanProperty(false);
+
 
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
     Query editQuery = session.getNamedQuery("editPrescription");
     Query deleteQuery = session.getNamedQuery("deletePrescription");
-    /**
-     * Current view mode.
-     */
-    private PrMode currMode;
+
     private Prescription prescription;
     private Patient targetPatient;
 
@@ -123,10 +133,10 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
         if (editState.getValue()) {
             if (exitConfirm()) {
                 editState.setValue(!editState.getValue());
-                this.getParentController().goBack();
+                this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
             }
         } else {
-            this.getParentController().goBack();
+            this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
         }
     }
 
@@ -138,14 +148,15 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
      */
     @Override
     public void populate(Object... context) {
+        User.Role role = ClinicApplication.getUser().getRole();
         editState.addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observableValue, Boolean before, Boolean after) {
                 if (after) {
-                    editButton.setText("Zapisz");
-                    notesTextField.setEditable(true);
-                    codeTextField.setEditable(true);
-                    tagsTextField.setEditable(true);
+                        editButton.setText("Zapisz");
+                        notesTextField.setEditable(true);
+                        codeTextField.setEditable(true);
+                        tagsTextField.setEditable(true);
                 } else {
                     editButton.setText("Edytuj");
                     notesTextField.setEditable(false);
@@ -154,7 +165,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                 }
             }
         });
-        User.Role role = ClinicApplication.getUser().getRole();
+
         currMode = (PrMode) context[0];
 
         if (currMode == PrMode.DETAILS) {
@@ -200,6 +211,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
         tagsTextField.setText(prescription.getTags());
         codeTextField.setText(prescription.getGovernmentId());
         patientTextField.setText(prescription.getPatientName());
+//        TODO add DatePicker
     }
 
     @FXML
@@ -208,8 +220,10 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
         try {
             if (currMode == PrMode.DETAILS) {
                 if (editState.getValue()) {
-                    if (notesTextField.getText().trim().equals("") || tagsTextField.getText() == null ||
-                            tagsTextField.getText().trim().equals("")) {
+//                    TODO add DatePicker check
+                    if (notesTextField.getText().trim().equals("") || notesTextField.getText() == null
+                            || tagsTextField.getText() == null || tagsTextField.getText().trim().equals("")
+                            || codeTextField.getText().trim().equals("") || codeTextField.getText() == null){
                         Alert alert = new Alert(Alert.AlertType.ERROR);
                         alert.setTitle("Błąd zapisu");
                         alert.setHeaderText("Nie wypełniono wymaganych pól");
@@ -232,6 +246,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                         transaction.commit();
                         ClinicApplication.getEntityManager().refresh(prescription);
                     }
+//                    TODO add alert for successful edit
                 }
             } else {
                 if (notesTextField.getText().trim().equals("")
@@ -254,20 +269,27 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                             ? null : codeTextField.getText().trim());
                     newPr.setPatient(targetPatient);
                     newPr.setAddedDate(Instant.now());
+
                     session.persist(newPr);
                     transaction.commit();
                     editState.setValue(!editState.getValue());
+
                     Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
                     alert.setTitle("Dodawanie recepty");
                     alert.setHeaderText("Pomyślnie dodano receptę");
                     alert.setContentText("Kod recepty: " + newPr.getGovernmentId());
                     alert.showAndWait();
-                    this.getParentController().goBack();
+
+                    this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
                     return;
                 }
             }
             editState.setValue(!editState.getValue());
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            transaction = session.getTransaction();
+            if(transaction.isActive())
+                transaction.rollback();
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Błąd zapisu");
             alert.setContentText(e.getLocalizedMessage());
@@ -301,7 +323,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
      * Opens government's website for patients.
      */
     @FXML
-    protected void moveToIKP() {
+    protected void sendToIKP() {
         try {
             Desktop.getDesktop().browse(new URI("https://www.pacjent.gov.pl"));
         } catch (IOException | URISyntaxException e) {
@@ -369,5 +391,5 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
         alert.showAndWait();
     }
 
-    public enum PrMode {DETAILS, CREATE}
+
 }
