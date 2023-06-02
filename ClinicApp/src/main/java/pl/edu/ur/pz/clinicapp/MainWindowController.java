@@ -24,9 +24,14 @@ import java.net.URL;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static pl.edu.ur.pz.clinicapp.utils.JPAUtils.toStringWithoutInitializing;
+
 public class MainWindowController implements Initializable {
+    private static final Logger logger = Logger.getLogger(MainWindowController.class.getName());
+
     public enum Views {
         WELCOME,
         NOTIFICATIONS,
@@ -102,7 +107,7 @@ public class MainWindowController implements Initializable {
         final var cached = views.get(which);
         if (cached == null) {
             try {
-                Logger.getGlobal().finest("Loading view: " + which);
+                logger.fine("Loading view: " + which);
                 final var loader = new FXMLLoader(viewToResource.get(which));
                 final Node node = loader.load();
                 final ChildController<MainWindowController> controller = loader.getController();
@@ -228,6 +233,18 @@ public class MainWindowController implements Initializable {
      * @param context Additional context parameter(s).
      */
     public void goToViewRaw(Views which, Object... context) {
+        logger.info("Navigation to view: %s".formatted(which));
+        if (logger.isLoggable(Level.FINE)) {
+            if (context.length > 0) {
+                for (int i = 0; i < context.length; i++) {
+                    logger.fine("Context: [%d] == %s".formatted(i, toStringWithoutInitializing(context[i])));
+                }
+            }
+            else {
+                logger.fine("Context: (none)");
+            }
+        }
+
         final var newView = getView(which);
         final var oldView = getPreviousView();
 
@@ -274,6 +291,4 @@ public class MainWindowController implements Initializable {
             view.controller.refresh();
         }
     }
-
-
 }

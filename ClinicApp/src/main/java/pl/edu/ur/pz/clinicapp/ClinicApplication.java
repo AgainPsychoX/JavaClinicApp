@@ -321,7 +321,7 @@ public class ClinicApplication extends Application {
     static public void logIn(String emailOrPESEL, String password) throws LoginException {
         logger.info("Logging in as `%s`".formatted(emailOrPESEL));
         instance.connectToDatabaseAsUser(emailOrPESEL, password);
-        instance.user = User.getCurrent();
+        instance.user = User.getCurrentFromConnection();
         logger.info("Logged in");
     }
 

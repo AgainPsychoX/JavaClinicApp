@@ -15,14 +15,15 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrBlank;
                 +"VALUES (:building, :city, :pesel, :post_city, :post_code, :street, :id)",
                 resultClass = Patient.class)
 })
-public class Patient {
+public class Patient implements UserReference {
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Patients are users
      */
 
     @Id
     private Integer id;
-    public int getId() {
+    @Override
+    public Integer getId() {
         return id;
     }
 
@@ -35,6 +36,31 @@ public class Patient {
         return user;
     }
 
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * General object operators
+     */
+
+    @Override
+    public String toString() {
+        return String.format("Patient{id=%d,pesel=%s,name=%s,surname=%s}",
+                id, getPESEL(), getName(), getSurname());
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) return true;
+        if (other instanceof Patient that) {
+            return getId() != null && getId().equals(that.getId());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return getId() != null ? getId().hashCode() : super.hashCode();
+    }
 
 
 

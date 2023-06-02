@@ -10,8 +10,8 @@ import java.util.List;
 @Entity
 @Table(name = "users")
 @NamedQueries({
-        @NamedQuery(name = "users.current", query = "FROM User u WHERE u.databaseUsername = FUNCTION('CURRENT_USER')"),
-        @NamedQuery(name = "users.get_by_login", query = "FROM User u WHERE u.databaseUsername = FUNCTION('get_user_internal_name', :input)"),
+        @NamedQuery(name = "User.getCurrent", query = "FROM User u WHERE u.databaseUsername = FUNCTION('CURRENT_USER')"),
+        @NamedQuery(name = "User.getByLogin", query = "FROM User u WHERE u.databaseUsername = FUNCTION('get_user_internal_name', :input)"),
         @NamedQuery(name = "User.clearTimetables", query = "DELETE FROM Timetable t WHERE t.user.id = :id")
 })
 @NamedNativeQueries({
@@ -27,7 +27,7 @@ import java.util.List;
         @NamedNativeQuery(name = "findDatabaseUser", query = "SELECT FROM pg_catalog.pg_roles WHERE rolname = :rolname",
                 resultClass = User.class),
 })
-public final class User {
+public final class User implements UserReference {
     public enum Role {
         ANONYMOUS,
         // TODO: rethink role field (as users can be both patients & doctors at the same time, no?
@@ -53,11 +53,17 @@ public final class User {
     }
 
     @Id
+    @Access(AccessType.PROPERTY)
     @Column(nullable = false)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
+    @Override
     public Integer getId() {
         return id;
+    }
+    @SuppressWarnings("unused") // required by @Access(AccessType.PROPERTY)
+    private void setId(Integer id) {
+        this.id = id;
     }
 
     @Enumerated(EnumType.STRING)
@@ -107,22 +113,7 @@ public final class User {
         this.surname = surname;
     }
 
-    @OneToMany(mappedBy = "sourceUser", fetch = FetchType.LAZY)
-    @OrderBy("sentDate DESC")
-    private List<Notification> allSentNotifications;
-    public List<Notification> getAllSentNotifications() {
-        return allSentNotifications;
-    }
-
-    @OneToMany(mappedBy = "destinationUser", fetch = FetchType.LAZY)
-    @OrderBy("sentDate DESC")
-    private List<Notification> allReceivedNotifications;
-    public List<Notification> getAllReceivedNotifications() {
-        return allReceivedNotifications;
-    }
-
-
-
+    @Override
     public String getDisplayName() {
         if (name != null) {
             if (surname != null)
@@ -132,6 +123,12 @@ public final class User {
         }
         return null;
     }
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Users have database accounts
+     */
 
     @Column(name = "internal_name", nullable = false, length = 40, unique = true)
     private String databaseUsername;
@@ -146,29 +143,44 @@ public final class User {
         final var em = ClinicApplication.getEntityManager();
         final var query = em.createNamedQuery("login");
         query.setParameter("input", emailOrPESEL.toLowerCase());
-        return (query.getSingleResult() == null) ? "" : (String) query.getSingleResult();
+        return (String) query.getSingleResult();
     }
 
+    // TODO: method to change password, potentially via some database function
+    //  to allow changing other users (patients) passwords by doctor/reception/admin.
 
-
-    static public User getCurrent() {
-        // TODO: rename the method to avoid confusion
-        return ClinicApplication.getEntityManager().createNamedQuery("users.current", User.class).getSingleResult();
+    /**
+     * Finds entity of user that currently connected (whose privileges are effective in this session).
+     * Prefer using {@link ClinicApplication#getUser()} to check for logged-in user,
+     * or even better: {@link ClinicApplication#requireUser()} in places where user must be logged-in.
+     * @return Entity of the user currently connected.
+     */
+    static public User getCurrentFromConnection() {
+        return ClinicApplication.getEntityManager().createNamedQuery("User.getCurrent", User.class).getSingleResult();
     }
 
+    /**
+     * Finds entity of user with given login string (email or PESEL).
+     * @param emailOrPESEL login string
+     * @return entity of found user
+     */
     static public User getByLogin(String emailOrPESEL) {
         final var em = ClinicApplication.getEntityManager();
-        final var query = em.createNamedQuery("users.get_by_login", User.class);
+        final var query = em.createNamedQuery("User.getByLogin", User.class);
         query.setParameter("input", emailOrPESEL.toLowerCase());
         return query.getSingleResult();
     }
 
 
 
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * General object operators
+     */
+
     @Override
     public String toString() {
-        return String.format("User{role=%s,name=%s,surname=%s,email=%s,internal=%s}",
-                role.toString(), name, surname, email, databaseUsername);
+        return String.format("User{id=%d,role=%s,name=%s,surname=%s,email=%s,internal=%s}",
+                id, role.toString(), name, surname, email, databaseUsername);
     }
 
     @Override
@@ -255,6 +267,24 @@ public final class User {
 
 
 
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Other users related entities
+     */
+
+    @OneToMany(mappedBy = "sourceUser", fetch = FetchType.LAZY)
+    @OrderBy("sentDate DESC")
+    private List<Notification> allSentNotifications;
+    public List<Notification> getAllSentNotifications() {
+        return allSentNotifications;
+    }
+
+    @OneToMany(mappedBy = "destinationUser", fetch = FetchType.LAZY)
+    @OrderBy("sentDate DESC")
+    private List<Notification> allReceivedNotifications;
+    public List<Notification> getAllReceivedNotifications() {
+        return allReceivedNotifications;
+    }
+
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true)
     @OrderBy("effective_date")
     private List<Timetable> timetables;
@@ -263,17 +293,14 @@ public final class User {
      * Provides access to timetables for given user. Upon persisting/merging,
      * the list will be persisted/merged as well, incl. deletion of removed elements.
      *
-     * @return List of all timetables objects related to the user,
-     * the latest effective date first as unmodifiable collection.
+     * @return List of all timetables objects related to the user
+     * in natural order (the oldest first).
      */
     public List<Timetable> getTimetables() {
         // TODO: custom PersistentCollection (to avoid add/remove/clear-Timetable in User)
         //  and custom CollectionPersister (to avoid N+1 more properly somehow)...
         if (!Hibernate.isInitialized(timetables)) {
-            final var entityManager = ClinicApplication.getEntityManager();
-            final var query = entityManager.createNamedQuery("Timetables.forUser", Timetable.class);
-            query.setParameter("user", this);
-            query.getResultList(); // to prefetch both timetables and their entries avoiding N+1
+            Timetable.forUser(this); // to prefetch both timetables and their entries avoiding N+1
         }
         return timetables;
     }
