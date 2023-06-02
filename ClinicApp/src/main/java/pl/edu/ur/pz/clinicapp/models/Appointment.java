@@ -1,11 +1,11 @@
 package pl.edu.ur.pz.clinicapp.models;
 
-import org.hibernate.annotations.NotFound;
-import org.hibernate.annotations.NotFoundAction;
+import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
 import javax.persistence.*;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 
 /**
  * Model representing patient registered visit to clinic to see selected doctor.
@@ -13,19 +13,21 @@ import java.time.Instant;
 @Entity
 @Table(name = "appointments")
 @NamedQueries({
-        /* Patient */
-        @NamedQuery(name = "appointments_as_patient",
-                query = "FROM Appointment a WHERE a.patient = :patient"),
-        @NamedQuery(name = "appointments_as_patient_from_date",
-                query = "FROM Appointment a WHERE a.patient = :patient AND :date <= a.date"),
-        @NamedQuery(name = "appointments_as_patient_between_dates",
-                query = "FROM Appointment a WHERE a.patient = :patient AND a.date BETWEEN :from AND :to"),
-        /* Doctor */
-        @NamedQuery(name = "appointments_as_doctor_between_dates",
-                query = "FROM Appointment a WHERE a.doctor = :doctor AND a.date BETWEEN :from AND :to"),
-        /* Any */
-        @NamedQuery(name = "appointments_as_user_between_dates",
-                query = "FROM Appointment a WHERE (a.doctor = :user OR a.patient = :user) AND a.date BETWEEN :from AND :to"),
+        @NamedQuery(name = "Appointments.forPatient.betweenDates", query = """
+                FROM Appointment a LEFT JOIN FETCH a.doctor
+                WHERE a.patient = :patient AND a.date BETWEEN :from AND :to
+                ORDER BY a.date
+                """),
+        @NamedQuery(name = "Appointments.forDoctor.betweenDates", query = """
+                FROM Appointment a LEFT JOIN FETCH a.patient
+                WHERE a.doctor = :doctor AND a.date BETWEEN :from AND :to
+                ORDER BY a.date
+                """),
+        @NamedQuery(name = "Appointments.forUser.betweenDates", query = """
+                FROM Appointment a LEFT JOIN FETCH a.doctor LEFT JOIN FETCH a.patient
+                WHERE (a.doctor.id = :user_id OR a.patient.id = :user_id) AND a.date BETWEEN :from AND :to
+                ORDER BY a.date
+                """),
         /* Other */
         // TODO: check if required
         @NamedQuery(name = "appointments",  query = "FROM Appointment"),
@@ -50,10 +52,28 @@ import java.time.Instant;
 })
 public class Appointment extends MedicalHistoryEntry implements Schedule.Entry {
     /**
+     * Queries and returns all appointments for given user in given range of time.
+     * Note: Might return partial data (logged-in user permissions might limit viewing other users' data).
+     * @param userReference Reference to user (user, patient or doctor).
+     * @param from Begin timestamp of the time range (inclusive).
+     * @param to End timestamp of the time range (inclusive).
+     * @return List of the appointments.
+     */
+    public static List<Appointment> forUserBetweenDates(UserReference userReference, Instant from, Instant to) {
+        final var query = ClinicApplication.getEntityManager()
+                .createNamedQuery("Appointments.forUser.betweenDates", Appointment.class);
+        query.setParameter("user_id", userReference.getId());
+        query.setParameter("from", from);
+        query.setParameter("to", to);
+        return query.getResultList();
+    }
+
+
+
+    /**
      * Doctor who will receive the patient.
      */
     @ManyToOne(fetch = FetchType.LAZY)
-    @NotFound(action = NotFoundAction.IGNORE)
     @JoinColumn(name = "doctor_id", referencedColumnName = "id", nullable = false)
     private Doctor doctor;
     public Doctor getDoctor() {
@@ -100,5 +120,10 @@ public class Appointment extends MedicalHistoryEntry implements Schedule.Entry {
     @Override
     public Type getType() {
         return Schedule.Entry.Type.APPOINTMENT;
+    }
+
+    @Override
+    public boolean doesCrossDays() {
+        return false;
     }
 }

@@ -265,7 +265,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
                 doctorCombo.getItems().addAll(doctors);
                 doctorCombo.setValue(ClinicApplication.getUser().asDoctor());
             } else {
-                doctors = entityManger.createNamedQuery("patients", Doctor.class).getResultList();
+                doctors = entityManger.createNamedQuery("doctors", Doctor.class).getResultList();
                 doctorCombo.getItems().addAll(doctors);
             }
             doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));

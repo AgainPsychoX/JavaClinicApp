@@ -134,6 +134,15 @@ public class Doctor implements UserReference {
     public void setMaxDaysInAdvance(int maxDaysInAdvance) {
         this.maxDaysInAdvance = maxDaysInAdvance;
     }
-    
-    // TODO: get doctor schedule
+
+
+
+    public List<Timetable> getTimetables() {
+        return Timetable.forUser(this);
+    }
+
+    // TODO: doctor schedule
+//    public Schedule getSchedule() {
+//        return Schedule.of(this);
+//    }
 }

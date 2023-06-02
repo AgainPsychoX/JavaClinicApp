@@ -68,6 +68,7 @@ public class MainWindowController implements Initializable {
             put(Views.PRESCRIPTIONS,        getViewResource("views/PrescriptionsView.fxml"));
             put(Views.PRESCRIPTION_DETAILS, getViewResource("views/PrescriptionDetailsView.fxml"));
             put(Views.TIMETABLE,            getViewResource("views/TimetableView.fxml"));
+            put(Views.SCHEDULE,             getViewResource("views/ScheduleView.fxml"));
             put(Views.REGISTER,             getViewResource("dialogs/RegisterDialog.fxml"));
     }};
 

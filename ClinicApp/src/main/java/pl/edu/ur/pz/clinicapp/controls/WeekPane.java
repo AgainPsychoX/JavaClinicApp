@@ -23,12 +23,16 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.ResourceBundle;
 
 public class WeekPane<T extends WeekPane.Entry> extends VBox {
     /**
      * Interface for entries to be placed on WeekPane.
+     *
+     * Entries longer than day should be divided into multiple entries.
      */
     public interface Entry extends Comparable<Entry> {
         DayOfWeek getDayOfWeek();
@@ -48,7 +52,41 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             return 0; // kinda illegal state (overlapping)
         }
 
-        // TODO: what about entries longer than day or across midnight?
+        default LocalTime startAsLocalTime() {
+            final var startMinute = getStartMinute();
+            return LocalTime.of(startMinute / 60, startMinute % 60);
+        }
+
+        /**
+         * Calculates potential entry start moment as zoned date time.
+         * @param date Date & zone to be used.
+         * @return Zoned date time for potential entry start.
+         */
+        default ZonedDateTime startAsZonedDateTime(ZonedDateTime date) {
+            assert date.getDayOfWeek() == getDayOfWeek();
+            final var startMinute = getStartMinute();
+            return date.toLocalDate()
+                    .atTime(startMinute / 60, startMinute % 60)
+                    .atZone(date.getZone());
+        }
+
+        default LocalTime endAsLocalTime() {
+            final var endMinute = getEndMinute();
+            return LocalTime.of(endMinute / 60, endMinute % 60);
+        }
+
+        /**
+         * Calculates potential entry end moment as zoned date time.
+         * @param date Date & zone to be used.
+         * @return Zoned date time for potential entry end.
+         */
+        default ZonedDateTime endAsZonedDateTime(ZonedDateTime date) {
+            assert date.getDayOfWeek() == getDayOfWeek();
+            final var endMinute = getEndMinute();
+            return date.toLocalDate()
+                    .atTime(endMinute / 60, endMinute % 60)
+                    .atZone(date.getZone());
+        }
     }
 
     @FXML protected GridPane headerGridPane;

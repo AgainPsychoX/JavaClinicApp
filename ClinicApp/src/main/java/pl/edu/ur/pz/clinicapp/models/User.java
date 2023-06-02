@@ -356,10 +356,4 @@ public final class User implements UserReference {
             query.executeUpdate();
         }
     }
-
-
-
-    public Schedule getSchedule() {
-        return Schedule.of(this);
-    }
 }
