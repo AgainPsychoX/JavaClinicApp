@@ -11,7 +11,7 @@ import javafx.scene.text.TextAlignment;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
-import pl.edu.ur.pz.clinicapp.controls.WeekPaneSelectionModel;
+import pl.edu.ur.pz.clinicapp.controls.WeekPaneFreeSelectionModel;
 import pl.edu.ur.pz.clinicapp.models.Appointment;
 import pl.edu.ur.pz.clinicapp.models.Doctor;
 import pl.edu.ur.pz.clinicapp.models.Schedule;
@@ -37,7 +37,7 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
     @FXML protected Button nextWeekButton;
 
     @FXML protected WeekPane<WeekPane.Entry> weekPane;
-    protected WeekPaneSelectionModel<WeekPane.Entry> weekPaneSelectionModel; // TODO: need custom here?
+    protected WeekPaneFreeSelectionModel<WeekPane.Entry> weekPaneSelectionModel;
 
     @FXML protected Button goTimetableButton;
     @FXML protected Button newVisitButton;
@@ -46,7 +46,7 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        weekPaneSelectionModel = new WeekPaneSelectionModel<>(weekPane);
+        weekPaneSelectionModel = new WeekPaneFreeSelectionModel<>(weekPane);
 
         // Enable details button only if there is any entry selected
         detailsButton.disableProperty().bind(weekPaneSelectionModel.selectedIndexProperty().isEqualTo(-1));
@@ -54,6 +54,7 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
         weekPane.setEntryCellFactory(weekPane -> new WeekPane.EntryCell<>() {
             {
                 setOnMouseClicked(event -> {
+                    event.consume();
                     if (event.getButton() == MouseButton.PRIMARY) {
                         final var entry = getItem();
                         weekPaneSelectionModel.select(entry);
@@ -67,7 +68,7 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
             @Override
             public void updateItem(WeekPane.Entry item, boolean empty) {
                 super.updateItem(item, empty);
-                getStyleClass().retainAll("cell", "entry"); // FIXME: set defaults
+                getStyleClass().retainAll("cell", "entry");
 
                 if (empty || item == null) {
                     setText("?");
@@ -77,15 +78,25 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
                     if (item instanceof Appointment appointment) {
                         final var patient = appointment.getPatient();
                         setTextAlignment(TextAlignment.LEFT);
+                        getStyleClass().add("appointment");
                         setText("%s %s. %s".formatted(
-                                appointment.startAsLocalTime().toString().replaceFirst("^0+(?!$)", ""),
+                                appointment.getStartAsLocalTime().toString().replaceFirst("^0+(?!$)", ""),
                                 patient.getName().charAt(0), patient.getSurname()
                         ));
                     } else if (item instanceof Schedule.SimpleEntry
                             || item instanceof Schedule.ProxyWeekPaneEntry) {
                         final var entry = (Schedule.Entry) item;
                         setTextAlignment(TextAlignment.CENTER);
-                        setText("(" + entry.getType().localizedName() + ")");
+                        if (entry.getType() == Schedule.Entry.Type.APPOINTMENT) {
+                            // If it's simple entry appointment, it means user (most likely patient)
+                            // doesn't have permissions to know about details of not-theirs appointment.
+                            setText("(inna wizyta)");
+                            getStyleClass().addAll("appointment", "other");
+                        }
+                        else {
+                            setText("(" + entry.getType().localizedName() + ")");
+                            getStyleClass().add(entry.getType().name().toLowerCase());
+                        }
                     } else {
                         assert false;
                     }
@@ -97,6 +108,26 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * State
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    /**
+     * @return date of currently selected week start (monday).
+     */
+    public LocalDate getDate() {
+        return datePicker.getValue();
+    }
+
+    /**
+     * @return date of selected date on the week pane (by entry or by free selector), or null if no selection.
+     */
+    public ZonedDateTime getSelectedDateTime() {
+        final var entry = weekPaneSelectionModel.getSelectedItem();
+        if (entry != null) {
+            return entry.calculatePotentialStartInWeek(getDate());
+        }
+        return getDate().atStartOfDay(ZoneId.systemDefault())
+                .plusDays(weekPaneSelectionModel.getSelectedDayOfWeek().ordinal())
+                .plusMinutes(weekPaneSelectionModel.getSelectedMinuteOfDay());
+    }
 
     protected Schedule schedule;
 
@@ -170,10 +201,6 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
         select(getDate());
     }
 
-    public LocalDate getDate() {
-        return datePicker.getValue();
-    }
-
     LocalDate alignDateToWeekStart(LocalDate date) {
         assert DayOfWeek.MONDAY.ordinal() == 0; // always true
         return date.minusDays(date.getDayOfWeek().ordinal());
@@ -188,6 +215,7 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
         final var weekStartDate = alignDateToWeekStart(date);
         datePicker.setValue(weekStartDate);
         weekPane.setEntries(schedule.generateWeekPaneEntriesForSchedule(weekStartDate));
+        weekPaneSelectionModel.clearSelection();
     }
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -218,14 +246,20 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
         getParentController().goToView(
                 MainWindowController.Views.TIMETABLE,
                 getUserReference(),
-                getDate() // TODO: use date of selected entry if avaliable
+                TimetableView.Mode.VIEW,
+                getSelectedDateTime()
         );
     }
 
     @FXML
     protected void newVisitAction(ActionEvent actionEvent) {
-        // TODO: allow preselect arbitrary time on the week pane
-
+        getParentController().goToView(
+                MainWindowController.Views.VISIT_DETAILS,
+                getUserReference(),
+                TimetableView.Mode.VIEW,
+                VisitsDetailsView.PrMode.CREATE
+        );
+        // TODO: allow passing preset info, like date = getSelectedDateTime()
     }
 
     @FXML

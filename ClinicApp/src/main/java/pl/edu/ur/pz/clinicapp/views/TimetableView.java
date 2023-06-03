@@ -37,24 +37,12 @@ import java.util.logging.Logger;
 import static pl.edu.ur.pz.clinicapp.utils.JPAUtils.transaction;
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
 
-/* TODO:
- *  steps:
- *      0. map FXML elements as fields -- DONE
- *      1. base modes switching -- DONE
- *      2. navigate timetables --- DONE
- *      3. dialog to add/edit/remove entries (reuse pattern from old project) --- DONE
- *      4. warning for unsaved changes (add fresh/dirty tracking)
- *      5. double click (or enter on focused) entry to edit --- DONE
- *      6. properly make use of populate interface -- DONE?
- *      7. finishing touches (like jumping to schedule)
- *  long term steps:
- *      + new timetable should base of the current selected one?
- *      + reuse view as schedule
- *      + early merge
- *      + fix user-patient-doctor dilemmas and permission issues
- *      + SQL side implementation of schedule checks
- *      + unit testing for timetable/schedules
- *      + enforce UI/UX consistency and code quality again (maybe tweak auto-formatting tool?)
+/* TODO (some also applies to ScheduleView, might require abstracting away):
+ *  + warning for unsaved changes (add fresh/dirty tracking)
+ *  + abstract away WeekPane.SelectableEntryCell, move weekPaneSelectionModel field into WeekPane?
+ *  + tab traversable entries & other keyboard accessibility
+ *  + new timetable should base of the current selected one?
+ *  + make date pickers week start on monday: https://stackoverflow.com/questions/70083214/how-to-make-monday-start-day-in-datepicker-calendar-java-javafx
  */
 
 /**
@@ -135,8 +123,8 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
                 else {
                     boolean isTall = this.getPrefHeight() > 32;
                     setText("%s - %s%s(%s)".formatted(
-                            item.startAsLocalTime().toString().replaceFirst("^0+(?!$)", ""),
-                            item.endAsLocalTime(),
+                            item.getStartAsLocalTime().toString().replaceFirst("^0+(?!$)", ""),
+                            item.getEndAsLocalTime(),
                             (isTall ? "\n" : " "),
                             (isTall ? longDurationConverter : shortDurationConverter)
                                     .toString(item.getDurationMinutes() * 60 * 1000)

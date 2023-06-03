@@ -77,12 +77,12 @@ public class Schedule {
                     continue;
                 }
 
-                ZonedDateTime entryEndTime = entry.endAsZonedDateTime(currentTime);
+                ZonedDateTime entryEndTime = entry.calculatePotentialStartAtDate(currentTime);
                 if (currentTime.isAfter(entryEndTime)) {
                     continue;
                 }
 
-                ZonedDateTime entryStartTime = entry.startAsZonedDateTime(currentTime);
+                ZonedDateTime entryStartTime = entry.calculatePotentialEndAtDate(currentTime);
                 if (currentTime.isAfter(entryStartTime)) {
                     entryStartTime = currentTime;
                 }

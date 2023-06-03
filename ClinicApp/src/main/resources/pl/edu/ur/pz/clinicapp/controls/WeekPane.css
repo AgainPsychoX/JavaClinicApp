@@ -33,6 +33,12 @@
     -fx-alignment: top-center;
 }
 
+.week-pane .rows.grid .free-selector {
+    -fx-border-color: black;
+    -fx-border-width: 1 1 1 1;
+    -fx-border-style: dashed;
+}
+
 /* TODO: move view specific styles to other file(s)? */
 .week-pane .rows.grid .entry:selected {
     -fx-background-color: derive(-entry-color, +20%);

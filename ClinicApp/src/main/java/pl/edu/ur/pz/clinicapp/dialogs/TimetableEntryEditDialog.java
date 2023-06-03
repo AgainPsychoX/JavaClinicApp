@@ -79,10 +79,10 @@ public class TimetableEntryEditDialog extends BaseEditDialog {
         dayChoiceBox.setValue(entry.getDayOfWeek());
 
         startSpinner.setPattern("HH:mm");
-        startSpinner.getValueFactory().setValue(entry.startAsLocalTime());
+        startSpinner.getValueFactory().setValue(entry.getStartAsLocalTime());
 
         endSpinner.setPattern("HH:mm");
-        endSpinner.getValueFactory().setValue(entry.endAsLocalTime());
+        endSpinner.getValueFactory().setValue(entry.getEndAsLocalTime());
     }
 
     @Override

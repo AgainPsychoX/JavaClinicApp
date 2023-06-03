@@ -22,9 +22,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.time.DayOfWeek;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -52,17 +50,22 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             return 0; // kinda illegal state (overlapping)
         }
 
-        default LocalTime startAsLocalTime() {
+        default LocalTime getStartAsLocalTime() {
             final var startMinute = getStartMinute();
             return LocalTime.of(startMinute / 60, startMinute % 60);
         }
 
+        default LocalTime getEndAsLocalTime() {
+            final var endMinute = getEndMinute();
+            return LocalTime.of(endMinute / 60, endMinute % 60);
+        }
+
         /**
-         * Calculates potential entry start moment as zoned date time.
+         * Calculates potential entry start moment as zoned date time, asserting it's the same the day of week.
          * @param date Date & zone to be used.
          * @return Zoned date time for potential entry start.
          */
-        default ZonedDateTime startAsZonedDateTime(ZonedDateTime date) {
+        default ZonedDateTime calculatePotentialStartAtDate(ZonedDateTime date) {
             assert date.getDayOfWeek() == getDayOfWeek();
             final var startMinute = getStartMinute();
             return date.toLocalDate()
@@ -70,22 +73,22 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
                     .atZone(date.getZone());
         }
 
-        default LocalTime endAsLocalTime() {
-            final var endMinute = getEndMinute();
-            return LocalTime.of(endMinute / 60, endMinute % 60);
-        }
-
         /**
-         * Calculates potential entry end moment as zoned date time.
+         * Calculates potential entry end moment as zoned date time, asserting it's the same the day of week.
          * @param date Date & zone to be used.
          * @return Zoned date time for potential entry end.
          */
-        default ZonedDateTime endAsZonedDateTime(ZonedDateTime date) {
+        default ZonedDateTime calculatePotentialEndAtDate(ZonedDateTime date) {
             assert date.getDayOfWeek() == getDayOfWeek();
             final var endMinute = getEndMinute();
             return date.toLocalDate()
                     .atTime(endMinute / 60, endMinute % 60)
                     .atZone(date.getZone());
+        }
+
+        default ZonedDateTime calculatePotentialStartInWeek(LocalDate mondayDate) {
+            return mondayDate.atStartOfDay(ZoneId.systemDefault())
+                    .plusDays(getDayOfWeek().ordinal()).plusMinutes(getStartMinute());
         }
     }
 
@@ -362,7 +365,7 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
         for (final var entry : getEntries()) {
             final var cell = cellFactory.call(this);
             cell.getStyleClass().add("entry");
-            cell.setMinSize(USE_PREF_SIZE, USE_PREF_SIZE);
+                cell.setMinSize(USE_PREF_SIZE, USE_PREF_SIZE);
             cell.setPrefSize(DEFAULT_DAY_COLUMN_WIDTH, calculateEntryHeight(entry));
             cell.setMaxSize(Double.MAX_VALUE, USE_PREF_SIZE);
             gridPane.add(cell, entry.getDayOfWeek().ordinal() + 1, calculateRowIndex(entry.getStartMinute()));
@@ -393,6 +396,14 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
     @Override
     public ObservableList<Node> getChildren() {
         return super.getChildren();
+    }
+
+    /**
+     * Exposed to ease customizations, as {@link WeekPane#getChildren} is already exposed anyway.
+     * @return Grid part of the week pane (not really useful unless extending the class)
+     */
+    public GridPane getGrid() {
+        return gridPane;
     }
 
     /**
