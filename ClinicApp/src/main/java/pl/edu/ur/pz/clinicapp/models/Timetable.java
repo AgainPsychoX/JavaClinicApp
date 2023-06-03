@@ -30,7 +30,7 @@ public class Timetable implements Comparable<Timetable> {
         final var query = ClinicApplication.getEntityManager()
                 .createNamedQuery("Timetables.forUserId", Timetable.class);
         query.setParameter("user_id", user.getId());
-        return query.getResultList();
+        return query.getResultStream().distinct().toList();
     }
 
 
