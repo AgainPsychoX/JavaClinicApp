@@ -9,6 +9,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static javafx.scene.layout.Region.USE_PREF_SIZE;
 
@@ -153,5 +155,22 @@ public class WeekPaneFreeSelectionModel<T extends WeekPane.Entry> extends WeekPa
         super.clearSelection();
         setSelectedDayOfWeek(null);
         setSelectedMinuteOfDay(-1);
+    }
+
+    /**
+     * @param mondayDate start of the week as monday date
+     * @return potential local date time of the selection in given week
+     */
+    public LocalDateTime calculatePotentialDateTimeInWeek(LocalDate mondayDate) {
+        final var entry = getSelectedItem();
+        if (entry != null) {
+            return entry.calculatePotentialStartInWeek(mondayDate);
+        }
+        if (getSelectedDayOfWeek() == null) {
+            return null;
+        }
+        return mondayDate.atStartOfDay()
+                .plusDays(getSelectedDayOfWeek().ordinal())
+                .plusMinutes(getSelectedMinuteOfDay() == -1 ? 0 : getSelectedMinuteOfDay());
     }
 }

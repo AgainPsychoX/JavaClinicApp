@@ -117,16 +117,15 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
     }
 
     /**
-     * @return date of selected date on the week pane (by entry or by free selector), or null if no selection.
+     * @return date time of the week pane selection (by entry or by free selector), or current week start date time.
      */
     public ZonedDateTime getSelectedDateTime() {
-        final var entry = weekPaneSelectionModel.getSelectedItem();
-        if (entry != null) {
-            return entry.calculatePotentialStartInWeek(getDate());
+        final var localDateTime =  weekPaneSelectionModel.calculatePotentialDateTimeInWeek(getDate());
+        if (localDateTime != null) {
+            return localDateTime.atZone(ZoneId.systemDefault());
+        } else {
+            return getDate().atStartOfDay(ZoneId.systemDefault());
         }
-        return getDate().atStartOfDay(ZoneId.systemDefault())
-                .plusDays(weekPaneSelectionModel.getSelectedDayOfWeek().ordinal())
-                .plusMinutes(weekPaneSelectionModel.getSelectedMinuteOfDay());
     }
 
     protected Schedule schedule;

@@ -86,8 +86,8 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
                     .atZone(date.getZone());
         }
 
-        default ZonedDateTime calculatePotentialStartInWeek(LocalDate mondayDate) {
-            return mondayDate.atStartOfDay(ZoneId.systemDefault())
+        default LocalDateTime calculatePotentialStartInWeek(LocalDate mondayDate) {
+            return mondayDate.atStartOfDay()
                     .plusDays(getDayOfWeek().ordinal()).plusMinutes(getStartMinute());
         }
     }
