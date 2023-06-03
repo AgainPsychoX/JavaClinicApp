@@ -13,6 +13,9 @@ public class JPAUtils {
      * @return a string representation of the object, or informational string if not initialized.
      */
     static public String toStringWithoutInitializing(Object object) {
+        if (object == null) {
+            return "(null)";
+        }
         if (Hibernate.isInitialized(object)) {
             return object.toString();
         }
