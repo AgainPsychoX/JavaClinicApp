@@ -107,7 +107,7 @@ public abstract class BaseEditDialog extends Stage {
         maxWidthProperty().bind(pane.maxWidthProperty());
         minHeightProperty().bind(pane.minHeightProperty());
         maxHeightProperty().bind(pane.maxHeightProperty());
-        setResizable(pane.getMinHeight() == pane.getMaxHeight() && pane.getMinWidth() == pane.getMaxWidth());
+        setResizable(pane.getMinHeight() != pane.getMaxHeight() || pane.getMinWidth() != pane.getMaxWidth());
         setScene(new Scene(pane));
 
         setState(State.FRESH);

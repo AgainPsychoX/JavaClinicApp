@@ -13,14 +13,14 @@
 
 <BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="160.0" minWidth="320.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
    <bottom>
-      <ButtonBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+      <ButtonBar BorderPane.alignment="CENTER">
         <buttons>
           <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#deleteAction" text="Usuń" />
             <Button fx:id="saveButton" defaultButton="true" mnemonicParsing="false" onAction="#saveAction" styleClass="reset-default-button-color" text="Zapisz" />
             <Button fx:id="cancelButton" cancelButton="true" mnemonicParsing="false" onAction="#cancelAction" text="Anuluj" />
         </buttons>
          <padding>
-            <Insets left="8.0" right="8.0" />
+            <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
          </padding>
       </ButtonBar>
    </bottom>
@@ -46,8 +46,8 @@
             <Label text="Dzień tygodnia:" />
             <Label text="Godzina rozpoczęcia:" GridPane.rowIndex="1" />
             <Label text="Godzina zakończenia:" GridPane.rowIndex="2" />
-            <LocalTimeSpinner fx:id="startSpinner" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <LocalTimeSpinner fx:id="endSpinner" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <LocalTimeSpinner fx:id="startSpinner" pattern="HH:mm" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <LocalTimeSpinner fx:id="endSpinner" pattern="HH:mm" GridPane.columnIndex="1" GridPane.rowIndex="2" />
          </children>
        </GridPane>
    </center>
