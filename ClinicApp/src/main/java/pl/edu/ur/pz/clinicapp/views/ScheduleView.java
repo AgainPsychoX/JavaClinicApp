@@ -254,8 +254,6 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
     protected void newVisitAction(ActionEvent actionEvent) {
         getParentController().goToView(
                 MainWindowController.Views.VISIT_DETAILS,
-                getUserReference(),
-                TimetableView.Mode.VIEW,
                 VisitsDetailsView.PrMode.CREATE
         );
         // TODO: allow passing preset info, like date = getSelectedDateTime()
