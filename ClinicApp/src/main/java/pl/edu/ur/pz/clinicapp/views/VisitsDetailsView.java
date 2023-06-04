@@ -62,6 +62,20 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
     Query deleteQuery = session.getNamedQuery("deleteAppointment");
 
     /**
+     * Get current edit state (fields editable or non-editable).
+     */
+    public static boolean getEditState() {
+        return editState.getValue();
+    }
+
+    /**
+     * Set current edit state (fields editable or non-editable).
+     */
+    public static void setEditState(boolean editState) {
+        VisitsDetailsView.editState.set(editState);
+    }
+
+    /**
      * Current view mode.
      */
     private PrMode currMode;
