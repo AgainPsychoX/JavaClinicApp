@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import pl.edu.ur.pz.clinicapp.controls.LocalTimeSpinner?>
 
-<fx:root maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="160.0" minWidth="320.0" stylesheets="@../common.css" type="BorderPane" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="160.0" minWidth="320.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
    <bottom>
       <ButtonBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
         <buttons>
@@ -51,4 +51,4 @@
          </children>
        </GridPane>
    </center>
-</fx:root>
+</BorderPane>

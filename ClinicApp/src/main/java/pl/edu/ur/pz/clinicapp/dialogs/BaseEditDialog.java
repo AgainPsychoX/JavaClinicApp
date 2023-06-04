@@ -94,13 +94,11 @@ public abstract class BaseEditDialog extends Stage {
      * @param mode Mode of the dialog.
      */
     protected BaseEditDialog(URL fxml, Mode mode) {
-        pane = new BorderPane();
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
-        fxmlLoader.setRoot(pane);
         fxmlLoader.setController(this);
 
         try {
-            fxmlLoader.load();
+            pane = fxmlLoader.load();
         }
         catch (IOException exception) {
             Logger.getGlobal().log(
