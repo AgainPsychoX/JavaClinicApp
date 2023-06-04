@@ -22,6 +22,7 @@ import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DateUtils;
+import pl.edu.ur.pz.clinicapp.utils.ReportObject;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -31,24 +32,20 @@ import java.util.*;
 
 public class ReportDialog extends ChildControllerBase<MainWindowController> implements Initializable {
 
+    @FXML private Button saveButton;
+    @FXML private DatePicker startDatePicker;
+    @FXML private DatePicker endDatePicker;
+    @FXML private ListView<String> availableFieldsListView;
+    @FXML private ListView<String> selectedFieldsListView;
+    private ReportMode mode;
+
+
     public String name;
     List<String> availableFields;
     List<String> selectedFields;
     Configuration configuration;
     ResourceBundle resourceBundle;
     ConverterProperties properties;
-    DefaultFontProvider fontProvider;
-    @FXML
-    private Button saveButton;
-    @FXML
-    private DatePicker startDatePicker;
-    @FXML
-    private DatePicker endDatePicker;
-    @FXML
-    private ListView<String> availableFieldsListView;
-    @FXML
-    private ListView<String> selectedFieldsListView;
-    private ReportMode currMode;
 
     private static void showAlert(Alert.AlertType type, String title, String header, String text) {
         Alert alert = new Alert(type);
@@ -60,31 +57,25 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        ReportObject reportObject = createConfig();
+        Configuration configuration = reportObject.getConfiguration();
+        ConverterProperties properties = reportObject.getProperties();
+        URL templatesURL = reportObject.getTemplatesURL();
+
         selectedFields = new ArrayList<>();
-        configuration = new Configuration(Configuration.VERSION_2_3_32);
-
-        Locale locale = new Locale("pl", "PL");
-
-        resourceBundle = ResourceBundle.getBundle("pl.edu.ur.pz.clinicapp.localization.strings", locale);
-        configuration.setLocale(locale);
-        properties = new ConverterProperties();
-        fontProvider = new DefaultFontProvider(true, true, true);
-        fontProvider.addFont(String.valueOf(ClinicApplication.class.getResource("fonts/calibri.ttf")));
-        properties.setFontProvider(fontProvider);
-        properties.setCharset("UTF-8");
-
-        URL templatesURL = ClinicApplication.class.getResource("templates");
+        resourceBundle = ResourceBundle.getBundle("pl.edu.ur.pz.clinicapp.localization.strings",
+                configuration.getLocale());
 
         try {
             configuration.setDirectoryForTemplateLoading(new File(templatesURL.toURI()));
             configuration.setSharedVariable("bundle", resourceBundle);
             configuration.setSharedVariable("DateUtils", new DateUtils());
         } catch (IOException | URISyntaxException | TemplateModelException e) {
-            showAlert(Alert.AlertType.ERROR, "Błąd inicializacji", "Brak potrzebnych plików", e.getLocalizedMessage());
+            showAlert(Alert.AlertType.ERROR, "Błąd inicializacji", "Brak potrzebnych plików",
+                    e.getLocalizedMessage());
             throw new RuntimeException(e);
         }
-        configuration.setDefaultEncoding("UTF-8");
-        configuration.setSQLDateAndTimeTimeZone(TimeZone.getDefault());
+
     }
 
     @Override
@@ -98,18 +89,11 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
 
     @Override
     public void populate(Object... context) {
-//        if((availableFields != null) && selectedFields != null && selectedFieldsListView.getItems() != null && availableFieldsListView.getItems() != null){
-//            dispose();
-//        }
-        if(context.length == 0 ){
-
-        }
-        currMode = (ReportMode) context[0];
+        mode = (ReportMode) context[0];
         refresh();
         saveButton.setOnAction(event -> {
-            switch (currMode) {
+            switch (mode) {
                 case PRESCRIPTION -> {
-
                     try {
                         prescriptionsReport((List<Prescription>) context[1]);
                     } catch (IOException | URISyntaxException | TemplateModelException e) {
@@ -136,7 +120,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
     @Override
     public void refresh() {
         availableFields = new ArrayList<>();
-        switch (currMode) {
+        switch (mode) {
             case PRESCRIPTION -> {
                 name = "prescription.";
                 availableFields = new ArrayList<>();
@@ -218,7 +202,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
     }
 
     @FXML
-    public void removeAllFields(ActionEvent event) {
+    public void removeAllFields() {
         selectedFields.clear();
         selectedFieldsListView.getItems().clear();
     }
@@ -382,6 +366,25 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
             showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Wystąpił błąd.", e.getLocalizedMessage());
             throw new RuntimeException(e);
         }
+    }
+
+    public static ReportObject createConfig(){
+        freemarker.template.Configuration configuration = new freemarker.template.Configuration(freemarker.template.Configuration.VERSION_2_3_32);
+
+        Locale locale = new Locale("pl", "PL");
+        configuration.setLocale(locale);
+        configuration.setDefaultEncoding("UTF-8");
+        configuration.setSQLDateAndTimeTimeZone(TimeZone.getDefault());
+
+        ConverterProperties properties = new ConverterProperties();
+        DefaultFontProvider fontProvider = new DefaultFontProvider(true, true, true);
+
+        fontProvider.addFont(String.valueOf(ClinicApplication.class.getResource("fonts/calibri.ttf")));
+
+        properties.setFontProvider(fontProvider);
+        properties.setCharset("UTF-8");
+        URL templatesURL = ClinicApplication.class.getResource("templates");
+        return new ReportObject(configuration, properties, templatesURL);
     }
 
 
