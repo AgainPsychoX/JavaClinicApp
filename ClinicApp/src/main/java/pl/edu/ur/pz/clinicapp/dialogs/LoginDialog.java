@@ -15,8 +15,6 @@ import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrBlank;
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.runDelayed;
@@ -52,12 +50,7 @@ public class LoginDialog extends Stage {
         try {
             pane = fxmlLoader.load();
         }
-        catch (IOException exception) {
-            Logger.getGlobal().log(
-                    Level.SEVERE,
-                    "Error creating login dialog!" +
-                            "\n\tFXML: " + fxml
-            );
+        catch (Exception exception) {
             throw new RuntimeException(exception);
         }
 

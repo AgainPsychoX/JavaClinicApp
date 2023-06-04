@@ -20,7 +20,6 @@ import javafx.scene.layout.*;
 import javafx.util.Callback;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.time.*;
 import java.util.List;
@@ -283,7 +282,7 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
 
         try {
             fxmlLoader.load();
-        } catch (IOException exception) {
+        } catch (Exception exception) {
             throw new RuntimeException(exception);
         }
 

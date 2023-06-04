@@ -9,10 +9,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static pl.edu.ur.pz.clinicapp.utils.ProblemHandlingUtils.reportExceptionNicely;
 
@@ -100,12 +97,7 @@ public abstract class BaseEditDialog extends Stage {
         try {
             pane = fxmlLoader.load();
         }
-        catch (IOException exception) {
-            Logger.getGlobal().log(
-                    Level.SEVERE,
-                    "Error creating edit dialog!" +
-                            "\n\tFXML: " + fxml
-            );
+        catch (Exception exception) {
             throw new RuntimeException(exception);
         }
 

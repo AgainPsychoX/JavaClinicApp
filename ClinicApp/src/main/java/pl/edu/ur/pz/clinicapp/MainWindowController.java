@@ -117,7 +117,7 @@ public class MainWindowController implements Initializable {
                 views.put(which, def);
                 return def;
             }
-            catch (IOException e) {
+            catch (Exception e) {
                 throw new RuntimeException("Error while loading view: " + which.name(), e);
             }
         }
