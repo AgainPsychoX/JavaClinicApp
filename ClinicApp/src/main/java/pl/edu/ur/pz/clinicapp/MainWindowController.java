@@ -19,7 +19,6 @@ import pl.edu.ur.pz.clinicapp.utils.HistoryTracker;
 import pl.edu.ur.pz.clinicapp.views.PrescriptionDetailsView;
 import pl.edu.ur.pz.clinicapp.views.ReferralDetailsView;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.EnumMap;
 import java.util.List;

@@ -16,8 +16,7 @@ import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import javax.security.auth.login.LoginException;
 import java.io.IOException;
 
-import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrBlank;
-import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.runDelayed;
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
 
 /**
  * Dialog responsible for logging in user.
@@ -72,10 +71,7 @@ public class LoginDialog extends Stage {
         }
 
 //        initModality(Modality.APPLICATION_MODAL);
-        minWidthProperty().bind(pane.minWidthProperty());
-        maxWidthProperty().bind(pane.maxWidthProperty());
-        minHeightProperty().bind(pane.minHeightProperty());
-        maxHeightProperty().bind(pane.maxHeightProperty());
+        linkStageSizeToPane(this, pane);
 //        setWidth(pane.getMinWidth());
 //        setHeight(pane.getMinHeight());
         loginScene = new Scene(pane);
@@ -150,10 +146,7 @@ public class LoginDialog extends Stage {
         registerScene = new Scene(BPane);
         stage.setTitle("Rejestracja");
         stage.setScene(registerScene);
-        stage.minWidthProperty().bind(BPane.minWidthProperty());
-        stage.maxWidthProperty().bind(BPane.maxWidthProperty());
-        stage.minHeightProperty().bind(BPane.minHeightProperty());
-        stage.maxHeightProperty().bind(BPane.maxHeightProperty());
+        linkStageSizeToPane(this, pane);
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.initOwner(this.getScene().getWindow());
 

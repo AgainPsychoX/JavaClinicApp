@@ -2,7 +2,6 @@ package pl.edu.ur.pz.clinicapp.dialogs;
 
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
-import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ChoiceBox;
 import javafx.util.StringConverter;
@@ -80,10 +79,7 @@ public class TimetableEntryEditDialog extends BaseEditDialog {
         dayChoiceBox.setValue(entry.getDayOfWeek());
 
         startSpinner.getValueFactory().setValue(entry.getStartAsLocalTime());
-        startSpinner.editorProperty().get().setAlignment(Pos.CENTER);
-
         endSpinner.getValueFactory().setValue(entry.getEndAsLocalTime());
-        endSpinner.editorProperty().get().setAlignment(Pos.CENTER);
     }
 
     @Override

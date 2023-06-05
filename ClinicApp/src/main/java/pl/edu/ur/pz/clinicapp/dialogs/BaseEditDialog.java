@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 
 import java.net.URL;
 
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.linkStageSizeToPane;
 import static pl.edu.ur.pz.clinicapp.utils.ProblemHandlingUtils.reportExceptionNicely;
 
 /**
@@ -103,11 +104,7 @@ public abstract class BaseEditDialog extends Stage {
 
         // Default styling & window (stage) properties
         initModality(Modality.APPLICATION_MODAL);
-        minWidthProperty().bind(pane.minWidthProperty());
-        maxWidthProperty().bind(pane.maxWidthProperty());
-        minHeightProperty().bind(pane.minHeightProperty());
-        maxHeightProperty().bind(pane.maxHeightProperty());
-        setResizable(pane.getMinHeight() != pane.getMaxHeight() || pane.getMinWidth() != pane.getMaxWidth());
+        linkStageSizeToPane(this, pane);
         setScene(new Scene(pane));
 
         setState(State.FRESH);

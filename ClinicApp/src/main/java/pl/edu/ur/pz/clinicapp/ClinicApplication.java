@@ -36,6 +36,7 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrBlank;
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.linkStageSizeToPane;
 
 public class ClinicApplication extends Application {
     private static final Logger logger = Logger.getLogger(ClinicApplication.class.getName());
@@ -292,10 +293,7 @@ public class ClinicApplication extends Application {
         final var scene = new Scene(pane);
         stage.setTitle("ClinicApp");
         stage.setScene(scene);
-        stage.minWidthProperty().bind(pane.minWidthProperty());
-        stage.maxWidthProperty().bind(pane.maxWidthProperty());
-        stage.minHeightProperty().bind(pane.minHeightProperty());
-        stage.maxHeightProperty().bind(pane.maxHeightProperty());
+        linkStageSizeToPane(stage, pane);
         mainWindowController = loader.getController();
 //        stage.setWidth(pane.getMinWidth());
 //        stage.setHeight(pane.getMinHeight());

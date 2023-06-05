@@ -5,6 +5,7 @@ import javafx.event.Event;
 import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import org.jetbrains.annotations.Nullable;
 
@@ -38,6 +39,21 @@ public class OtherUtils {
         final var scene = node.getScene();
         if (scene == null) return null;
         return (Stage) scene.getWindow();
+    }
+
+    /**
+     * Binds stage (window) size to pane width settings (incl. resizability), easing building dialogs.
+     * Few pixels for width and height is added to accommodate for window decoration.
+     * Exact values might be too much, but in this case too much is better than too little.
+     * @param stage stage to link
+     * @param pane pane to bind to
+     */
+    public static void linkStageSizeToPane(Stage stage, Pane pane) {
+        stage.minWidthProperty().bind(pane.minWidthProperty().add(8));
+        stage.maxWidthProperty().bind(pane.maxWidthProperty().add(36));
+        stage.minHeightProperty().bind(pane.minHeightProperty().add(36));
+        stage.maxHeightProperty().bind(pane.maxHeightProperty().add(36));
+        stage.setResizable(pane.getMinHeight() != pane.getMaxHeight() || pane.getMinWidth() != pane.getMaxWidth());
     }
 
     /**
