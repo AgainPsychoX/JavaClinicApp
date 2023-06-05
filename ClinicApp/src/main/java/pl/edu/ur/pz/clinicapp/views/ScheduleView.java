@@ -7,15 +7,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.input.MouseButton;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneFreeSelectionModel;
-import pl.edu.ur.pz.clinicapp.models.Appointment;
-import pl.edu.ur.pz.clinicapp.models.Doctor;
-import pl.edu.ur.pz.clinicapp.models.Schedule;
-import pl.edu.ur.pz.clinicapp.models.UserReference;
+import pl.edu.ur.pz.clinicapp.controls.WeekPaneScheduleEntryCell;
+import pl.edu.ur.pz.clinicapp.dialogs.ScheduleSlotPickerDialog;
+import pl.edu.ur.pz.clinicapp.models.*;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.InteractionGuard;
 
@@ -24,6 +22,8 @@ import java.time.*;
 import java.util.ResourceBundle;
 
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.nullCoalesce;
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.runDelayed;
+import static pl.edu.ur.pz.clinicapp.utils.TemporalUtils.alignDateToWeekStart;
 
 public class ScheduleView extends ChildControllerBase<MainWindowController> implements Initializable {
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -51,7 +51,7 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
         // Enable details button only if there is any entry selected
         detailsButton.disableProperty().bind(weekPaneSelectionModel.selectedIndexProperty().isEqualTo(-1));
 
-        weekPane.setEntryCellFactory(weekPane -> new WeekPane.EntryCell<>() {
+        weekPane.setEntryCellFactory(weekPane -> new WeekPaneScheduleEntryCell<>() {
             {
                 setOnMouseClicked(event -> {
                     event.consume();
@@ -63,44 +63,6 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
                         }
                     }
                 });
-            }
-
-            @Override
-            public void updateItem(WeekPane.Entry item, boolean empty) {
-                super.updateItem(item, empty);
-                getStyleClass().retainAll("cell", "entry");
-
-                if (empty || item == null) {
-                    setText("?");
-                }
-                else {
-                    // TODO: if isTall & isWide -> 8:00 - 8:15 (15 minut)\nMarin Kowalski ?
-                    if (item instanceof Appointment appointment) {
-                        final var patient = appointment.getPatient();
-                        setTextAlignment(TextAlignment.LEFT);
-                        getStyleClass().add("appointment");
-                        setText("%s %s. %s".formatted(
-                                appointment.getStartAsLocalTime().toString().replaceFirst("^0+(?!$)", ""),
-                                patient.getName().charAt(0), patient.getSurname()
-                        ));
-                    } else if (item instanceof Schedule.SimpleEntry
-                            || item instanceof Schedule.ProxyWeekPaneEntry) {
-                        final var entry = (Schedule.Entry) item;
-                        setTextAlignment(TextAlignment.CENTER);
-                        if (entry.getType() == Schedule.Entry.Type.APPOINTMENT) {
-                            // If it's simple entry appointment, it means user (most likely patient)
-                            // doesn't have permissions to know about details of not-theirs appointment.
-                            setText("(inna wizyta)");
-                            getStyleClass().addAll("appointment", "other");
-                        }
-                        else {
-                            setText("(" + entry.getType().localizedName() + ")");
-                            getStyleClass().add(entry.getType().name().toLowerCase());
-                        }
-                    } else {
-                        assert false;
-                    }
-                }
             }
         });
     }
@@ -119,13 +81,9 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
     /**
      * @return date time of the week pane selection (by entry or by free selector), or current week start date time.
      */
-    public ZonedDateTime getSelectedDateTime() {
-        final var localDateTime =  weekPaneSelectionModel.calculatePotentialDateTimeInWeek(getDate());
-        if (localDateTime != null) {
-            return localDateTime.atZone(ZoneId.systemDefault());
-        } else {
-            return getDate().atStartOfDay(ZoneId.systemDefault());
-        }
+    public LocalDateTime getSelectedDateTime() {
+        final var selected =  weekPaneSelectionModel.calculatePotentialDateTimeInWeek(getDate());
+        return nullCoalesce(selected, getDate().atStartOfDay());
     }
 
     protected Schedule schedule;
@@ -192,22 +150,15 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
             }
         }
 
+        // TODO: if no entries on weekend the 2 columns are hidden; but if current time is weekend,
+        //  it would be nice to jump to next week (but do not generate the entries twice; maybe separate query?)
+        //  And consider we want to show the weekend columns if we get exact date...
         select(preselectedDate);
     }
 
     @Override
     public void refresh() {
         select(getDate());
-    }
-
-    LocalDate alignDateToWeekStart(LocalDate date) {
-        assert DayOfWeek.MONDAY.ordinal() == 0; // always true
-        return date.minusDays(date.getDayOfWeek().ordinal());
-    }
-
-    LocalDate alignDateToWeekEnd(LocalDate date) {
-        assert DayOfWeek.SUNDAY.ordinal() == 6; // always true
-        return date.plusDays(7 - date.getDayOfWeek().ordinal());
     }
 
     public void select(LocalDate date) {
@@ -257,6 +208,18 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
                 VisitsDetailsView.PrMode.CREATE
         );
         // TODO: allow passing preset info, like date = getSelectedDateTime()
+
+        // FIXME: Temporary testing code for ScheduleSlotPickerDialog,
+        //  as I don't have mental at this moment to deal with shit in VisitsDetailsView
+        {
+            runDelayed(333, () -> {
+                final var dialog = new ScheduleSlotPickerDialog(schedule, getSelectedDateTime());
+                dialog.setHeaderText("Test 123");
+                dialog.showAndWait();
+                System.out.println(dialog.getResultDateTime());
+                System.out.println(dialog.getResultDuration());
+            });
+        }
     }
 
     @FXML

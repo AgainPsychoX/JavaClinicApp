@@ -11,6 +11,7 @@ import javafx.scene.layout.Region;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import static javafx.scene.layout.Region.USE_PREF_SIZE;
 
@@ -18,18 +19,17 @@ import static javafx.scene.layout.Region.USE_PREF_SIZE;
  * Class responsible for managing selection inside week pane, with ability to free selection of minute of week.
  */
 public class WeekPaneFreeSelectionModel<T extends WeekPane.Entry> extends WeekPaneSelectionModel<T> {
-    public Region selector;
+    final public Region selector;
 
-    protected void createSelector() {
+    static private Region createDefaultSelector() {
         final var selectorHeight = 20;
-        final var grid = weekPane.getGrid();
-        selector = new Region();
+        final var selector = new Region();
         selector.getStyleClass().add("free-selector");
         selector.setMinSize(USE_PREF_SIZE, USE_PREF_SIZE);
         selector.setPrefSize(WeekPane.DEFAULT_DAY_COLUMN_WIDTH, selectorHeight);
         selector.setMaxSize(Double.MAX_VALUE, USE_PREF_SIZE);
-        grid.getChildren().add(selector);
         GridPane.setValignment(selector, VPos.TOP);
+        return selector;
     }
 
     protected void setShowingSelector(boolean show) {
@@ -39,12 +39,14 @@ public class WeekPaneFreeSelectionModel<T extends WeekPane.Entry> extends WeekPa
 
     public WeekPaneFreeSelectionModel(WeekPane<T> weekPane) {
         super(weekPane);
+        selector = createDefaultSelector();
+
         final var grid = weekPane.getGrid();
 
-        createSelector();
         setShowingSelector(false);
 
         // Make sure the selector reminds inside the grid (in case the week pane was rebuilt)
+        grid.getChildren().add(selector);
         weekPane.entriesProperty().addListener(observable -> {
             if (!grid.getChildren().contains(selector)) {
                 grid.getChildren().add(selector);
@@ -92,13 +94,20 @@ public class WeekPaneFreeSelectionModel<T extends WeekPane.Entry> extends WeekPa
             }
         });
         selectedDayOfWeekProperty().addListener((observable, oldDayOfWeek, dayOfWeek) -> {
-            if (dayOfWeek == null) return;
+            if (dayOfWeek == null) {
+                setShowingSelector(false);
+                return;
+            }
             GridPane.setColumnIndex(selector, dayOfWeek.ordinal() + 1);
         });
-        selectedMinuteOfDayProperty().addListener((observable, oldMinuteOfDay, minuteOfDay) -> {
-            if (minuteOfDay == -1) return;
-            GridPane.setRowIndex(selector, weekPane.calculateRowIndex(minuteOfDay));
-            GridPane.setMargin(selector, new Insets(weekPane.calculateRowOffset(minuteOfDay), 0, 0, 0));
+        selectedTimeOfDayProperty().addListener((observable, oldTimeOfDay, timeOfDay) -> {
+            if (timeOfDay == null) {
+                // TODO: show selector over entire day column?
+                return;
+            }
+            final var rgp = weekPane.getRowGenerationParams();
+            GridPane.setRowIndex(selector, rgp.calculateRowIndex(timeOfDay));
+            GridPane.setMargin(selector, new Insets(rgp.calculateRowOffset(timeOfDay), 0, 0, 0));
         });
     }
 
@@ -121,32 +130,41 @@ public class WeekPaneFreeSelectionModel<T extends WeekPane.Entry> extends WeekPa
     }
 
     /**
-     * @return read-only property for selected minute of day; -1 if whole day is selected or no selection.
+     * @return read-only property for selected time of day; null if whole day is selected or no selection.
      */
-    public final ReadOnlyObjectProperty<Integer> selectedMinuteOfDayProperty() {
-        return selectedMinuteOfDay.getReadOnlyProperty();
+    public final ReadOnlyObjectProperty<LocalTime> selectedTimeOfDayProperty() {
+        return selectedTimeOfDay.getReadOnlyProperty();
     }
-    final private ReadOnlyObjectWrapper<Integer> selectedMinuteOfDay =
-            new ReadOnlyObjectWrapper<>(this, "selectedMinuteOfDay", -1);
-    protected final void setSelectedMinuteOfDay(int value) {
-        selectedMinuteOfDay.set(value);
+    final private ReadOnlyObjectWrapper<LocalTime> selectedTimeOfDay =
+            new ReadOnlyObjectWrapper<>(this, "selectedTimeOfDay", null);
+    protected final void setSelectedTimeOfDay(LocalTime value) {
+        selectedTimeOfDay.set(value);
     }
     /**
-     * @return selected minute of the day, or -1 if whole day is selected or no selection.
+     * @return selected time of the day, or -1 if whole day is selected or no selection.
      */
-    public final int getSelectedMinuteOfDay() {
-        return selectedMinuteOfDayProperty().get();
+    public final LocalTime getSelectedTimeOfDay() {
+        return selectedTimeOfDayProperty().get();
     }
 
-    public void select(DayOfWeek dayOfWeek, int minuteOfDay) {
+    /**
+     *
+     * @param dayOfWeek day of the week, or null if no selection.
+     * @param minuteOfDay minute of the day, or -1 if whole day (or no selection).
+     */
+    public void select(DayOfWeek dayOfWeek, long minuteOfDay) {
+        select(dayOfWeek, minuteOfDay < 0 ? null : LocalTime.ofSecondOfDay(minuteOfDay * 60));
+    }
+
+    public void select(DayOfWeek dayOfWeek, LocalTime timeOfDay) {
         if (dayOfWeek == null) {
             setSelectedDayOfWeek(null);
-            setSelectedMinuteOfDay(-1);
+            setSelectedTimeOfDay(null);
             return;
         }
-        if (minuteOfDay < -1 || 1440 < minuteOfDay) return;
+
         setSelectedDayOfWeek(dayOfWeek);
-        setSelectedMinuteOfDay(minuteOfDay);
+        setSelectedTimeOfDay(timeOfDay);
         // TODO: select the entry if matching?
     }
 
@@ -154,7 +172,7 @@ public class WeekPaneFreeSelectionModel<T extends WeekPane.Entry> extends WeekPa
     public void clearSelection() {
         super.clearSelection();
         setSelectedDayOfWeek(null);
-        setSelectedMinuteOfDay(-1);
+        setSelectedTimeOfDay(null);
     }
 
     /**
@@ -169,8 +187,7 @@ public class WeekPaneFreeSelectionModel<T extends WeekPane.Entry> extends WeekPa
         if (getSelectedDayOfWeek() == null) {
             return null;
         }
-        return mondayDate.atStartOfDay()
-                .plusDays(getSelectedDayOfWeek().ordinal())
-                .plusMinutes(getSelectedMinuteOfDay() == -1 ? 0 : getSelectedMinuteOfDay());
+        return mondayDate.plusDays(getSelectedDayOfWeek().ordinal()).atTime(getSelectedTimeOfDay());
+
     }
 }

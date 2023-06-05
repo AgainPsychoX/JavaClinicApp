@@ -8,7 +8,7 @@ import java.time.ZonedDateTime;
 import java.util.List;
 
 /**
- * Utility class that eases manipulation of doctor schedule (including timetables).
+ * Utility class that eases manipulation of doctor schedule & timetables.
  */
 public class DoctorSchedule extends Schedule {
     protected Doctor getDoctor() {

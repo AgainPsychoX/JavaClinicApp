@@ -141,8 +141,7 @@ public class Doctor implements UserReference {
         return Timetable.forUser(this);
     }
 
-    // TODO: doctor schedule
-//    public Schedule getSchedule() {
-//        return Schedule.of(this);
-//    }
+    public Schedule getSchedule() {
+        return DoctorSchedule.of(this);
+    }
 }

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Utility class that eases manipulation of user schedule.
+ * Utility class that eases manipulation of user schedule & timetables.
  */
 public class Schedule {
     protected UserReference userReference;

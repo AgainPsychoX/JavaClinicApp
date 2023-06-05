@@ -113,6 +113,31 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
                 throw new IllegalStateException("Minutes range must be dividable by step.");
             }
         }
+
+        public int calculateRowIndex(LocalTime timeOfDay) {
+            return calculateRowIndex(timeOfDay.toSecondOfDay() / 60);
+        }
+
+        public int calculateRowIndex(int minuteOfDay) {
+            assert (minuteOfDay >= startMinuteOfDay);
+            return (minuteOfDay - startMinuteOfDay) / stepInMinutes;
+        }
+
+        public double calculateRowOffset(LocalTime timeOfDay) {
+            return calculateRowOffset(timeOfDay.toSecondOfDay() / 60);
+        }
+
+        public double calculateRowOffset(int minuteOfDay) {
+            return (double) minuteOfDay % stepInMinutes / stepInMinutes * rowHeight;
+        }
+
+        public double calculateEntryHeight(Entry entry) {
+            return calculateEntryHeight(entry.getDurationMinutes());
+        }
+
+        public double calculateEntryHeight(long minutes) {
+            return (double) minutes / stepInMinutes * rowHeight;
+        }
     }
 
     /**
@@ -355,6 +380,8 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
     protected static final int DEFAULT_DAY_COLUMN_WIDTH = 80;
 
     protected void layoutEntries() {
+        final var rgp = getRowGenerationParams();
+
         // TODO: instead removing & recreating all the entries cells remove/recreate only changed ones
 
         gridPane.getChildren().removeIf(n -> n instanceof Cell);
@@ -365,28 +392,13 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             final var cell = cellFactory.call(this);
             cell.getStyleClass().add("entry");
                 cell.setMinSize(USE_PREF_SIZE, USE_PREF_SIZE);
-            cell.setPrefSize(DEFAULT_DAY_COLUMN_WIDTH, calculateEntryHeight(entry));
+            cell.setPrefSize(DEFAULT_DAY_COLUMN_WIDTH, rgp.calculateEntryHeight(entry));
             cell.setMaxSize(Double.MAX_VALUE, USE_PREF_SIZE);
-            gridPane.add(cell, entry.getDayOfWeek().ordinal() + 1, calculateRowIndex(entry.getStartMinute()));
+            gridPane.add(cell, entry.getDayOfWeek().ordinal() + 1, rgp.calculateRowIndex(entry.getStartMinute()));
             GridPane.setValignment(cell, VPos.TOP);
-            GridPane.setMargin(cell, new Insets(calculateRowOffset(entry.getStartMinute()), 0, 0, 0));
+            GridPane.setMargin(cell, new Insets(rgp.calculateRowOffset(entry.getStartMinute()), 0, 0, 0));
             cell.updateItem(entry, false); // late, to allow overriding and querying size
         }
-    }
-
-    protected int calculateRowIndex(int minuteOfDay) {
-        final var rgp = getRowGenerationParams();
-        return (minuteOfDay - rgp.startMinuteOfDay) / rgp.stepInMinutes;
-    }
-
-    protected double calculateRowOffset(int minuteOfDay) {
-        final var rgp = getRowGenerationParams();
-        return (double) minuteOfDay % rgp.stepInMinutes / rgp.stepInMinutes * rgp.rowHeight;
-    }
-    
-    protected double calculateEntryHeight(Entry entry) {
-        final var rgp = getRowGenerationParams();
-        return (double) entry.getDurationMinutes() / rgp.stepInMinutes * rgp.rowHeight;
     }
 
     /**
