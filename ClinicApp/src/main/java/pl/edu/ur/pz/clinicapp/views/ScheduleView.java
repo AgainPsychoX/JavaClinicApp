@@ -12,6 +12,7 @@ import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneFreeSelectionModel;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneScheduleEntryCell;
+import pl.edu.ur.pz.clinicapp.dialogs.ScheduleSimpleEntryEditDialog;
 import pl.edu.ur.pz.clinicapp.dialogs.ScheduleSlotPickerDialog;
 import pl.edu.ur.pz.clinicapp.models.*;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
@@ -19,6 +20,7 @@ import pl.edu.ur.pz.clinicapp.utils.InteractionGuard;
 
 import java.net.URL;
 import java.time.*;
+import java.time.temporal.ChronoUnit;
 import java.util.ResourceBundle;
 
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.nullCoalesce;
@@ -79,11 +81,10 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
     }
 
     /**
-     * @return date time of the week pane selection (by entry or by free selector), or current week start date time.
+     * @return date time of the week pane selection (by entry or by free selector), null if no selection.
      */
     public LocalDateTime getSelectedDateTime() {
-        final var selected =  weekPaneSelectionModel.calculatePotentialDateTimeInWeek(getDate());
-        return nullCoalesce(selected, getDate().atStartOfDay());
+        return weekPaneSelectionModel.calculatePotentialDateTimeInWeek(getDate());
     }
 
     protected Schedule schedule;
@@ -197,7 +198,7 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
                 MainWindowController.Views.TIMETABLE,
                 getUserReference(),
                 TimetableView.Mode.VIEW,
-                getSelectedDateTime()
+                nullCoalesce(getSelectedDateTime(), getDate().atStartOfDay())
         );
     }
 
@@ -213,7 +214,8 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
         //  as I don't have mental at this moment to deal with shit in VisitsDetailsView
         {
             runDelayed(333, () -> {
-                final var dialog = new ScheduleSlotPickerDialog(schedule, getSelectedDateTime());
+                final var dialog = new ScheduleSlotPickerDialog(
+                        schedule, nullCoalesce(getSelectedDateTime(), getDate().atStartOfDay()));
                 dialog.setHeaderText("Test 123");
                 dialog.showAndWait();
                 System.out.println(dialog.getResultDateTime());
@@ -224,8 +226,7 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
 
     @FXML
     protected void newEntryAction(ActionEvent actionEvent) {
-        // TODO: allow preselect arbitrary time on the week pane
-        // TODO: show new simple entry dialog
+        showAddOrEditSimpleEntryDialog(null);
     }
 
     @FXML
@@ -244,10 +245,31 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
                     appointment
             );
         } else if (entry instanceof Schedule.SimpleEntry simpleEntry) {
-            // TODO: show edit simple entry dialog
-            throw new UnsupportedOperationException("Not implemented yet");
+            showAddOrEditSimpleEntryDialog(simpleEntry);
         } else if (entry instanceof Schedule.ProxyWeekPaneEntry proxyEntry) {
             goToEntryDetails(proxyEntry.getOriginal());
+        }
+    }
+
+    protected void showAddOrEditSimpleEntryDialog(Schedule.SimpleEntry simpleEntry) {
+        // TODO: warning about editing past/already expired time?
+
+        /* Persisting changes is managed by the dialog itself here.
+         */
+        final var dialog = new ScheduleSimpleEntryEditDialog(simpleEntry, schedule);
+        dialog.populate(nullCoalesce(getSelectedDateTime(), LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)));
+        dialog.showAndWait();
+        switch (dialog.getState()) {
+            case NEW_COMMITTED -> {
+                weekPane.getEntries().add(dialog.getEntry());
+            }
+            case EDIT_COMMITTED -> {
+                final var weekPaneEntries = weekPane.getEntries();
+                weekPaneEntries.set(weekPaneEntries.indexOf(simpleEntry), dialog.getEntry());
+            }
+            case DELETE_COMMITTED -> {
+                weekPane.getEntries().remove(dialog.getEntry());
+            }
         }
     }
 }

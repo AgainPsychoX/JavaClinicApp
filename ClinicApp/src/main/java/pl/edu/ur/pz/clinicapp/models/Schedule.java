@@ -32,6 +32,7 @@ public class Schedule {
     protected Schedule() {}
 
     public static Schedule of(UserReference user) {
+        if (user == null) throw new NullPointerException();
         final var instance = new Schedule();
         instance.userReference = user;
         return instance;
@@ -264,7 +265,7 @@ public class Schedule {
 
             public boolean isBusy() {
                 return switch (this) {
-                    case OPEN, EXTRA -> false;
+                    case NONE, OPEN, EXTRA -> false;
                     default -> true;
                 };
             }
@@ -436,6 +437,10 @@ public class Schedule {
         protected Entry.Type type;
         public Entry.Type getType() {
             return type;
+        }
+        public void setType(Entry.Type type) {
+            assert type != Type.APPOINTMENT; // should be Appointment class instead simple entry
+            this.type = type;
         }
 
         // Empty constructor is required for JPA standard.

@@ -63,11 +63,11 @@ public class ScheduleSlotPickerDialog extends Stage {
     }
 
     public ScheduleSlotPickerDialog(Schedule schedule) {
-        this(schedule, LocalDateTime.now());
+        this(schedule, null);
     }
 
     public ScheduleSlotPickerDialog(Schedule schedule, LocalDateTime dateTime) {
-        this(schedule, dateTime, getDefaultDuration(schedule));
+        this(schedule, dateTime, null);
     }
 
     public ScheduleSlotPickerDialog(Schedule schedule, LocalDateTime dateTime, Duration duration) {
@@ -85,6 +85,10 @@ public class ScheduleSlotPickerDialog extends Stage {
         initModality(Modality.APPLICATION_MODAL);
         linkStageSizeToPane(this, pane);
         setScene(new Scene(pane));
+        setTitle("Wybór miejsca w terminarzu");
+
+        if (dateTime == null) dateTime = LocalDateTime.now();
+        if (duration == null) duration = getDefaultDuration(schedule);
 
         this.schedule = schedule;
 
@@ -93,6 +97,7 @@ public class ScheduleSlotPickerDialog extends Stage {
          * Far away from my best piece of code... :Aware.gif:
          *
          * TODO: remember selection despite switching weeks? (and maybe refactor)
+         * TODO: add some accessibility (keyboard) controls to move the week pane free selection
          */
 
         weekPaneSelectionModel = new WeekPaneFreeSelectionModel<>(weekPane);

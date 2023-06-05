@@ -26,7 +26,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static pl.edu.ur.pz.clinicapp.utils.JPAUtils.toStringWithoutInitializing;
+import static pl.edu.ur.pz.clinicapp.utils.JPAUtils.getExplanatoryStringWithoutInitializing;
 
 public class MainWindowController implements Initializable {
     private static final Logger logger = Logger.getLogger(MainWindowController.class.getName());
@@ -186,11 +186,7 @@ public class MainWindowController implements Initializable {
             }
 
             if (role == User.Role.DOCTOR) {
-//                c.add(buttonForNavigationMenu("Terminarz", (e) -> goToView(Views.SCHEDULE)));
-                // TODO: instead having direct button to timetable, there should be button in schedule,
-                //      as timetable isn't that interesting to be checked every time and the info will be
-                //      most likely already included on the schedule too.
-                c.add(buttonForNavigationMenu("Harmonogram", (e) -> goToView(Views.TIMETABLE)));
+                c.add(buttonForNavigationMenu("Terminarz", (e) -> goToView(Views.SCHEDULE)));
             }
 
             if (role == User.Role.PATIENT) {

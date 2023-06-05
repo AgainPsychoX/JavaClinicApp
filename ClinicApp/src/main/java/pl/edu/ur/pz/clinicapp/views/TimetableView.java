@@ -929,6 +929,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
         // TODO: warning about problems with editing past/already effective timetable,
         //  prefer adding new (only once in edit session)
 
+        // TODO: allow free selection and pass start datetime somehow
         showAddOrEditEntryDialog(null);
 
         interactionGuard.end();
