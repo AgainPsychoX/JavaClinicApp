@@ -374,14 +374,14 @@ CREATE POLICY insert_own_as_doctor ON public.referrals FOR INSERT TO gp_doctors
 ----------------------------------------
 -- SELECT
 
-GRANT SELECT ON TABLE public.referrals TO gp_patients, gp_nurses, gp_doctors;
+GRANT SELECT ON TABLE public.referrals TO gp_patients, gp_nurses, gp_doctors, gp_receptionists;
 
 DROP POLICY IF EXISTS select_own_as_patient ON public.referrals;
 CREATE POLICY select_own_as_patient ON public.referrals FOR SELECT TO gp_patients
     USING (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
 DROP POLICY IF EXISTS select_as_personel ON public.referrals;
-CREATE POLICY select_as_personel ON public.referrals FOR SELECT TO gp_doctors, gp_nurses
+CREATE POLICY select_as_personel ON public.referrals FOR SELECT TO gp_doctors, gp_nurses, gp_receptionists
     USING (TRUE);
 
 ----------------------------------------

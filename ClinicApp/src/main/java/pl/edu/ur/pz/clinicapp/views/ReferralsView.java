@@ -97,14 +97,12 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         if (currQuery == null) {
             if (role == User.Role.NURSE) {
                 currQuery = nursesReferrals;
-                System.out.println("nurses");
             } else if (role == User.Role.PATIENT) {
                 currQuery = findUsersReferrals;
             } else if (role == User.Role.DOCTOR) {
                 currQuery = createdReferrals;
             } else {
                 currQuery = allReferrals;
-                System.out.println("all");
             }
         }
     }
@@ -142,15 +140,12 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
      */
     @Override
     public void populate(Object... context) {
-        System.err.println("POPULATE");
         if (currQuery == findTargetUsersReferrals) currQuery = null;
         targetPatient = ((context.length > 0) ? ((Patient) context[0]) : null);
-        System.out.println(targetPatient);
-        System.out.println("currquerypop"+currQuery);
         buttonBox.getChildren().clear();
         if (targetPatient != null) {
             buttonBox.getChildren().add(detailsButton);
-            buttonBox.getChildren().add(addButton);
+            if (!(currUserRole == User.Role.RECEPTION)) buttonBox.getChildren().add(addButton);
             if (!vBox.getChildren().contains(backText)) vBox.getChildren().add(1, backText);
             backText.setText("< Powrót do pacjenta " + targetPatient.getDisplayName());
         } else {
@@ -212,7 +207,6 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         else if (currQuery == findUsersReferrals) filter.setValue(filterModeToString.get(filterMode.OWN));
         else if (currQuery == nursesReferrals) filter.setValue(filterModeToString.get(filterMode.NURSES));
 
-        System.out.println("Ref z populate");
         refresh();
     }
 
@@ -242,8 +236,6 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
      */
 
     public void changeFilter() {
-
-        System.out.println("selected item:"+ filter.getSelectionModel().getSelectedItem());
         if (filter.getSelectionModel().getSelectedItem() == null || targetPatient != null) return;
         if (filter.getSelectionModel().getSelectedItem() == filterModeToString.get(filterMode.ALL))
             currQuery = allReferrals;
@@ -253,7 +245,6 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
             currQuery = findUsersReferrals;
         else currQuery = nursesReferrals;
 
-        System.out.println("Ref z changeFilter");
         refresh();
     }
 

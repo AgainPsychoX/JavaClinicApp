@@ -143,6 +143,7 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
      * <ol>
      * <li>First argument can specify {@link RefMode}.
      * <li>Second argument can specify {@link Referral} whose info is to be displayed, edited or deleted.
+     * <li>Third argument can specify {@link Patient} in whose context the app is currently displaying referrals.
      * </ol>
      *
      * @param context Context arguments.
@@ -150,6 +151,7 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
     @Override
     public void populate(Object... context) {
         isTarget = context.length > 2;
+        if(context.length > 2) targetPatient = ((Patient) context[2]);
         editState.addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observableValue, Boolean before, Boolean after) {

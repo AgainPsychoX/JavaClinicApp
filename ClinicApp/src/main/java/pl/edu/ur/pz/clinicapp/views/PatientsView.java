@@ -77,8 +77,13 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
     @Override
     public void populate(Object... context) {
         patients.setAll(getAllPatients());
-        table.getItems().setAll(patients);
+        table.setItems(patients);
         table.getSelectionModel().clearSelection();
+
+        // if search field is not empty, perform search again - for user's convenience (no need to hit enter/type again)
+        if (searchTextField.getText() != null && !searchTextField.getText().trim().equals("")) {
+            searchAction(new ActionEvent());
+        }
     }
 
     @Override
