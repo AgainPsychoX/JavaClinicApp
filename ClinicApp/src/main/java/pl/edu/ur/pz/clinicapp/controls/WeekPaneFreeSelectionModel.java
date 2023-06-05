@@ -37,13 +37,17 @@ public class WeekPaneFreeSelectionModel<T extends WeekPane.Entry> extends WeekPa
         selector.setManaged(show);
     }
 
+    protected void updateFreeSelector() {
+        setShowingSelector(getSelectedItem() == null && getSelectedDayOfWeek() != null);
+    }
+
     public WeekPaneFreeSelectionModel(WeekPane<T> weekPane) {
         super(weekPane);
+
         selector = createDefaultSelector();
+        setShowingSelector(false);
 
         final var grid = weekPane.getGrid();
-
-        setShowingSelector(false);
 
         // Make sure the selector reminds inside the grid (in case the week pane was rebuilt)
         grid.getChildren().add(selector);
@@ -80,34 +84,34 @@ public class WeekPaneFreeSelectionModel<T extends WeekPane.Entry> extends WeekPa
 
             // TODO: allow aligning to previous/next entry too; btw: the exact value be can specified in form anyways
 
-            setShowingSelector(true); // required, despite selected entry listener sets it, as null to null is no change
-            select(null); // deselect entry
+            select((T) null); // deselect entry
             select(dayOfWeek, minuteOfDay);
         });
 
         // Move the selector element on select
         // TODO: shouldn't those be a weak listeners?
         selectedItemProperty().addListener((observable, oldEntry, newEntry) -> {
-            setShowingSelector(newEntry == null);
             if (newEntry != null) {
                 select(newEntry.getDayOfWeek(), newEntry.getStartMinute());
             }
+            updateFreeSelector();
         });
         selectedDayOfWeekProperty().addListener((observable, oldDayOfWeek, dayOfWeek) -> {
-            if (dayOfWeek == null) {
-                setShowingSelector(false);
-                return;
+            if (dayOfWeek != null) {
+                GridPane.setColumnIndex(selector, dayOfWeek.ordinal() + 1);
             }
-            GridPane.setColumnIndex(selector, dayOfWeek.ordinal() + 1);
+            updateFreeSelector();
         });
         selectedTimeOfDayProperty().addListener((observable, oldTimeOfDay, timeOfDay) -> {
-            if (timeOfDay == null) {
-                // TODO: show selector over entire day column?
-                return;
-            }
             final var rgp = weekPane.getRowGenerationParams();
-            GridPane.setRowIndex(selector, rgp.calculateRowIndex(timeOfDay));
-            GridPane.setMargin(selector, new Insets(rgp.calculateRowOffset(timeOfDay), 0, 0, 0));
+            if (timeOfDay == null) /* select whole day */ {
+                GridPane.setRowIndex(selector, 0);
+                GridPane.setMargin(selector, new Insets(0, 0, 0, 0));
+            } else /* select part of the day */ {
+                GridPane.setRowIndex(selector, rgp.calculateRowIndex(timeOfDay));
+                GridPane.setMargin(selector, new Insets(rgp.calculateRowOffset(timeOfDay), 0, 0, 0));
+            }
+            updateFreeSelector();
         });
     }
 
@@ -145,6 +149,12 @@ public class WeekPaneFreeSelectionModel<T extends WeekPane.Entry> extends WeekPa
      */
     public final LocalTime getSelectedTimeOfDay() {
         return selectedTimeOfDayProperty().get();
+    }
+
+    // TODO: include duration (or end time) here as well?
+
+    public void select(DayOfWeek dayOfWeek) {
+        select(dayOfWeek, null);
     }
 
     /**

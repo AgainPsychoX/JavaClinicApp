@@ -179,6 +179,9 @@ public class Schedule {
 
     /**
      * Proxy entries to represent schedule entries that doesn't fit in single weekday inside a week pane.
+     *
+     * TODO: maybe refactor? shouldn't be Schedule.Entry? Currently every schedule-like weekPane
+     *  uses WeekPane.Entry and multiple instanceof which looks wierd...
      */
     public static class ProxyWeekPaneEntry implements WeekPane.Entry {
         protected Entry original;
@@ -258,6 +261,13 @@ public class Schedule {
             EXTRA,
 
             OTHER;
+
+            public boolean isBusy() {
+                return switch (this) {
+                    case OPEN, EXTRA -> false;
+                    default -> true;
+                };
+            }
 
             public String localizedName() {
                 return switch (this) {

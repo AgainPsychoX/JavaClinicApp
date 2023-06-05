@@ -114,6 +114,14 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             }
         }
 
+        public LocalTime startTimeOfDay() {
+            return LocalTime.ofSecondOfDay(startMinuteOfDay / 60);
+        }
+
+        public LocalTime endTimeOfDay() {
+            return LocalTime.ofSecondOfDay(startMinuteOfDay / 60);
+        }
+
         public int calculateRowIndex(LocalTime timeOfDay) {
             return calculateRowIndex(timeOfDay.toSecondOfDay() / 60);
         }

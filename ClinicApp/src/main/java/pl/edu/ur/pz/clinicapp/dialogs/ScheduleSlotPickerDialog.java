@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.linkStageSizeToPane;
 import static pl.edu.ur.pz.clinicapp.utils.TemporalUtils.alignDateToWeekStart;
@@ -31,6 +32,8 @@ import static pl.edu.ur.pz.clinicapp.utils.TemporalUtils.alignDateToWeekStart;
  * Dialog for picking slot on schedule (i.e. for appointments).
  */
 public class ScheduleSlotPickerDialog extends Stage {
+    private static final Logger logger = Logger.getLogger(ScheduleSlotPickerDialog.class.getName());
+
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Elements and initialization
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -99,6 +102,7 @@ public class ScheduleSlotPickerDialog extends Stage {
             return cell;
         });
         weekPaneSelectionModel.selectedDayOfWeekProperty().addListener((o, oldDayOfWeek, newDayOfWeek) -> {
+            logger.finer("Selected day of week: " + newDayOfWeek);
             if (newDayOfWeek == null) {
                 acceptButton.setDisable(false);
                 return;
@@ -107,15 +111,35 @@ public class ScheduleSlotPickerDialog extends Stage {
             updateAcceptButton();
         });
         weekPaneSelectionModel.selectedTimeOfDayProperty().addListener((o, oldTimeOfDay, newTimeOfDay) -> {
+            logger.finer("Selected time of day: " + newTimeOfDay);
             if (newTimeOfDay != null) {
                 startTimeSpinner.getValueFactory().setValue(newTimeOfDay);
             }
             updateAcceptButton();
         });
 
-        final var time = dateTime.toLocalTime();
+        // TODO: allow selection of all hours, work needed in week pane code...
+        final var weekPaneStartTime = weekPane.getRowGenerationParams().startTimeOfDay();
+        var time = dateTime.toLocalTime();
+        if (time.isBefore(weekPaneStartTime)) {
+            time = weekPaneStartTime;
+        }
+
         startTimeSpinner.getValueFactory().setValue(time);
         startTimeSpinner.valueProperty().addListener((o, oldValue, newValue) -> {
+            logger.finer("Start time spinner: " + newValue);
+
+            // TODO: allow selection of all hours, work needed in week pane code...
+            if (newValue.isBefore(weekPaneStartTime)) {
+                // Prevent change
+                logger.finer("Prevent change, back to: " + oldValue);
+                startTimeSpinner.getValueFactory().setValue(oldValue);
+                return;
+            }
+
+            /* Weird thing happens here. Everything seems to work finer, but once you add debugger breakpoint
+             * the spinner keeps being updated, firing change events as it was held.
+             */
             weekPaneSelectionModel.select(getDate().getDayOfWeek(), newValue);
 
             final var d = Duration.between(oldValue, endTimeSpinner.getValue()).abs();
@@ -123,6 +147,7 @@ public class ScheduleSlotPickerDialog extends Stage {
         });
         endTimeSpinner.getValueFactory().setValue(time.plus(duration));
         endTimeSpinner.valueProperty().addListener((o, oldValue, newValue) -> {
+            logger.finer("End time spinner: " + newValue);
             updateSelectorHeight();
         });
         // TODO: add minValueProperty and maxValueProperty in LocalTimeSpinner to prevent reordering here
@@ -130,16 +155,23 @@ public class ScheduleSlotPickerDialog extends Stage {
         datePicker.valueProperty().addListener((o, oldValue, newValue) -> {
             final var newWeekStart = alignDateToWeekStart(newValue);
 
-            // Check if different week than old value (if any) to avoid regenerating
+            boolean sameWeek = false;
             if (oldValue != null) {
                 final var oldWeekStart = alignDateToWeekStart(oldValue);
                 if (oldWeekStart.isEqual(newWeekStart)) {
-                    return;
+                    sameWeek = true;
                 }
             }
 
-            weekPane.setEntries(schedule.generateWeekPaneEntriesForSchedule(newWeekStart));
-            weekPaneSelectionModel.clearSelection();
+            if (sameWeek) {
+                logger.finer("Date picker (same week): " + newValue);
+                weekPaneSelectionModel.select(newValue.getDayOfWeek(), startTimeSpinner.getValue());
+            }
+            else {
+                logger.finer("Date picker (new week): " + newValue);
+                weekPane.setEntries(schedule.generateWeekPaneEntriesForSchedule(newWeekStart));
+                weekPaneSelectionModel.clearSelection();
+            }
         });
         datePicker.setValue(dateTime.toLocalDate());
         weekPaneSelectionModel.select(dateTime.getDayOfWeek(), time);
@@ -203,13 +235,37 @@ public class ScheduleSlotPickerDialog extends Stage {
     }
 
     protected boolean validateSelection() {
-        final var time = weekPaneSelectionModel.getSelectedTimeOfDay();
-        if (time == null) {
+        final var startTime = weekPaneSelectionModel.getSelectedTimeOfDay();
+        if (startTime == null) {
             return false;
         }
+        final var endTime = startTime.plus(getDuration());
 
-        // FIXME: prevent accept also if duration overlaps with other (non-open/non-extra) entries
+        // TODO: checkbox to force selection? only for admin/owner (doctor)
 
+        for (final var entry : weekPane.getEntries()) {
+            if (entry.getDayOfWeek() == getDate().getDayOfWeek()
+                    && entry.getEndAsLocalTime().isAfter(startTime)
+                    && entry.getStartAsLocalTime().isBefore(endTime)) {
+                Schedule.Entry original;
+                if (entry instanceof Schedule.ProxyWeekPaneEntry proxy) {
+                    original = proxy.getOriginal();
+                } else if (entry instanceof Schedule.Entry simple) {
+                    original = simple;
+                } else {
+                    // Should never happen...?
+                    assert false;
+                    return false;
+                }
+
+                if (original.getType().isBusy()) {
+                    logger.finest("Validation failed, overlapping with " + original);
+                    return false;
+                }
+            }
+        }
+
+        logger.finest("Validation succeed");
         return true;
     }
 
