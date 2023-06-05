@@ -27,10 +27,7 @@ import pl.edu.ur.pz.clinicapp.utils.InteractionGuard;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -43,6 +40,7 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
  *  + tab traversable entries & other keyboard accessibility
  *  + new timetable should base of the current selected one?
  *  + make date pickers week start on monday: https://stackoverflow.com/questions/70083214/how-to-make-monday-start-day-in-datepicker-calendar-java-javafx
+ *  * unlock week pane start hour
  */
 
 /**
@@ -412,7 +410,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
         var preselectedIndex = -1;
         ZonedDateTime preselectedDate = null;
 
-        if (context.length >= 1) {
+        if (context.length > 0) {
             if (context[0] instanceof UserReference x) {
                 userReference = x;
             } else if (context[0] instanceof Timetable x) {
@@ -424,7 +422,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
                 throw new IllegalArgumentException();
             }
 
-            if (context.length >= 2) {
+            if (context.length > 1) {
                 if (context[1] instanceof Mode x) {
                     mode = x;
                 } else if (context[1] instanceof Boolean x) {
@@ -434,13 +432,15 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
                     throw new IllegalArgumentException();
                 }
 
-                if (context.length >= 3) {
+                if (context.length > 2) {
                     if (context[2] instanceof ZonedDateTime y) {
                         preselectedDate = y;
                     } else if (context[2] instanceof Instant y) {
                         preselectedDate = y.atZone(ZoneId.systemDefault());
                     } else if (context[2] instanceof LocalDate y) {
                         preselectedDate = y.atStartOfDay(ZoneId.systemDefault());
+                    } else if (context[2] instanceof LocalDateTime y) {
+                        preselectedDate = y.atZone(ZoneId.systemDefault());
                     } else {
                         throw new IllegalArgumentException();
                     }

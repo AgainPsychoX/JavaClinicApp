@@ -50,9 +50,9 @@ public class OtherUtils {
      */
     public static void linkStageSizeToPane(Stage stage, Pane pane) {
         stage.minWidthProperty().bind(pane.minWidthProperty().add(8));
-        stage.maxWidthProperty().bind(pane.maxWidthProperty().add(36));
-        stage.minHeightProperty().bind(pane.minHeightProperty().add(36));
-        stage.maxHeightProperty().bind(pane.maxHeightProperty().add(36));
+        stage.maxWidthProperty().bind(pane.maxWidthProperty().add(38));
+        stage.minHeightProperty().bind(pane.minHeightProperty().add(38));
+        stage.maxHeightProperty().bind(pane.maxHeightProperty().add(38));
         stage.setResizable(pane.getMinHeight() != pane.getMaxHeight() || pane.getMinWidth() != pane.getMaxWidth());
     }
 

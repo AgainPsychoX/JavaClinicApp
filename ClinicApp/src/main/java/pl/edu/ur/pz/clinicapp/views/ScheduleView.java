@@ -113,14 +113,14 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
         UserReference userReference = ClinicApplication.getUser();
         var preselectedDate = LocalDate.now();
 
-        if (context.length >= 1) {
+        if (context.length > 0) {
             if (context[0] instanceof UserReference x) {
                 userReference = x;
             } else {
                 throw new IllegalArgumentException();
             }
 
-            if (context.length >= 2) {
+            if (context.length > 1) {
                 if (context[1] instanceof LocalDate y) {
                     preselectedDate = y;
                 } else if (context[1] instanceof ZonedDateTime y) {

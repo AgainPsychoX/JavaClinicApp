@@ -9,24 +9,23 @@ import java.util.function.Consumer;
 
 public class JPAUtils {
     /**
+     * Prepares explanatory string for given object ({@link Object#toString} and canonical class name),
+     * avoiding initializing persistence proxies. Useful for logging and debugging.
      * @param object object to work with
-     * @return a string representation of the object, or informational string if not initialized.
+     * @return string trying to represent what object might be
      */
-    static public String toStringWithoutInitializing(Object object) {
+    static public String getExplanatoryStringWithoutInitializing(Object object) {
         if (object == null) {
-            return "(null)";
-        }
-        if (Hibernate.isInitialized(object)) {
-            return object.toString();
-        }
-        if (object instanceof HibernateProxy proxy) {
-            return "%s ID:%s (not yet initialized by Hibernate)".formatted(
+            return "null";
+        } else if (Hibernate.isInitialized(object)) {
+            return "%s (%s)".formatted(object.toString(), Hibernate.getClass(object).getCanonicalName());
+        } else if (object instanceof HibernateProxy proxy) {
+            return "%s ID:%s (proxy not yet initialized by Hibernate)".formatted(
                     proxy.getHibernateLazyInitializer().getEntityName(),
                     proxy.getHibernateLazyInitializer().getEntityName()
             );
-        }
-        else {
-            return "%s (not yet initialized by Hibernate)".formatted(object.getClass());
+        } else {
+            return "? (%s)".formatted(object.getClass().getCanonicalName());
         }
     }
 

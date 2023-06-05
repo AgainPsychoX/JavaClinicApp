@@ -233,11 +233,10 @@ public class MainWindowController implements Initializable {
         if (logger.isLoggable(Level.FINE)) {
             if (context.length > 0) {
                 for (int i = 0; i < context.length; i++) {
-                    logger.fine("Context: [%d] == %s".formatted(i, toStringWithoutInitializing(context[i])));
+                    logger.fine("context[%d] == %s".formatted(i, getExplanatoryStringWithoutInitializing(context[i])));
                 }
-            }
-            else {
-                logger.fine("Context: (none)");
+            } else {
+                logger.fine("(context empty)");
             }
         }
 
