@@ -21,6 +21,8 @@ import static javafx.scene.layout.Region.USE_PREF_SIZE;
 public class WeekPaneFreeSelectionModel<T extends WeekPane.Entry> extends WeekPaneSelectionModel<T> {
     final public Region selector;
 
+    // TODO: animate the selector somehow? https://stackoverflow.com/questions/17676274/how-to-make-an-animation-with-css-in-javafx
+
     static private Region createDefaultSelector() {
         final var selectorHeight = 20;
         final var selector = new Region();
@@ -35,6 +37,7 @@ public class WeekPaneFreeSelectionModel<T extends WeekPane.Entry> extends WeekPa
     protected void setShowingSelector(boolean show) {
         selector.setVisible(show);
         selector.setManaged(show);
+        selector.toFront();
     }
 
     protected void updateFreeSelector() {

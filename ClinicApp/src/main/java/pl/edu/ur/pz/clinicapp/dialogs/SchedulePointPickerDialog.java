@@ -20,9 +20,19 @@ public class SchedulePointPickerDialog extends ScheduleSlotPickerDialog {
 
         setTitle("Wybór punktu w terminarzu");
 
+        // Hide everything but start time spinner - to allow user chose exact time of day
         final var timeSpinnersParent = startTimeSpinner.getParent();
-        timeSpinnersParent.setDisable(true);
-        timeSpinnersParent.setManaged(false);
-        timeSpinnersParent.setVisible(false);
+        for (final var child : timeSpinnersParent.getChildrenUnmodifiable()) {
+            if (child != startTimeSpinner) {
+                child.setDisable(true);
+                child.setManaged(false);
+                child.setVisible(false);
+            }
+        }
+    }
+
+    @Override
+    protected boolean validateSelection() {
+        return true;
     }
 }

@@ -1,7 +1,6 @@
 package pl.edu.ur.pz.clinicapp.dialogs;
 
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -101,11 +100,7 @@ public class ScheduleSlotPickerDialog extends Stage {
          */
 
         weekPaneSelectionModel = new WeekPaneFreeSelectionModel<>(weekPane);
-        weekPane.setEntryCellFactory(weekPane -> {
-            final var cell = new WeekPaneScheduleEntryCell<>();
-            cell.setOnMouseClicked(Event::consume); // prevent free-selection on/under existing entries
-            return cell;
-        });
+        weekPane.setEntryCellFactory(weekPane -> new WeekPaneScheduleEntryCell<>());
         weekPaneSelectionModel.selectedDayOfWeekProperty().addListener((o, oldDayOfWeek, newDayOfWeek) -> {
             logger.finer("Selected day of week: " + newDayOfWeek);
             if (newDayOfWeek == null) {
@@ -180,6 +175,7 @@ public class ScheduleSlotPickerDialog extends Stage {
         });
         datePicker.setValue(dateTime.toLocalDate());
         weekPaneSelectionModel.select(dateTime.getDayOfWeek(), time);
+        updateSelectorHeight();
     }
 
     private void updateSelectorHeight() {
@@ -251,7 +247,7 @@ public class ScheduleSlotPickerDialog extends Stage {
         for (final var entry : weekPane.getEntries()) {
             if (entry.getDayOfWeek() == getDate().getDayOfWeek()
                     && entry.getEndAsLocalTime().isAfter(startTime)
-                    && entry.getStartAsLocalTime().isBefore(endTime)) {
+                    && !entry.getStartAsLocalTime().isAfter(endTime)) {
                 Schedule.Entry original;
                 if (entry instanceof Schedule.ProxyWeekPaneEntry proxy) {
                     original = proxy.getOriginal();

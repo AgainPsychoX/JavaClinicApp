@@ -151,6 +151,8 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
             }
         }
 
+        extraText.setVisible(false); // TODO: use it somehow?
+
         // TODO: if no entries on weekend the 2 columns are hidden; but if current time is weekend,
         //  it would be nice to jump to next week (but do not generate the entries twice; maybe separate query?)
         //  And consider we want to show the weekend columns if we get exact date...
