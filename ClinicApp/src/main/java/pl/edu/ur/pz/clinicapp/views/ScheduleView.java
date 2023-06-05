@@ -257,15 +257,16 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
         /* Persisting changes is managed by the dialog itself here.
          */
         final var dialog = new ScheduleSimpleEntryEditDialog(simpleEntry, schedule);
-        dialog.populate(nullCoalesce(getSelectedDateTime(), LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)));
+        if (simpleEntry == null) {
+            dialog.populate(nullCoalesce(getSelectedDateTime(), LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)));
+        }
         dialog.showAndWait();
         switch (dialog.getState()) {
             case NEW_COMMITTED -> {
                 weekPane.getEntries().add(dialog.getEntry());
             }
             case EDIT_COMMITTED -> {
-                final var weekPaneEntries = weekPane.getEntries();
-                weekPaneEntries.set(weekPaneEntries.indexOf(simpleEntry), dialog.getEntry());
+                weekPane.refreshEntry(simpleEntry);
             }
             case DELETE_COMMITTED -> {
                 weekPane.getEntries().remove(dialog.getEntry());

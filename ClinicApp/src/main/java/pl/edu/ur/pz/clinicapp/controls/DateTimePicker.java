@@ -3,8 +3,6 @@ package pl.edu.ur.pz.clinicapp.controls;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.scene.control.DatePicker;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.util.StringConverter;
 
 import java.time.LocalDate;
@@ -54,26 +52,39 @@ public class DateTimePicker extends DatePicker {
         this.format.set(format);
     }
 
+    private class TheStringConverter extends StringConverter<LocalDate> {
+        @Override
+        public String toString(LocalDate object) {
+            LocalDateTime value = getDateTimeValue();
+            return (value != null) ? value.format(formatter) : "";
+        }
+
+        @Override
+        public LocalDate fromString(String value) {
+            if (value == null) {
+                dateTimeValue.set(null);
+                return null;
+            }
+            dateTimeValue.set(LocalDateTime.parse(value, formatter));
+            return dateTimeValue.get().toLocalDate();
+        }
+    };
+
+    /* Two (separate) instances required for hack to force update display node (text field),
+     * which is required for when date doesn't change, but time does.
+     */
+    final private StringConverter<LocalDate> targetStringConverter = new TheStringConverter();
+    final private StringConverter<LocalDate> secondaryStringConverter = new TheStringConverter();
+
+    private void forceUpdateDisplayNode() {
+        setConverter(secondaryStringConverter);
+        setConverter(targetStringConverter);
+    }
+
     public DateTimePicker() {
         getStyleClass().add("datetime-picker");
         setFormat(DEFAULT_PATTERN);
-        setConverter(new StringConverter<>() {
-            @Override
-            public String toString(LocalDate object) {
-                LocalDateTime value = getDateTimeValue();
-                return (value != null) ? value.format(formatter) : "";
-            }
-
-            @Override
-            public LocalDate fromString(String value) {
-                if (value == null) {
-                    dateTimeValue.set(null);
-                    return null;
-                }
-                dateTimeValue.set(LocalDateTime.parse(value, formatter));
-                return dateTimeValue.get().toLocalDate();
-            }
-        });
+        setConverter(targetStringConverter);
 
         // Synchronize changes to the underlying date value back to the dateTimeValue
         valueProperty().addListener((observable, oldValue, newValue) -> {
@@ -90,20 +101,16 @@ public class DateTimePicker extends DatePicker {
         });
 
         // Synchronize changes to dateTimeValue back to the underlying date value
-        dateTimeValue.addListener((observable, oldValue, newValue) -> {
-            setValue(newValue == null ? null : newValue.toLocalDate());
+        dateTimeValue.addListener((observable, oldDateTime, newDateTime) -> {
+            setValue(newDateTime == null ? null : newDateTime.toLocalDate());
+            forceUpdateDisplayNode();
         });
 
         // Persist changes on blur
         getEditor().focusedProperty().addListener((observable, wasFocused, isFocused) -> {
             if (!isFocused) {
-                simulateEnterPressed();
+                getEditor().commitValue();
             }
         });
-    }
-
-    private void simulateEnterPressed() {
-        getEditor().fireEvent(new KeyEvent(getEditor(), getEditor(), KeyEvent.KEY_PRESSED,
-                null, null, KeyCode.ENTER, false, false, false, false));
     }
 }

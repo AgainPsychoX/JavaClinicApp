@@ -14,6 +14,7 @@ import pl.edu.ur.pz.clinicapp.models.Schedule;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 
@@ -70,7 +71,11 @@ public class ScheduleSimpleEntryEditDialog extends BaseEditDialog {
         this.schedule = schedule;
 
         if (mode == Mode.NEW) {
-            this.entry = new Schedule.SimpleEntry();
+            final var aboutNow = ZonedDateTime.now().truncatedTo(ChronoUnit.HOURS).plusHours(1);
+            this.entry = new Schedule.SimpleEntry(
+                    Schedule.Entry.Type.VACATION,
+                    aboutNow.toInstant(),
+                    aboutNow.plusHours(1).toInstant());
             setTitle("Dodawanie wpisu terminarza");
         }
         else {
@@ -93,13 +98,20 @@ public class ScheduleSimpleEntryEditDialog extends BaseEditDialog {
 
         beginDateTimePicker.setEditable(false);
         beginDateTimePicker.setOnMouseClicked(event -> openDialogToPickBeginTime());
+        endDateTimePicker.setOnKeyPressed(event -> {
+            event.consume();
+            openDialogToPickBeginTime();
+        });
+
         endDateTimePicker.setEditable(false);
         endDateTimePicker.setOnMouseClicked(event -> openDialogToPickEndTime());
+        endDateTimePicker.setOnKeyPressed(event -> {
+            event.consume();
+            openDialogToPickEndTime();
+        });
 
-        // Default populate
-        typeChoiceBox.setValue(entry != null ? entry.getType() : Schedule.Entry.Type.VACATION);
-        beginDateTimePicker.setDateTimeValue(LocalDateTime.now().truncatedTo(ChronoUnit.HOURS));
-        endDateTimePicker.setDateTimeValue(LocalDateTime.now().plusHours(1));
+        assert this.entry != null; // should be always true
+        populate(this.entry);
     }
 
     public void populate(Schedule.SimpleEntry entry) {
@@ -122,11 +134,9 @@ public class ScheduleSimpleEntryEditDialog extends BaseEditDialog {
 
     protected void openDialogToPickBeginTime() {
         beginDateTimePicker.hide();
-        // FIXME: Somewhere here bug happens, the edit dialog closes, schedule point picker remains, but bugged
-        //  (UI refreshing only on window resize, wtf?). What is going on...?
         final var dialog = new SchedulePointPickerDialog(schedule, beginDateTimePicker.getDateTimeValue());
         dialog.setHeaderText("Wybierz początek czasu trwania");
-        // TODO: show end time?
+        // TODO: hide current entry & show end time?
         dialog.showAndWait();
         dialog.getResultDateTime().ifPresent(dateTimeValue -> {
             beginDateTimePicker.setDateTimeValue(dateTimeValue);
@@ -135,16 +145,15 @@ public class ScheduleSimpleEntryEditDialog extends BaseEditDialog {
     }
 
     protected void openDialogToPickEndTime() {
-        // FIXME: fix begin dialog first
-//        endDateTimePicker.hide();
-//        final var dialog = new SchedulePointPickerDialog(schedule, endDateTimePicker.getDateTimeValue());
-//        dialog.setHeaderText("Wybierz koniec czasu trwania");
-//        // TODO: show end time?
-//        dialog.showAndWait();
-//        dialog.getResultDateTime().ifPresent(dateTimeValue -> {
-//            endDateTimePicker.setDateTimeValue(dateTimeValue);
-//            keepBeginEndSorted();
-//        });
+        endDateTimePicker.hide();
+        final var dialog = new SchedulePointPickerDialog(schedule, endDateTimePicker.getDateTimeValue());
+        dialog.setHeaderText("Wybierz koniec czasu trwania");
+        // TODO: hide current entry & show start time?
+        dialog.showAndWait();
+        dialog.getResultDateTime().ifPresent(dateTimeValue -> {
+            endDateTimePicker.setDateTimeValue(dateTimeValue);
+            keepBeginEndSorted();
+        });
     }
 
     protected void keepBeginEndSorted() {
@@ -166,12 +175,16 @@ public class ScheduleSimpleEntryEditDialog extends BaseEditDialog {
             return false;
         }
 
-        entry.setType(typeChoiceBox.getValue());
-        entry.setBeginTime(beginDateTimePicker.getDateTimeValue().atZone(ZoneId.systemDefault()).toInstant());
-        entry.setEndTime(endDateTimePicker.getDateTimeValue().atZone(ZoneId.systemDefault()).toInstant());
-        entry.setUser(schedule.getUser());
+        transaction(em -> {
+            entry.setType(typeChoiceBox.getValue());
+            entry.setBeginTime(beginDateTimePicker.getDateTimeValue().atZone(ZoneId.systemDefault()).toInstant());
+            entry.setEndTime(endDateTimePicker.getDateTimeValue().atZone(ZoneId.systemDefault()).toInstant());
+            entry.setUser(schedule.getUser());
 
-        transaction(em -> em.persist(entry));
+            if (entry.getId() == null) {
+                em.persist(entry);
+            }
+        });
         return true;
     }
 

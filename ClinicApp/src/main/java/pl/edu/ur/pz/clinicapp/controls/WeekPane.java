@@ -388,7 +388,6 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
     protected static final int DEFAULT_DAY_COLUMN_WIDTH = 80;
 
     protected void layoutEntries() {
-        final var rgp = getRowGenerationParams();
 
         // TODO: instead removing & recreating all the entries cells remove/recreate only changed ones
 
@@ -397,16 +396,20 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
 
         final var cellFactory = getEntryCellFactory();
         for (final var entry : getEntries()) {
-            final var cell = cellFactory.call(this);
-            cell.getStyleClass().add("entry");
-                cell.setMinSize(USE_PREF_SIZE, USE_PREF_SIZE);
-            cell.setPrefSize(DEFAULT_DAY_COLUMN_WIDTH, rgp.calculateEntryHeight(entry));
-            cell.setMaxSize(Double.MAX_VALUE, USE_PREF_SIZE);
-            gridPane.add(cell, entry.getDayOfWeek().ordinal() + 1, rgp.calculateRowIndex(entry.getStartMinute()));
-            GridPane.setValignment(cell, VPos.TOP);
-            GridPane.setMargin(cell, new Insets(rgp.calculateRowOffset(entry.getStartMinute()), 0, 0, 0));
-            cell.updateItem(entry, false); // late, to allow overriding and querying size
+            layoutEntry(entry, cellFactory.call(this));
         }
+    }
+
+    protected void layoutEntry(T entry, EntryCell<T> cell) {
+        final var rgp = getRowGenerationParams();
+        cell.getStyleClass().add("entry");
+        cell.setMinSize(USE_PREF_SIZE, USE_PREF_SIZE);
+        cell.setPrefSize(DEFAULT_DAY_COLUMN_WIDTH, rgp.calculateEntryHeight(entry));
+        cell.setMaxSize(Double.MAX_VALUE, USE_PREF_SIZE);
+        gridPane.add(cell, entry.getDayOfWeek().ordinal() + 1, rgp.calculateRowIndex(entry.getStartMinute()));
+        GridPane.setValignment(cell, VPos.TOP);
+        GridPane.setMargin(cell, new Insets(rgp.calculateRowOffset(entry.getStartMinute()), 0, 0, 0));
+        cell.updateItem(entry, false); // late, to allow overriding and querying size
     }
 
     /**
@@ -451,6 +454,17 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             }
         }
         return null;
+    }
+
+    /**
+     * Refreshes the entry cell (i.e. after modifying).
+     * @param item entry to update cell for
+     */
+    public void refreshEntry(T item) {
+        final var cell = findEntryCell(item);
+        if (cell == null) throw new IllegalArgumentException();
+        gridPane.getChildren().remove(cell);
+        layoutEntry(item, cell);
     }
 
     public void scrollToRow(int index) {
