@@ -9,13 +9,17 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
+import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
@@ -24,9 +28,15 @@ import java.sql.Timestamp;
 import java.util.EnumMap;
 import java.util.List;
 
+/**
+ * View controller to view and search for {@link Referral}s.
+ */
 public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
-
+    @FXML
+    protected Text backText;
+    @FXML
+    protected HBox buttonBox;
     @FXML
     protected ComboBox filter;
     @FXML
@@ -69,24 +79,23 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
     Query allReferrals;
     Query nursesReferrals;
     Query createdReferrals;
+    Query findTargetUsersReferrals;
 
     User.Role currUserRole;
+    private Patient targetPatient;
 
     private enum filterMode {OWN, NURSES, CREATED, ALL}
 
     private static final EnumMap<filterMode, String> filterModeToString = new EnumMap<>(filterMode.class);
 
-
     /**
-     * Default dispose method.
+     * Sets query currently used for displaying {@link Referral}s according to given
+     * {@link pl.edu.ur.pz.clinicapp.models.User.Role}.
+     *
+     * @param role {@link pl.edu.ur.pz.clinicapp.models.User.Role} of current user.
      */
-    @Override
-    public void dispose() {
-        super.dispose();
-    }
-
     public void setCurrQuery(User.Role role) {
-        if(currQuery == null){
+        if (currQuery == null) {
             if (role == User.Role.NURSE) {
                 currQuery = nursesReferrals;
             } else if (role == User.Role.PATIENT) {
@@ -97,48 +106,70 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
                 currQuery = allReferrals;
             }
         }
-
     }
 
+    /**
+     * Sets available combobox options for filtering {@link Referral}s according to given
+     * {@link pl.edu.ur.pz.clinicapp.models.User.Role}.
+     *
+     * @param role {@link pl.edu.ur.pz.clinicapp.models.User.Role} of current user.
+     */
     public void setFilterVals(User.Role role) {
-        if (role == User.Role.NURSE) {
+        if (role == User.Role.NURSE || role == User.Role.PATIENT || targetPatient != null) {
             filter.setVisible(false);
-        } else if (role == User.Role.PATIENT) {
-            filter.setVisible(false);
-        } else if (role == User.Role.DOCTOR) {
-            filter.setItems(FXCollections.observableArrayList(
-                    filterModeToString.get(filterMode.CREATED),
-                    filterModeToString.get(filterMode.OWN)
-            ));
+//        } else if (role == User.Role.DOCTOR) {
+//            filter.setItems(FXCollections.observableArrayList(
+//                    filterModeToString.get(filterMode.CREATED),
+//                    filterModeToString.get(filterMode.OWN)
+//            ));
         } else {
             filter.setItems(FXCollections.observableArrayList(
                     filterModeToString.get(filterMode.ALL),
                     filterModeToString.get(filterMode.CREATED),
                     filterModeToString.get(filterMode.OWN),
                     filterModeToString.get(filterMode.NURSES)
+
             ));
+            filter.setVisible(true);
         }
     }
 
     /**
-     * Initializes table cells and adds listener which enables or disables the edit/save button.
+     * Populates the view for given context. <br>
+     *
+     * @param context Optional context arguments.
      */
     @Override
     public void populate(Object... context) {
+        if (currQuery == findTargetUsersReferrals) currQuery = null;
+        targetPatient = ((context.length > 0) ? ((Patient) context[0]) : null);
+        buttonBox.getChildren().clear();
+        if (targetPatient != null) {
+            buttonBox.getChildren().add(detailsButton);
+            if (!(currUserRole == User.Role.RECEPTION)) buttonBox.getChildren().add(addButton);
+            if (!vBox.getChildren().contains(backText)) vBox.getChildren().add(1, backText);
+            backText.setText("< Powrót do pacjenta " + targetPatient.getDisplayName());
+        } else {
+            buttonBox.getChildren().add(detailsButton);
+            vBox.getChildren().remove(backText);
+        }
+
         session = ClinicApplication.getEntityManager().unwrap(Session.class);
-        findUsersReferrals = session.getNamedQuery("findUsersReferrals").setParameter("uname",
-                ClinicApplication.getUser().getDatabaseUsername());
+        findUsersReferrals = session.getNamedQuery("findUsersReferrals").setParameter("patient",
+                ClinicApplication.requireUser().asPatient());
+        findTargetUsersReferrals = session.getNamedQuery("findUsersReferrals").setParameter("patient",
+                targetPatient);
         allReferrals = session.getNamedQuery("allReferrals");
         nursesReferrals = session.getNamedQuery("nursesReferrals");
         createdReferrals = session.getNamedQuery("createdReferrals").setParameter("user",
-                ClinicApplication.getUser());
+                ClinicApplication.requireUser());
 
         table.getSelectionModel().clearSelection();
 
         dateCol.setCellValueFactory(new PropertyValueFactory<>("addedDate"));
         fulDateCol.setCellValueFactory(new PropertyValueFactory<>("fulfilmentDate"));
         interestCol.setCellValueFactory(new PropertyValueFactory<>("pointOfInterest"));
-        patientCol.setCellValueFactory(new PropertyValueFactory<>("doctorName"));
+        patientCol.setCellValueFactory(new PropertyValueFactory<>("patientName"));
         doctorCol.setCellValueFactory(new PropertyValueFactory<>("doctorName"));
         notesCol.setCellValueFactory(new PropertyValueFactory<>("notes"));
         feedbackCol.setCellValueFactory(new PropertyValueFactory<>("feedback"));
@@ -158,22 +189,24 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         filterModeToString.put(filterMode.CREATED, "Utworzone przeze mnie");
         filterModeToString.put(filterMode.ALL, "Wszystkie");
 
-        User.Role currUserRole = ClinicApplication.getUser().getRole();
-        setCurrQuery(currUserRole);
+        User.Role currUserRole = ClinicApplication.requireUser().getRole();
+        if (targetPatient != null) {
+            currQuery = findTargetUsersReferrals;
+        } else setCurrQuery(currUserRole);
         setFilterVals(currUserRole);
 
-        if(currUserRole == User.Role.PATIENT){
+        if (currUserRole == User.Role.PATIENT) {
             table.getColumns().remove(patientCol);
         }
 
-        if(currUserRole == User.Role.NURSE){
+        if (currUserRole == User.Role.NURSE) {
             table.getColumns().remove(interestCol);
         }
 
-        if(currQuery == allReferrals) filter.setValue(filterModeToString.get(filterMode.ALL));
-        else if(currQuery == createdReferrals) filter.setValue(filterModeToString.get(filterMode.CREATED));
-        else if(currQuery == findUsersReferrals) filter.setValue(filterModeToString.get(filterMode.OWN));
-        else filter.setValue(filterModeToString.get(filterMode.NURSES));
+        if (currQuery == allReferrals) filter.setValue(filterModeToString.get(filterMode.ALL));
+        else if (currQuery == createdReferrals) filter.setValue(filterModeToString.get(filterMode.CREATED));
+        else if (currQuery == findUsersReferrals) filter.setValue(filterModeToString.get(filterMode.OWN));
+        else if (currQuery == nursesReferrals) filter.setValue(filterModeToString.get(filterMode.NURSES));
 
         refresh();
     }
@@ -199,12 +232,18 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         }
     }
 
-    // Changes items according to selected filter mode.
-    public void changeFilter(ActionEvent actionEvent) {
+    /**
+     * Changes items in table according to selected filter mode.
+     */
 
-        if(filter.getSelectionModel().getSelectedItem() == filterModeToString.get(filterMode.ALL)) currQuery = allReferrals;
-        else if(filter.getSelectionModel().getSelectedItem() == filterModeToString.get(filterMode.CREATED)) currQuery = createdReferrals;
-        else if(filter.getSelectionModel().getSelectedItem() == filterModeToString.get(filterMode.OWN)) currQuery = findUsersReferrals;
+    public void changeFilter() {
+        if (filter.getSelectionModel().getSelectedItem() == null || targetPatient != null) return;
+        if (filter.getSelectionModel().getSelectedItem() == filterModeToString.get(filterMode.ALL))
+            currQuery = allReferrals;
+        else if (filter.getSelectionModel().getSelectedItem() == filterModeToString.get(filterMode.CREATED))
+            currQuery = createdReferrals;
+        else if (filter.getSelectionModel().getSelectedItem() == filterModeToString.get(filterMode.OWN))
+            currQuery = findUsersReferrals;
         else currQuery = nursesReferrals;
 
         refresh();
@@ -212,6 +251,8 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
     /**
      * Filters table rows according to text typed in the search field.
+     *
+     * @param event Performed action.
      */
     public void searchAction(ActionEvent event) {
         searchDebounce.stop();
@@ -228,6 +269,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
             if (referral.getNotes().toLowerCase().contains(text.trim())) return true;
             if (referral.getFeedback() != null && referral.getFeedback().toLowerCase().contains(text.trim()))
                 return true;
+//            if (referral.getStringTags().toLowerCase().contains(text.trim())) return true;
             if (referral.getTags().toLowerCase().contains(text.trim())) return true;
             return referral.getGovernmentId() != null && referral.getGovernmentId().contains(text.trim());
         });
@@ -242,13 +284,20 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
      */
     public void displayDetails() {
         this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS,
-                ReferralDetailsView.RefMode.DETAILS, table.getSelectionModel().getSelectedItem());
+                ReferralDetailsView.RefMode.DETAILS, table.getSelectionModel().getSelectedItem(), targetPatient);
     }
 
-    // TEST ONLY - last param should be a patient, for now it's current user
+    /**
+     * Opens details view in CREATE mode.
+     */
     public void addReferral() {
         this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS,
-                ReferralDetailsView.RefMode.CREATE, ClinicApplication.getUser());
+                ReferralDetailsView.RefMode.CREATE, targetPatient);
+    }
+
+    public void onBackClick() {
+        this.getParentController().goToView(MainWindowController.Views.PATIENT_DETAILS,
+                PatientDetailsView.RefMode.DETAILS, targetPatient);
     }
 
     @FXML

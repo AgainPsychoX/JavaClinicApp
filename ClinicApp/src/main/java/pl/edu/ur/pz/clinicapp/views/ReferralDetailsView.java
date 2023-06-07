@@ -16,6 +16,7 @@ import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -35,7 +36,7 @@ import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DateUtils;
 
 import java.awt.*;
-import java.io.*;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -48,6 +49,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
 
+/**
+ * View controller to edit, delete or display details of a {@link Referral}.
+ */
 public class ReferralDetailsView extends ChildControllerBase<MainWindowController> {
 
     /**
@@ -57,9 +61,6 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
 
     ;
 
-    /**
-     * Current view mode.
-     */
     private RefMode currMode;
     @FXML
     protected CheckBox nursesCheck;
@@ -105,31 +106,18 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
     Query editQuery = session.getNamedQuery("editReferral");
     Query deleteQuery = session.getNamedQuery("deleteReferral");
     private Referral ref;
+    private boolean isTarget;
 
     private static BooleanProperty editState = new SimpleBooleanProperty(false);
     private Patient targetPatient;
     private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
-    /**
-     * Get current edit state (fields editable or non-editable).
-     */
     public static boolean getEditState() {
         return editState.getValue();
     }
 
-    /**
-     * Set current edit state (fields editable or non-editable).
-     */
     public static void setEditState(boolean editState) {
         ReferralDetailsView.editState.set(editState);
-    }
-
-    /**
-     * Default dispose method.
-     */
-    @Override
-    public void dispose() {
-        super.dispose();
     }
 
     /**
@@ -152,21 +140,34 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
         if (editState.getValue()) {
             if (exitConfirm()) {
                 editState.setValue(!editState.getValue());
-                this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
+                if (isTarget) {
+                    this.getParentController().goToView(MainWindowController.Views.REFERRALS, targetPatient);
+                } else this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
             }
         } else {
-            this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
+            if (isTarget) {
+                this.getParentController().goToView(MainWindowController.Views.REFERRALS, targetPatient);
+            } else this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
         }
     }
 
     /**
-     * Adds listener to the editState which accordingly sets fields to editable or non-editable.
-     * Checks current window mode and user's identity and accordingly removes forbidden activities (edit and deletion
-     * for non-creators of the referral or deletion if mode is set to CREATE).
-     * Sets editState to true if mode is set to CREATE.
+     * Populates the view for given context. <br>
+     * Sets action buttons according to logged user's role.
+     * <p>
+     * Context arguments:
+     * <ol>
+     * <li>First argument can specify {@link RefMode}.
+     * <li>Second argument can specify {@link Referral} whose info is to be displayed, edited or deleted.
+     * <li>Third argument can specify {@link Patient} in whose context the app is currently displaying referrals.
+     * </ol>
+     *
+     * @param context Context arguments.
      */
     @Override
     public void populate(Object... context) {
+        isTarget = context.length > 2;
+        if(context.length > 2) targetPatient = ((Patient) context[2]);
         editState.addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observableValue, Boolean before, Boolean after) {
@@ -193,7 +194,7 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
                         datePicker.setEditable(true);
                         datePicker.setDisable(false);
                         dateTimeField.setEditable(true);
-                        if (!nursesCheck.isSelected()) interestField.setEditable(true);
+                        if (!nursesCheck.isSelected() || currMode == RefMode.CREATE) interestField.setEditable(true);
                         notesArea.setEditable(true);
                         feedbackArea.setEditable(true);
                         codeField.setEditable(true);
@@ -236,18 +237,18 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
 
             if (role != User.Role.ADMIN && role != User.Role.NURSE && ref.getAddedBy() != ClinicApplication.getUser()) {
                 buttonBox.getChildren().add(IKPButton);
-                buttonBox.getChildren().add(printButton);
+                buttonBox.getChildren().add(printButton); //added
                 patientField.setText(null);
-            }else if (role == User.Role.NURSE){
+            } else if (role == User.Role.NURSE) {
                 buttonBox.getChildren().add(editButton);
-                buttonBox.getChildren().add(printButton);
+                buttonBox.getChildren().add(printButton); //aded
                 patientField.setText("Pacjent: " + ref.getPatient().getDisplayName());
             } else {
                 if (!interestBox.getChildren().contains(nursesCheck)) interestBox.getChildren().add(nursesCheck);
                 buttonBox.getChildren().add(editButton);
                 buttonBox.getChildren().add(deleteButton);
                 buttonBox.getChildren().add(IKPButton);
-                buttonBox.getChildren().add(printButton);
+                buttonBox.getChildren().add(printButton); //added
                 patientField.setText("Pacjent: " + ref.getPatient().getDisplayName());
             }
             refresh();
@@ -265,7 +266,7 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
             feedbackArea.setText(null);
             codeField.setText(null);
             tagsField.setText(null);
-            targetPatient = ((User) context[1]).asPatient();
+            targetPatient = ((Patient) context[1]);
             editState.setValue(true);
 
             patientField.setText("Pacjent: " + targetPatient.getDisplayName());
@@ -298,6 +299,7 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
         feedbackArea.setText(ref.getFeedback());
         codeField.setText(ref.getGovernmentId());
         tagsField.setText(ref.getTags());
+//        tagsField.setText(ref.getStringTags());
     }
 
     /**
@@ -417,7 +419,7 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
                     exit.setContentText("Dodano nowe skierowanie.");
                     exit.showAndWait();
 
-                    this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
+                    this.getParentController().goToView(MainWindowController.Views.REFERRALS, targetPatient);
                     return;
                 }
             }
@@ -431,7 +433,7 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
             alert.setHeaderText("Niepoprawny format godziny.");
             alert.setContentText("Poprawne formaty: gg:mm lub gg:mm:ss");
             alert.showAndWait();
-        } catch (DateTimeParseException d){
+        } catch (DateTimeParseException d) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Błąd zapisu");
             alert.setHeaderText("Niepoprawny format daty.");
@@ -462,7 +464,9 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
             exit.setContentText("Usunięto wybrane skierowanie.");
             exit.showAndWait();
 
-            this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
+            if (isTarget) {
+                this.getParentController().goToView(MainWindowController.Views.REFERRALS, targetPatient);
+            } else this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
         } else {
             alert.close();
         }

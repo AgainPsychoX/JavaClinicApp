@@ -176,27 +176,27 @@
             <children>
                 <HBox alignment="CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
                     <children>
-                        <Button fx:id="goToVisitsButton" mnemonicParsing="false" onAction="#goToVisitsAction" prefWidth="200.0" text="Przejdź do wizyt">
+                        <Button fx:id="goToVisitsButton" mnemonicParsing="false" onAction="#goToVisitsAction" prefWidth="200.0" text="Przejdź do wizyt" styleClass="my-primary-button">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
-                        <Button fx:id="goToPrescriptionsButton" mnemonicParsing="false" onAction="#goToPrescriptionsAction" prefWidth="200.0" text="Przejdź do recept">
+                        <Button fx:id="goToPrescriptionsButton" mnemonicParsing="false" onAction="#goToPrescriptionsAction" prefWidth="200.0" text="Przejdź do recept" styleClass="my-primary-button">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
-                        <Button fx:id="goToReferralsButton" mnemonicParsing="false" onAction="#goToReferralsAction" prefWidth="200.0" text="Przejdź do skierowań">
+                        <Button fx:id="goToReferralsButton" mnemonicParsing="false" onAction="#goToReferralsAction" prefWidth="200.0" text="Przejdź do skierowań" styleClass="my-primary-button">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
-                        <Button fx:id="editButton" mnemonicParsing="false" onAction="#editAction" prefWidth="200.0" text="Edytuj">
+                        <Button fx:id="editButton" mnemonicParsing="false" onAction="#editAction" prefWidth="200.0" text="Edytuj" styleClass="my-primary-button">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
-                  <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveButton" prefWidth="200.0" text="Zapisz">
+                  <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveButton" prefWidth="200.0" text="Zapisz" styleClass="my-primary-button">
                      <padding>
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>

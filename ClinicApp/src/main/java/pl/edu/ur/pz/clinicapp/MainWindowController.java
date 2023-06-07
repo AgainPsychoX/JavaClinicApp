@@ -18,6 +18,7 @@ import pl.edu.ur.pz.clinicapp.utils.ChildController;
 import pl.edu.ur.pz.clinicapp.utils.HistoryTracker;
 import pl.edu.ur.pz.clinicapp.views.PrescriptionDetailsView;
 import pl.edu.ur.pz.clinicapp.views.ReferralDetailsView;
+import pl.edu.ur.pz.clinicapp.views.VisitsDetailsView;
 
 import java.io.IOException;
 import java.net.URL;
@@ -51,20 +52,19 @@ public class MainWindowController implements Initializable {
     }
 
     private static final EnumMap<Views, URL> viewToResource = new EnumMap<>(Views.class) {{
-            put(Views.NOTIFICATIONS,        getViewResource("views/NotificationsView.fxml"));
-            put(Views.ACCOUNTS,             getViewResource("views/AccountsView.fxml"));
-            put(Views.ACCOUNT_DETAILS,      getViewResource("views/AccountDetailsView.fxml"));
-            put(Views.VISITS,               getViewResource("views/VisitsView.fxml"));
-            put(Views.VISIT_DETAILS,        getViewResource("views/VisitsDetailsView.fxml"));
-            put(Views.PATIENTS,             getViewResource("views/PatientsView.fxml"));
-            put(Views.PATIENT_DETAILS,      getViewResource("views/PatientDetailsView.fxml"));
-            put(Views.REFERRALS,            getViewResource("views/ReferralsView.fxml"));
-            put(Views.REFERRAL_DETAILS,     getViewResource("views/ReferralDetailsView.fxml"));
-            put(Views.PRESCRIPTIONS,        getViewResource("views/PrescriptionsView.fxml"));
-            put(Views.PRESCRIPTION_DETAILS, getViewResource("views/PrescriptionDetailsView.fxml"));
-            put(Views.TIMETABLE,            getViewResource("views/TimetableView.fxml"));
-            put(Views.REGISTER,             getViewResource("dialogs/RegisterDialog.fxml"));
-            put(Views.REPORTS, ClinicApplication.class.getResource("dialogs/ReportDialog.fxml"));
+        put(Views.NOTIFICATIONS, getViewResource("views/NotificationsView.fxml"));
+        put(Views.ACCOUNTS, getViewResource("views/AccountsView.fxml"));
+        put(Views.ACCOUNT_DETAILS, getViewResource("views/AccountDetailsView.fxml"));
+        put(Views.VISITS, getViewResource("views/VisitsView.fxml"));
+        put(Views.VISIT_DETAILS, getViewResource("views/VisitsDetailsView.fxml"));
+        put(Views.PATIENTS, getViewResource("views/PatientsView.fxml"));
+        put(Views.PATIENT_DETAILS, getViewResource("views/PatientDetailsView.fxml"));
+        put(Views.REFERRALS, getViewResource("views/ReferralsView.fxml"));
+        put(Views.REFERRAL_DETAILS, getViewResource("views/ReferralDetailsView.fxml"));
+        put(Views.PRESCRIPTIONS, getViewResource("views/PrescriptionsView.fxml"));
+        put(Views.PRESCRIPTION_DETAILS, getViewResource("views/PrescriptionDetailsView.fxml"));
+        put(Views.TIMETABLE, getViewResource("views/TimetableView.fxml"));
+        put(Views.REGISTER, getViewResource("dialogs/RegisterDialog.fxml"));
     }};
 
     static class ViewDefinition {
@@ -77,17 +77,22 @@ public class MainWindowController implements Initializable {
         }
     }
 
-    @FXML private BorderPane contentPane;
+    @FXML
+    private BorderPane contentPane;
 
-    @FXML private VBox navigationButtons;
+    @FXML
+    private VBox navigationButtons;
 
-    @FXML private Text loggedAsText;
+    @FXML
+    private Text loggedAsText;
 
-    @FXML private Text roleText;
+    @FXML
+    private Text roleText;
 
     public Window getWindow() {
         return this.contentPane.getScene().getWindow();
     }
+
     public Stage getStage() {
         return (Stage) getWindow();
     }
@@ -111,12 +116,10 @@ public class MainWindowController implements Initializable {
                 final var def = new ViewDefinition(node, controller);
                 views.put(which, def);
                 return def;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 throw new RuntimeException("Error while loading view: " + which.name(), e);
             }
-        }
-        else {
+        } else {
             return cached;
         }
     }
@@ -144,12 +147,8 @@ public class MainWindowController implements Initializable {
         final var button = new Button("Wyloguj się");
         button.getStyleClass().addAll("navigation-menu-button", "log-out");
         button.setOnAction((e) -> {
-            if (ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
-            ReferralDetailsView.setEditState(false);
-            if (PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) return;
-            PrescriptionDetailsView.setEditState(false);
-            if (RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) return;
-            RegisterDialog.setEditState(false);
+            if (checkEditStates()) return;
+            setAllEditStatesFalse();
 
             // Log-out is necessary here, even tho there already is `setOnCloseRequest` for the stage,
             // as it just catches window event.
@@ -209,7 +208,7 @@ public class MainWindowController implements Initializable {
 
             if (role == User.Role.ADMIN) {
                 c.add(buttonForNavigationMenu("Zarządzanie kontami", (e) -> goToView(Views.ACCOUNTS)));
-//                c.add(buttonForNavigationMenu("Raporty", (e) -> goToView(Views.REPORTS)));
+                c.add(buttonForNavigationMenu("Raporty", (e) -> goToView(Views.REPORTS)));
             }
 
             c.add(buttonForLogout());
@@ -231,7 +230,8 @@ public class MainWindowController implements Initializable {
 
     /**
      * Navigates to view without pushing history stack.
-     * @param which Which view to navigate to.
+     *
+     * @param which   Which view to navigate to.
      * @param context Additional context parameter(s).
      */
     public void goToViewRaw(Views which, Object... context) {
@@ -240,12 +240,8 @@ public class MainWindowController implements Initializable {
 
         // TODO: might be good idea to make it more generic behaviour of view, maybe providing new interface
         //      and checking if (oldView instanceof NavigationAware np) { if (np.onNavigation(new)) {...} }
-        if (ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) return;
-        ReferralDetailsView.setEditState(false);
-        if (PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) return;
-        PrescriptionDetailsView.setEditState(false);
-        if (RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) return;
-        RegisterDialog.setEditState(false);
+        if (checkEditStates()) return;
+        setAllEditStatesFalse();
 
         if (oldView != null && oldView.controller != null) {
             oldView.controller.dispose();
@@ -259,7 +255,8 @@ public class MainWindowController implements Initializable {
 
     /**
      * Navigates to view.
-     * @param which Which view to navigate to.
+     *
+     * @param which   Which view to navigate to.
      * @param context Additional context parameter(s).
      */
     public void goToView(Views which, Object... context) {
@@ -282,5 +279,18 @@ public class MainWindowController implements Initializable {
         }
     }
 
+    protected boolean checkEditStates() {
+        return ((ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm()) ||
+                (PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm()) ||
+                (RegisterDialog.getEditState() && !RegisterDialog.exitConfirm()) ||
+                (VisitsDetailsView.getEditState() && !VisitsDetailsView.exitConfirm()));
 
+    }
+
+    private void setAllEditStatesFalse() {
+        ReferralDetailsView.setEditState(false);
+        PrescriptionDetailsView.setEditState(false);
+        RegisterDialog.setEditState(false);
+        VisitsDetailsView.setEditState(false);
+    }
 }

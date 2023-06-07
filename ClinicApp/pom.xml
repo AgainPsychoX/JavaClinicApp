@@ -81,9 +81,14 @@
             <type>pom</type>
         </dependency>
         <dependency>
-        <groupId>com.itextpdf</groupId>
-        <artifactId>html2pdf</artifactId>
-        <version>4.0.3</version>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>html2pdf</artifactId>
+            <version>4.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>5.9.2</version>
         </dependency>
     </dependencies>
 
