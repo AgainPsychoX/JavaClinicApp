@@ -1,5 +1,6 @@
 package pl.edu.ur.pz.clinicapp.utils;
 
+import pl.edu.ur.pz.clinicapp.models.Appointment;
 import pl.edu.ur.pz.clinicapp.models.Timetable;
 import pl.edu.ur.pz.clinicapp.models.User;
 
@@ -43,13 +44,28 @@ public class ExampleDataSeeder
         transaction.begin();
 
         // TODO: imo move all seeding here, and make example data seeding optional (minimalist/structure only mode)
+        //  Might be useful: https://github.com/DiUS/java-faker
         // TODO: generate N doctors, each with random speciality, timetable
 
-        final var user = User.getByLogin("lwojcik@gmail.com");
-        user.clearTimetables();
-        user.addTimetable(generateBasicTimetable(zonedDay(-10)));
-        user.addTimetable(generateBasicTimetable(zonedDay(-3)));
-        user.addTimetable(generateBasicTimetable(zonedDay(4)));
+        final var doctorUser = User.getByLogin("lwojcik@gmail.com");
+        final var doctor = doctorUser.asDoctor();
+        doctorUser.clearTimetables();
+        doctorUser.addTimetable(generateBasicTimetable(zonedDay(-10)));
+        doctorUser.addTimetable(generateBasicTimetable(zonedDay(-3)));
+        doctorUser.addTimetable(generateBasicTimetable(zonedDay(4)));
+
+        final var patientUser = User.getByLogin("jkrupa@gmail.com");
+        final var patient = patientUser.asPatient();
+        var appointment = new Appointment();
+        appointment.setAddedBy(doctorUser);
+        appointment.setAddedDate(zonedDay(-1).plusHours(9).toInstant());
+        appointment.setDoctor(doctor);
+        appointment.setPatient(patient);
+        appointment.setDate(zonedDay().plusHours(10).plusMinutes(30).toInstant());
+        appointment.setDuration(doctor.getDefaultVisitDuration());
+        appointment.setNotes("Lorem ipsum...");
+        appointment.setStringTags("");
+        entityManager.persist(appointment);
 
         // TODO: generate K patients, each selecting one or more doctors, and have appointments generated for them
         // TODO: ...

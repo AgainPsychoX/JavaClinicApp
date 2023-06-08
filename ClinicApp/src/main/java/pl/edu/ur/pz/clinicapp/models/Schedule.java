@@ -1,6 +1,7 @@
 package pl.edu.ur.pz.clinicapp.models;
 
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
+import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 
 import javax.persistence.*;
 import java.time.*;
@@ -8,16 +9,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Utility class that eases manipulation of user schedule.
+ * Utility class that eases manipulation of user schedule & timetables.
  */
 public class Schedule {
-    protected User user;
+    protected UserReference userReference;
+
+    public UserReference getUserReference() {
+        return userReference;
+    }
+
+    public User getUser() {
+        if (userReference instanceof User user)
+            return user;
+        if (userReference instanceof Patient patient)
+            return patient.asUser();
+        if (userReference instanceof Doctor doctor)
+            return doctor.asUser(); // might throw if unprivileged user want to get doctor as user
+
+        return null;
+    }
 
     protected Schedule() {}
 
-    public static Schedule of(User user) {
+    public static Schedule of(UserReference user) {
+        if (user == null) throw new NullPointerException();
         final var instance = new Schedule();
-        instance.user = user;
+        instance.userReference = user;
         return instance;
     }
 
@@ -26,25 +43,27 @@ public class Schedule {
      * @param begin Beginning of the timespan to generate entries for.
      * @param end End of the timespan to generate entries for.
      * @return List of {@link Schedule.SimpleEntry} of type {@link Schedule.Entry.Type#OPEN},
-     *  sorted chronologically (oldest first).
+     *  sorted chronologically (the oldest first).
      */
     public List<Entry> generateScheduleEntriesFromTimetables(ZonedDateTime begin, ZonedDateTime end) {
         // TODO: unit testing
         final var list = new ArrayList<Entry>(10);
-        final var timetables = user.getTimetables(); // latest first
-        // FIXME: timetables are kept in natural order for effective dates, earliest first, latest last
+        final var timetables = Timetable.forUser(userReference); // natural order
 
         ZonedDateTime currentTime = begin;
         while (currentTime.isBefore(end)) {
             // Find current & next effective timetable (in chronological order)
             Timetable effectiveTimetable = null;
             Timetable nextEffectiveTimetable = null;
-            for (final var timetable : timetables) {
-                if (!timetable.getEffectiveDate().isAfter(currentTime)) {
+            for (int i = 0; i < timetables.size(); i++) {
+                final var timetable = timetables.get(i);
+                if (timetable.isPossiblyEffective(currentTime)) {
                     effectiveTimetable = timetable;
+                    if (i + 1 < timetables.size()) {
+                        nextEffectiveTimetable = timetables.get(i + 1);
+                    }
                     break;
                 }
-                nextEffectiveTimetable = timetable;
             }
             if (effectiveTimetable == null) {
                 throw new IllegalStateException();
@@ -59,12 +78,12 @@ public class Schedule {
                     continue;
                 }
 
-                ZonedDateTime entryEndTime = entry.endAsZonedDateTime(currentTime);
+                ZonedDateTime entryEndTime = entry.calculatePotentialStartAtDate(currentTime);
                 if (currentTime.isAfter(entryEndTime)) {
                     continue;
                 }
 
-                ZonedDateTime entryStartTime = entry.startAsZonedDateTime(currentTime);
+                ZonedDateTime entryStartTime = entry.calculatePotentialEndAtDate(currentTime);
                 if (currentTime.isAfter(entryStartTime)) {
                     entryStartTime = currentTime;
                 }
@@ -96,45 +115,117 @@ public class Schedule {
     }
 
     /**
-     * Finds schedule entries for the user limited by begin and end timestamps.
-     * Note: It compares start dates only.
-     * @param beginTime Begin timestamp (inclusive).
-     * @param endTime End timestamp (inclusive).
+     * Finds schedule entries for the user between specified range of time (comparing start dates only).
+     * Query might return partial data if no sufficient privileges. The {@link DoctorSchedule#findScheduleEntries}
+     * override will also include vague information on entries that current user have no privileges to view.
+     * @param from Begin timestamp of the time range (inclusive).
+     * @param to End timestamp of the time range (inclusive).
      * @return List of schedule entries found for the user in selected period.
      */
-    public List<Entry> findScheduleEntries(Instant beginTime, Instant endTime) {
-        final var em = ClinicApplication.getEntityManager();
+    public List<Entry> findScheduleEntries(Instant from, Instant to) {
         final var list = new ArrayList<Entry>(80);
-
-        {
-            TypedQuery<SimpleEntry> query = em.createNamedQuery(
-                    "schedule_simple_entries_as_user_between_dates", SimpleEntry.class);
-            query.setParameter("user", this.user);
-            query.setParameter("from", beginTime);
-            query.setParameter("to", endTime);
-            query.getResultStream().forEach(list::add);
-        }
-        {
-            TypedQuery<Appointment> query = em.createNamedQuery(
-                    "appointments_as_user_between_dates", Appointment.class);
-            query.setParameter("user", this.user);
-            query.setParameter("from", beginTime);
-            query.setParameter("to", endTime);
-            query.getResultStream().forEach(list::add);
-        }
-
+        list.addAll(SimpleEntry.forUserBetweenDates(userReference, from, to));
+        list.addAll(Appointment.forUserBetweenDates(userReference, from, to));
         return list;
+    }
+
+    public List<WeekPane.Entry> generateWeekPaneEntriesForSchedule(LocalDate weekStartDate) {
+        // TODO: unit testing
+        final var zone = ZoneId.systemDefault();
+        final var weekEndDate = weekStartDate.plusDays(7);
+        final var resultList = new ArrayList<WeekPane.Entry>(80);
+
+        final var scheduleEntries = findScheduleEntries(
+                weekStartDate.atStartOfDay(zone).toInstant(),
+                weekEndDate.atStartOfDay(zone).toInstant()
+        );
+        for (final var entry : scheduleEntries) {
+            // Add original entry if it starts somewhere in the week
+            final var beginDateTime = entry.getBeginTime().atZone(zone);
+            if (!beginDateTime.toLocalDate().isBefore(weekStartDate)) {
+                resultList.add(entry);
+            }
+
+            if (entry.doesCrossDays()) {
+                var date = entry.getBeginTime().atZone(zone).toLocalDate();
+                if (date.isBefore(weekStartDate)) {
+                    date = weekStartDate;
+                }
+
+                final var dayBeforeEndDate = entry.getEndTime().atZone(zone).toLocalDate().minusDays(1);
+                if (dayBeforeEndDate.isAfter(weekEndDate)) /* the original entry lasts outside the week */ {
+                    // Add full days entries
+                    while (date.isBefore(weekEndDate)) {
+                        date = date.plusDays(1);
+                        resultList.add(new ProxyWeekPaneEntry(entry, date.getDayOfWeek(), 0, 1440));
+                    }
+                } else /* the original entry ends inside the week */ {
+                    // Add full days entries
+                    while (date.isBefore(dayBeforeEndDate)) {
+                        date = date.plusDays(1);
+                        resultList.add(new ProxyWeekPaneEntry(entry, date.getDayOfWeek(), 0, 1440));
+                    }
+
+                    // Add last entry which might be not full day
+                    final var endDateTime = entry.getEndTime().atZone(zone);
+                    resultList.add(new ProxyWeekPaneEntry(entry, date.getDayOfWeek(),
+                            0, endDateTime.getHour() * 60 + endDateTime.getMinute()));
+                }
+
+            }
+        }
+
+        return resultList;
+    }
+
+    /**
+     * Proxy entries to represent schedule entries that doesn't fit in single weekday inside a week pane.
+     *
+     * TODO: maybe refactor? shouldn't be Schedule.Entry? Currently every schedule-like weekPane
+     *  uses WeekPane.Entry and multiple instanceof which looks wierd...
+     */
+    public static class ProxyWeekPaneEntry implements WeekPane.Entry {
+        protected Entry original;
+        public Entry getOriginal() {
+            return original;
+        }
+
+        DayOfWeek dayOfWeek;
+        @Override
+        public DayOfWeek getDayOfWeek() {
+            return dayOfWeek;
+        }
+
+        int startMinute;
+        @Override
+        public int getStartMinute() {
+            return startMinute;
+        }
+
+        int endMinute;
+        @Override
+        public int getEndMinute() {
+            return endMinute;
+        }
+
+        public ProxyWeekPaneEntry(Entry original, DayOfWeek dayOfWeek, int startMinute, int endMinute) {
+            this.original = original;
+            this.dayOfWeek = dayOfWeek;
+            this.startMinute = startMinute;
+            this.endMinute = endMinute;
+        }
     }
 
     /**
      * Schedule entries representing allocated time pieces in the schedule.
      */
-    public interface Entry {
+    public interface Entry extends WeekPane.Entry {
         enum Type {
             NONE,
 
             /**
-             * Describes open hours.
+             * Describes open hours. Entries with such type are not to be persisted in the database,
+             * as they are provided by (effective) timetable (of the user) mechanism.
              */
             OPEN,
 
@@ -171,12 +262,82 @@ public class Schedule {
             EXTRA,
 
             OTHER;
+
+            public boolean isBusy() {
+                return switch (this) {
+                    case NONE, OPEN, EXTRA -> false;
+                    default -> true;
+                };
+            }
+
+            public String localizedName() {
+                return switch (this) {
+                    case OPEN            -> "otwarte";
+                    case CLOSED          -> "zamknięte";
+                    case VACATION        -> "urlop";
+                    case HOLIDAYS        -> "święto";
+                    case SICK_LEAVE      -> "choroba";
+                    case EMERGENCY_LEAVE -> "nagły wypadek";
+                    case APPOINTMENT     -> "wizyta";
+                    case EXTRA           -> "dodatkowe";
+                    case OTHER           -> "inne";
+                    default              -> "?";
+                };
+            }
         }
 
         Type getType();
         Instant getBeginTime();
         Instant getEndTime();
         Duration getDuration();
+
+        @Override
+        default DayOfWeek getDayOfWeek() {
+            return getBeginTime().atZone(ZoneId.systemDefault()).getDayOfWeek();
+        }
+        @Override
+        default int getStartMinute() {
+            final var date = getBeginTime().atZone(ZoneId.systemDefault());
+            return date.getHour() * 60 + date.getMinute();
+        }
+
+        /**
+         * Warning: The value might be capped 24 * 60 = 1440 in case the entry crosses over multiple days.
+         * Use of {@link ProxyWeekPaneEntry} might be required to display this entry properly on a {@link WeekPane}.
+         * @return end minute of the entry on given day of week
+         */
+        @Override
+        default int getEndMinute() {
+            final var endMinute = getStartMinute() + (int) getDuration().toMinutes();
+            return Math.min(endMinute, 24 * 60);
+        }
+
+        /**
+         * @return true if the entry crosses over multiple days, false otherwise.
+         */
+        default boolean doesCrossDays() {
+            final var startDay = getBeginTime().atZone(ZoneId.systemDefault()).getDayOfWeek();
+            final var endDay = getEndTime().atZone(ZoneId.systemDefault()).getDayOfWeek();
+            return startDay != endDay;
+        }
+    }
+
+    /**
+     * <p> Queries and returns all schedule busy entries for given user in given range of time,
+     * as simple entries' data (without ID, readonly), including appointments (without details).
+     *
+     * @param from Begin timestamp of the time range (inclusive).
+     * @param to End timestamp of the time range (inclusive).
+     * @return List of the simple entries in natural order (by begin timestamp).
+     */
+    @SuppressWarnings("unchecked")
+    List<Entry> getBusyEntries(Instant from, Instant to) {
+        final var query = ClinicApplication.getEntityManager()
+                .createNamedQuery("ScheduleBusyEntries.forUser.betweenDates", SimpleEntry.class);
+        query.setParameter("user_id", userReference);
+        query.setParameter("from", from);
+        query.setParameter("to", to);
+        return (List<Entry>) (List<? extends Entry>) query.getResultList();
     }
 
     /**
@@ -185,12 +346,44 @@ public class Schedule {
     @Entity
     @Table(name = "schedule_simple_entries")
     @NamedQueries({
-            @NamedQuery(name = "schedule_simple_entries_as_user",
-                    query = "FROM Schedule$SimpleEntry e WHERE e.user = :user"),
-            @NamedQuery(name = "schedule_simple_entries_as_user_between_dates",
-                    query = "FROM Schedule$SimpleEntry e WHERE e.user = :user AND :from < e.endTime AND e.beginTime < :to"),
+            @NamedQuery(name = "ScheduleSimpleEntries.forUser.betweenDates", query = """
+                    FROM Schedule$SimpleEntry e WHERE e.user.id = :user_id AND :from < e.endTime AND e.beginTime < :to
+                    ORDER BY e.beginTime
+                    """),
+    })
+    @NamedNativeQueries({
+            @NamedNativeQuery(name = "ScheduleBusyEntries.forUser.betweenDates", query = """
+                    SELECT * FROM schedule_busy_view WHERE user_id = :user_id AND :from < end_time AND begin_time < :to
+                    """, // the view should be already ordered (`ORDER BY user_id, begin_time`)
+                    resultSetMapping = "schedule_busy_view"),
+    })
+    @SqlResultSetMappings({
+            @SqlResultSetMapping(name = "schedule_busy_view", classes = {
+                    @ConstructorResult(targetClass = SimpleEntry.class, columns = {
+                            @ColumnResult(name = "user_id",    type = Integer.class),
+                            @ColumnResult(name = "begin_time", type = Instant.class),
+                            @ColumnResult(name = "end_time",   type = Instant.class),
+                            @ColumnResult(name = "type",       type = String.class), // custom enum
+                    })
+            }),
     })
     public static class SimpleEntry implements Entry {
+        /**
+         * Queries and returns all simple entries for given user in given range of time.
+         * @param user Reference to user (user, patient or doctor).
+         * @param from Begin timestamp of the time range (inclusive).
+         * @param to End timestamp of the time range (inclusive).
+         * @return List of the simple entries.
+         */
+        static List<SimpleEntry> forUserBetweenDates(UserReference user, Instant from, Instant to) {
+            final var query = ClinicApplication.getEntityManager()
+                    .createNamedQuery("ScheduleSimpleEntries.forUser.betweenDates", SimpleEntry.class);
+            query.setParameter("user_id", user.getId());
+            query.setParameter("from", from);
+            query.setParameter("to", to);
+            return query.getResultList();
+        }
+
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Integer id;
@@ -199,7 +392,7 @@ public class Schedule {
         }
 
         @Column(nullable = false)
-        private Instant beginTime;
+        protected Instant beginTime;
         @Override
         public Instant getBeginTime() {
             return beginTime;
@@ -210,7 +403,7 @@ public class Schedule {
         }
 
         @Column(nullable = false)
-        private Instant endTime;
+        protected Instant endTime;
         @Override
         public Instant getEndTime() {
             return endTime;
@@ -230,7 +423,7 @@ public class Schedule {
          */
         @ManyToOne(fetch = FetchType.LAZY, optional = false)
         @JoinColumn(name = "user_id", referencedColumnName = "id", nullable = false)
-        private User user;
+        protected User user;
         public User getUser() {
             return user;
         }
@@ -238,20 +431,37 @@ public class Schedule {
             this.user = user;
         }
 
-        @Column(nullable = false, insertable = false, updatable = false)
         @Enumerated(EnumType.STRING)
-        private Type type;
-        public Type getType() {
+        @Column(nullable = false, columnDefinition = "schedule_simple_entry_type") // custom enum type
+        @org.hibernate.annotations.Type(type = "postgresql_enum")
+        protected Entry.Type type;
+        public Entry.Type getType() {
             return type;
+        }
+        public void setType(Entry.Type type) {
+            assert type != Type.APPOINTMENT; // should be Appointment class instead simple entry
+            this.type = type;
         }
 
         // Empty constructor is required for JPA standard.
         public SimpleEntry() {}
 
-        public SimpleEntry(Type type, Instant beginTime, Instant endTime) {
+        public SimpleEntry(Entry.Type type, Instant beginTime, Instant endTime) {
             this.type = type;
             this.beginTime = beginTime;
             this.endTime = endTime;
+        }
+
+        /**
+         * Constructor for `schedule_busy_view` {@link SqlResultSetMapping}
+         * (see annotations for the {@link Schedule.SimpleEntry})
+         */
+        @SuppressWarnings("unused")
+        private SimpleEntry(Integer user_id, Instant begin_time, Instant end_time, String type) {
+            this.type = Entry.Type.valueOf(type);
+            this.beginTime = begin_time;
+            this.endTime = end_time;
+            // TODO: how to set use here? anyways, it's not like it's really needed anyways, as it's immutable entry
         }
     }
 }

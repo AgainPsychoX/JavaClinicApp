@@ -12,6 +12,7 @@ import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 public class JavaFxBuiltInsLocalizationFix {
     private static final Logger logger = Logger.getLogger(JavaFxBuiltInsLocalizationFix.class.getName());
 

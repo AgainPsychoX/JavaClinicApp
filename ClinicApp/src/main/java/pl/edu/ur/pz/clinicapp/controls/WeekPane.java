@@ -20,15 +20,16 @@ import javafx.scene.layout.*;
 import javafx.util.Callback;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
-import java.time.DayOfWeek;
+import java.time.*;
 import java.util.List;
 import java.util.ResourceBundle;
 
 public class WeekPane<T extends WeekPane.Entry> extends VBox {
     /**
      * Interface for entries to be placed on WeekPane.
+     *
+     * Entries longer than day should be divided into multiple entries.
      */
     public interface Entry extends Comparable<Entry> {
         DayOfWeek getDayOfWeek();
@@ -48,7 +49,46 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             return 0; // kinda illegal state (overlapping)
         }
 
-        // TODO: what about entries longer than day or across midnight?
+        default LocalTime getStartAsLocalTime() {
+            final var startMinute = getStartMinute();
+            return LocalTime.of(startMinute / 60, startMinute % 60);
+        }
+
+        default LocalTime getEndAsLocalTime() {
+            final var endMinute = getEndMinute();
+            return LocalTime.of(endMinute / 60, endMinute % 60);
+        }
+
+        /**
+         * Calculates potential entry start moment as zoned date time, asserting it's the same the day of week.
+         * @param date Date & zone to be used.
+         * @return Zoned date time for potential entry start.
+         */
+        default ZonedDateTime calculatePotentialStartAtDate(ZonedDateTime date) {
+            assert date.getDayOfWeek() == getDayOfWeek();
+            final var startMinute = getStartMinute();
+            return date.toLocalDate()
+                    .atTime(startMinute / 60, startMinute % 60)
+                    .atZone(date.getZone());
+        }
+
+        /**
+         * Calculates potential entry end moment as zoned date time, asserting it's the same the day of week.
+         * @param date Date & zone to be used.
+         * @return Zoned date time for potential entry end.
+         */
+        default ZonedDateTime calculatePotentialEndAtDate(ZonedDateTime date) {
+            assert date.getDayOfWeek() == getDayOfWeek();
+            final var endMinute = getEndMinute();
+            return date.toLocalDate()
+                    .atTime(endMinute / 60, endMinute % 60)
+                    .atZone(date.getZone());
+        }
+
+        default LocalDateTime calculatePotentialStartInWeek(LocalDate mondayDate) {
+            return mondayDate.atStartOfDay()
+                    .plusDays(getDayOfWeek().ordinal()).plusMinutes(getStartMinute());
+        }
     }
 
     @FXML protected GridPane headerGridPane;
@@ -72,6 +112,39 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             if (stepInMinutes < 0 && (endMinuteOfDay - startMinuteOfDay) % stepInMinutes != 0) {
                 throw new IllegalStateException("Minutes range must be dividable by step.");
             }
+        }
+
+        public LocalTime startTimeOfDay() {
+            return LocalTime.ofSecondOfDay(startMinuteOfDay / 60);
+        }
+
+        public LocalTime endTimeOfDay() {
+            return LocalTime.ofSecondOfDay(startMinuteOfDay / 60);
+        }
+
+        public int calculateRowIndex(LocalTime timeOfDay) {
+            return calculateRowIndex(timeOfDay.toSecondOfDay() / 60);
+        }
+
+        public int calculateRowIndex(int minuteOfDay) {
+            assert (minuteOfDay >= startMinuteOfDay);
+            return (minuteOfDay - startMinuteOfDay) / stepInMinutes;
+        }
+
+        public double calculateRowOffset(LocalTime timeOfDay) {
+            return calculateRowOffset(timeOfDay.toSecondOfDay() / 60);
+        }
+
+        public double calculateRowOffset(int minuteOfDay) {
+            return (double) minuteOfDay % stepInMinutes / stepInMinutes * rowHeight;
+        }
+
+        public double calculateEntryHeight(Entry entry) {
+            return calculateEntryHeight(entry.getDurationMinutes());
+        }
+
+        public double calculateEntryHeight(long minutes) {
+            return (double) minutes / stepInMinutes * rowHeight;
         }
     }
 
@@ -242,7 +315,7 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
 
         try {
             fxmlLoader.load();
-        } catch (IOException exception) {
+        } catch (Exception exception) {
             throw new RuntimeException(exception);
         }
 
@@ -315,6 +388,7 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
     protected static final int DEFAULT_DAY_COLUMN_WIDTH = 80;
 
     protected void layoutEntries() {
+
         // TODO: instead removing & recreating all the entries cells remove/recreate only changed ones
 
         gridPane.getChildren().removeIf(n -> n instanceof Cell);
@@ -322,31 +396,20 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
 
         final var cellFactory = getEntryCellFactory();
         for (final var entry : getEntries()) {
-            final var cell = cellFactory.call(this);
-            cell.getStyleClass().add("entry");
-            cell.setMinSize(USE_PREF_SIZE, USE_PREF_SIZE);
-            cell.setPrefSize(DEFAULT_DAY_COLUMN_WIDTH, calculateEntryHeight(entry));
-            cell.setMaxSize(Double.MAX_VALUE, USE_PREF_SIZE);
-            gridPane.add(cell, entry.getDayOfWeek().ordinal() + 1, calculateRowIndex(entry.getStartMinute()));
-            GridPane.setValignment(cell, VPos.TOP);
-            GridPane.setMargin(cell, new Insets(calculateRowOffset(entry.getStartMinute()), 0, 0, 0));
-            cell.updateItem(entry, false); // late, to allow overriding and querying size
+            layoutEntry(entry, cellFactory.call(this));
         }
     }
 
-    protected int calculateRowIndex(int minuteOfDay) {
+    protected void layoutEntry(T entry, EntryCell<T> cell) {
         final var rgp = getRowGenerationParams();
-        return (minuteOfDay - rgp.startMinuteOfDay) / rgp.stepInMinutes;
-    }
-
-    protected double calculateRowOffset(int minuteOfDay) {
-        final var rgp = getRowGenerationParams();
-        return (double) minuteOfDay % rgp.stepInMinutes / rgp.stepInMinutes * rgp.rowHeight;
-    }
-    
-    protected double calculateEntryHeight(Entry entry) {
-        final var rgp = getRowGenerationParams();
-        return (double) entry.getDurationMinutes() / rgp.stepInMinutes * rgp.rowHeight;
+        cell.getStyleClass().add("entry");
+        cell.setMinSize(USE_PREF_SIZE, USE_PREF_SIZE);
+        cell.setPrefSize(DEFAULT_DAY_COLUMN_WIDTH, rgp.calculateEntryHeight(entry));
+        cell.setMaxSize(Double.MAX_VALUE, USE_PREF_SIZE);
+        gridPane.add(cell, entry.getDayOfWeek().ordinal() + 1, rgp.calculateRowIndex(entry.getStartMinute()));
+        GridPane.setValignment(cell, VPos.TOP);
+        GridPane.setMargin(cell, new Insets(rgp.calculateRowOffset(entry.getStartMinute()), 0, 0, 0));
+        cell.updateItem(entry, false); // late, to allow overriding and querying size
     }
 
     /**
@@ -355,6 +418,14 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
     @Override
     public ObservableList<Node> getChildren() {
         return super.getChildren();
+    }
+
+    /**
+     * Exposed to ease customizations, as {@link WeekPane#getChildren} is already exposed anyway.
+     * @return Grid part of the week pane (not really useful unless extending the class)
+     */
+    public GridPane getGrid() {
+        return gridPane;
     }
 
     /**
@@ -383,6 +454,17 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             }
         }
         return null;
+    }
+
+    /**
+     * Refreshes the entry cell (i.e. after modifying).
+     * @param item entry to update cell for
+     */
+    public void refreshEntry(T item) {
+        final var cell = findEntryCell(item);
+        if (cell == null) throw new IllegalArgumentException();
+        gridPane.getChildren().remove(cell);
+        layoutEntry(item, cell);
     }
 
     public void scrollToRow(int index) {
