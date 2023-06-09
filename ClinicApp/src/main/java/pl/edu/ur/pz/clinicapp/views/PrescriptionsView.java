@@ -1,6 +1,7 @@
 package pl.edu.ur.pz.clinicapp.views;
 
 import javafx.animation.PauseTransition;
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -33,28 +34,17 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class PrescriptionsView extends ChildControllerBase<MainWindowController> implements Initializable {
-    @FXML
-    protected VBox vBox;
-    @FXML
-    protected TableView<Prescription> table;
-    @FXML
-    protected TableColumn<Prescription, String> patientCol;
-    @FXML
-    protected TableColumn<Prescription, String> dateCol;
-    @FXML
-    protected TableColumn<Prescription, String> doctorCol;
-    @FXML
-    protected TableColumn<Prescription, String> codeCol;
-    @FXML
-    protected TableColumn<Prescription, String> tagsCol;
-    @FXML
-    protected Button addButton;
-    @FXML
-    protected Button moveButton;
-    @FXML
-    protected Button detailsButton;
-    @FXML
-    protected TextField searchTextField;
+    @FXML protected VBox vBox;
+    @FXML protected TableView<Prescription> table;
+    @FXML protected TableColumn<Prescription, String> patientCol;
+    @FXML protected TableColumn<Prescription, String> dateCol;
+    @FXML protected TableColumn<Prescription, String> doctorCol;
+    @FXML protected TableColumn<Prescription, String> codeCol;
+    @FXML protected TableColumn<Prescription, String> tagsCol;
+    @FXML protected Button addButton;
+    @FXML protected Button moveButton;
+    @FXML protected Button detailsButton;
+    @FXML protected TextField searchTextField;
 
     protected ObservableList<Prescription> prescriptions = FXCollections.observableArrayList();
     protected FilteredList<Prescription> filteredPrescriptions = new FilteredList<>(prescriptions, b -> true);
@@ -177,14 +167,18 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     @FXML
     public void displayDetails() {
         this.getParentController().goToView(MainWindowController.Views.PRESCRIPTION_DETAILS,
-                PrescriptionDetailsView.PrMode.DETAILS, table.getSelectionModel().getSelectedItem());
+                PrescriptionDetailsView.Mode.VIEW, table.getSelectionModel().getSelectedItem());
+//        Platform.runLater(() -> {
+//            // Wywołaj initialize w widoku Details
+//            PrescriptionDetailsView.initialize();
+//        });
     }
 
     //Insert for testing purposes - adds a prescription for current user instead of patient
     @FXML
     protected void addPrescription() {
         this.getParentController().goToView(MainWindowController.Views.PRESCRIPTION_DETAILS,
-                PrescriptionDetailsView.PrMode.CREATE, ClinicApplication.getUser());
+                PrescriptionDetailsView.Mode.CREATE, ClinicApplication.getUser());
     }
 
     /**

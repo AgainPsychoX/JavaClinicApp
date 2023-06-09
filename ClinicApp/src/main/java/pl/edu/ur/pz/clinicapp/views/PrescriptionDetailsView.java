@@ -2,15 +2,16 @@ package pl.edu.ur.pz.clinicapp.views;
 
 import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.html2pdf.HtmlConverter;
-import com.itextpdf.html2pdf.resolver.font.DefaultFontProvider;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -25,11 +26,13 @@ import org.hibernate.query.Query;
 import org.hibernate.type.StandardBasicTypes;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DateUtils;
+import pl.edu.ur.pz.clinicapp.utils.ReportObject;
 
 import java.awt.*;
 import java.io.*;
@@ -37,10 +40,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TimeZone;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.*;
 
 
 /**
@@ -48,48 +51,41 @@ import java.util.TimeZone;
  */
 
 
-public class PrescriptionDetailsView extends ChildControllerBase<MainWindowController> {
+public class PrescriptionDetailsView extends ChildControllerBase<MainWindowController> implements Initializable {
 
-    /**
-     * Available window modes (details of existing prescription or creation of a new one).
-     */
-
-    public enum PrMode {DETAILS, CREATE}
-    /**
-     * Current view mode.
-     */
-    private PrMode currMode;
-
-    @FXML
-    protected HBox buttonBox;
-    @FXML
-    protected TextField patientTextField;
-    @FXML
-    protected TextField doctorTextField;
-    @FXML
-    protected TextArea notesTextField;
-    @FXML
-    protected TextField tagsTextField;
-    @FXML
-    protected TextField codeTextField;
-    @FXML
-    protected Button editButton;
-    @FXML
-    protected Button ikpButton;
-    @FXML
-    protected Button deleteButton;
-    @FXML
-    protected Button printButton;
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * Elements and initialization
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
     private static final BooleanProperty editState = new SimpleBooleanProperty(false);
-
+    private final ReadOnlyObjectWrapper<Mode> mode = new ReadOnlyObjectWrapper<>();
+    protected User user;
 
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
     Query editQuery = session.getNamedQuery("editPrescription");
     Query deleteQuery = session.getNamedQuery("deletePrescription");
 
+    @FXML private HBox buttonBox;
+
+    @FXML private TextField patientTextField;
+
+    @FXML private TextArea notesTextField;
+    @FXML private TextField doctorTextField;
+    @FXML private TextField tagsTextField;
+    @FXML private TextField govIdTextField;
+
+    @FXML private Button editButton;
+    @FXML private Button deleteButton;
+
+    @FXML private DatePicker addedDatePicker;
+
     private Prescription prescription;
     private Patient targetPatient;
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * State
+     * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+    private List<Node> patientOnlyThings;
 
     /**
      * Get current edit state (fields editable or non-editable).
@@ -109,21 +105,212 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
      * Displays alert about unsaved changes and returns whether user wants to discard them or not.
      */
     public static Boolean exitConfirm() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Niezapisane zmiany");
-        alert.setHeaderText("Widok w trybie edycji");
-        alert.setContentText("Wszystkie niezapisane zmiany zostaną utracone.");
-        Optional<ButtonType> result = alert.showAndWait();
+        return showAlert(Alert.AlertType.CONFIRMATION, "Niezapisane zmiany", "Widok w trybie edycji",
+                "Wszystkie niezapisane zmiany zostaną utracone.");
+    }
 
-        return result.get() == ButtonType.OK;
+    private static boolean showAlert(Alert.AlertType type, String title, String header, String text) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(header);
+        alert.setContentText(text);
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.OK;
     }
 
     /**
-     * Default dispose method.
+     * Adds listener to the editState which accordingly sets fields to editable or non-editable.
+     * Checks current window mode and user's identity and accordingly removes forbidden activities (edit and deletion
+     * for non-creators of the referral or deletion if mode is set to CREATE).
+     *
+     * @param location  The location used to resolve relative paths for the root object, or
+     *                  {@code null} if the location is not known.
+     * @param resources The resources used to localize the root object, or {@code null} if
+     *                  the root object was not localized.
      */
     @Override
-    public void dispose() {
-        super.dispose();
+    public void initialize(URL location, ResourceBundle resources) {
+        editState.addListener((observableValue, before, after) -> {
+            if (after) {
+                editButton.setText("Zapisz");
+                notesTextField.setEditable(true);
+                govIdTextField.setEditable(true);
+                tagsTextField.setEditable(true);
+            } else {
+                editButton.setText("Edytuj");
+                notesTextField.setEditable(false);
+                govIdTextField.setEditable(false);
+                tagsTextField.setEditable(false);
+            }
+        });
+        patientOnlyThings = List.of(
+                doctorTextField,
+                notesTextField,
+                tagsTextField,
+                govIdTextField
+        );
+    }
+
+    public ReadOnlyObjectProperty<Mode> modeProperty() {
+        return mode;
+    }
+
+    public Mode getMode() {
+        return mode.get();
+    }
+
+    /**
+     * Sets whether fields are visible or editable depending on user role.
+     * Sets editState to true if mode is set to CREATE.
+     *
+     * @param mode Mode used to specify which settings are set (view/create).
+     */
+    public void setMode(Mode mode) {
+        this.mode.set(mode);
+
+        final var patient = user.asPatient();
+        if (patient != null) {
+            for (final var node : patientOnlyThings) {
+                setNodeEnabledVisibleManaged(node, true);
+            }
+            setNodeEnabledVisibleManaged(editButton, true);
+        } else {
+            for (final var node : patientOnlyThings) {
+                setNodeEnabledVisibleManaged(node, false);
+                if (node instanceof TextField field) {
+                    field.setText("");
+                } else if (node instanceof TextArea area) {
+                    area.setText("");
+                }
+                buttonBox.getChildren().remove(editButton);
+                buttonBox.getChildren().remove(deleteButton);
+            }
+        }
+
+        switch (mode) {
+            case VIEW -> {
+                patientTextField.setEditable(false);
+
+                for (final var node : patientOnlyThings) {
+                    if (node instanceof TextField field) {
+                        field.setEditable(false);
+                    } else if (node instanceof TextArea area) {
+                        area.setEditable(false);
+                    }
+                }
+            }
+            case CREATE -> {
+                setNodeEnabledVisibleManaged(editButton, true);
+
+                patientTextField.setEditable(true);
+                notesTextField.setEditable(true);
+                tagsTextField.setEditable(true);
+                govIdTextField.setEditable(true);
+
+                editState.setValue(true);
+                addedDatePicker.setValue(LocalDate.now());
+                if (patient != null) {
+                    for (final var node : patientOnlyThings) {
+                        if (node instanceof TextField field) {
+                            field.setEditable(true);
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    private void setNodeEnabledVisibleManaged(Node node, boolean show) {
+        node.setDisable(!show);
+        node.setVisible(show);
+        node.setManaged(show);
+    }
+
+    /**
+     * Popluates the view from given context.
+     * <p>
+     * If no arguemnts are given, the view will show empty values.
+     *
+     * <ol>
+     *     <li>First argument can specify {@link Mode} /li>
+     *     <li>Second argument can specify either {@link Prescription} if record will be edited or displayed or
+     *     {@link Patient} if new record will be created</li>
+     * </ol>
+     *
+     * @param context Optional context arguments.
+     */
+    @Override
+    public void populate(Object... context) {
+        var mode = Mode.VIEW;
+        var user = ClinicApplication.getUser();
+
+        targetPatient = null;
+        prescription = null;
+
+        if (context.length >= 1) {
+            if (context[0] instanceof Mode m) {
+                mode = m;
+            } else {
+                throw new IllegalArgumentException();
+            }
+            if (context.length >= 2) {
+                if (context[1] instanceof Prescription p) {
+                    prescription = p;
+                    targetPatient = prescription.getPatient();
+                } else if (context[1] instanceof User p) {
+                    targetPatient = p.asPatient();
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            }
+        }
+
+        this.user = user;
+
+        setMode(mode);
+
+        refresh();
+
+//        Leaving for now if something breaks up
+
+//        if(context[0] == null){
+//            currMode = Mode.CREATE;
+//        }
+//        else {
+//            mode = (Mode) context[0];
+//        }
+//        if (mode == Mode.VIEW) {
+//            prescription = (Prescription) context[1];
+
+        // in case the referral was edited while app is running
+//        ClinicApplication.getEntityManager().refresh(prescription);
+
+//            if (role != User.Role.ADMIN && prescription.getAddedBy() != ClinicApplication.getUser()) {
+//                buttonBox.getChildren().remove(editButton);
+//                buttonBox.getChildren().remove(deleteButton);
+//            } else {
+//                buttonBox.getChildren().remove(ikpButton);
+//                if (!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
+//                if (!buttonBox.getChildren().contains(deleteButton)) buttonBox.getChildren().add(deleteButton);
+//                buttonBox.getChildren().add(ikpButton);
+//            }
+//            refresh();
+//        } else {
+//            buttonBox.getChildren().remove(deleteButton);
+//            buttonBox.getChildren().remove(ikpButton);
+//            if (!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
+//            buttonBox.getChildren().add(ikpButton);
+//
+//            doctorTextField.setText(ClinicApplication.getUser().getDisplayName());
+//            notesTextField.setText(null);
+//            govIdTextField.setText(null);
+//            tagsTextField.setText(null);
+//            targetPatient = ((User) context[1]).asPatient();
+//            editState.setValue(true);
+//
+//            patientTextField.setText(targetPatient.getDisplayName());
+//        }
     }
 
     /**
@@ -131,7 +318,8 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
      */
     public void onBackClick() {
         if (editState.getValue()) {
-            if (exitConfirm()) {
+            if (showAlert(Alert.AlertType.CONFIRMATION, "Niezapisane zmiany", "Widok w trybie edycji",
+                    "Wszystkie niezapisane zmiany zostaną utracone.")) {
                 editState.setValue(!editState.getValue());
                 this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
             }
@@ -141,95 +329,60 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
     }
 
     /**
-     * Adds listener to the editState which accordingly sets fields to editable or non-editable.
-     * Checks current window mode and user's identity and accordingly removes forbidden activities (edit and deletion
-     * for non-creators of the referral or deletion if mode is set to CREATE).
-     * Sets editState to true if mode is set to CREATE.
+     * Default dispose method. Clears TextField list and removes buttons from box.
      */
     @Override
-    public void populate(Object... context) {
-        User.Role role = ClinicApplication.getUser().getRole();
-        editState.addListener(new ChangeListener<Boolean>() {
-            @Override
-            public void changed(ObservableValue<? extends Boolean> observableValue, Boolean before, Boolean after) {
-                if (after) {
-                        editButton.setText("Zapisz");
-                        notesTextField.setEditable(true);
-                        codeTextField.setEditable(true);
-                        tagsTextField.setEditable(true);
-                } else {
-                    editButton.setText("Edytuj");
-                    notesTextField.setEditable(false);
-                    codeTextField.setEditable(false);
-                    tagsTextField.setEditable(false);
-                }
-            }
-        });
-
-        currMode = (PrMode) context[0];
-
-        if (currMode == PrMode.DETAILS) {
-            prescription = (Prescription) context[1];
-
-            // in case the referral was edited while app is running
-            ClinicApplication.getEntityManager().refresh(prescription);
-
-            if (role != User.Role.ADMIN && prescription.getAddedBy() != ClinicApplication.getUser()) {
-                buttonBox.getChildren().remove(editButton);
-                buttonBox.getChildren().remove(deleteButton);
-            } else {
-                buttonBox.getChildren().remove(ikpButton);
-                if (!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
-                if (!buttonBox.getChildren().contains(deleteButton)) buttonBox.getChildren().add(deleteButton);
-                buttonBox.getChildren().add(ikpButton);
-            }
-            refresh();
-        } else {
-            buttonBox.getChildren().remove(deleteButton);
-            buttonBox.getChildren().remove(ikpButton);
-            if (!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
-            buttonBox.getChildren().add(ikpButton);
-
-            doctorTextField.setText(ClinicApplication.getUser().getDisplayName());
-            notesTextField.setText(null);
-            codeTextField.setText(null);
-            tagsTextField.setText(null);
-            targetPatient = ((User) context[1]).asPatient();
-            editState.setValue(true);
-
-            patientTextField.setText(targetPatient.getDisplayName());
-        }
+    public void dispose() {
+        System.out.println("DUPA");
+        buttonBox.getChildren().removeAll();
+        doctorTextField.setText(null);
+        notesTextField.setText(null);
+        tagsTextField.setText(null);
+        govIdTextField.setText(null);
+        patientTextField.setText(null);
+        super.dispose();
     }
 
     /**
-     * Sets values of table cells.
+     * Sets values of text fields.
      */
     @Override
     public void refresh() {
-        doctorTextField.setText(prescription.getDoctorName());
-        notesTextField.setText(prescription.getNotes());
-        tagsTextField.setText(prescription.getTags());
-        codeTextField.setText(prescription.getGovernmentId());
-        patientTextField.setText(prescription.getPatientName());
-//        TODO add DatePicker
+
+        if (getMode() == Mode.VIEW) {
+            doctorTextField.setText(prescription.getDoctorName());
+            notesTextField.setText(prescription.getNotes());
+            tagsTextField.setText(prescription.getTags());
+            govIdTextField.setText(prescription.getGovernmentId());
+            patientTextField.setText(prescription.getPatientName());
+            Instant instant = prescription.getAddedDate();
+            LocalDate date = instant.atZone(ZoneId.systemDefault()).toLocalDate();
+            addedDatePicker.setValue(date);
+        } else {
+            doctorTextField.setText(user.getDisplayName());
+            patientTextField.setText(targetPatient.getDisplayName());
+            addedDatePicker.setValue(LocalDate.now());
+        }
+
+
+//        final var entityManager = ClinicApplication.getEntityManager();
+//        entityManager.refresh(user);
+//        populate(user, getMode());
     }
 
     @FXML
     public void editSave() {
         Transaction transaction;
         try {
-            if (currMode == PrMode.DETAILS) {
+            if (getMode() == Mode.VIEW) {
                 if (editState.getValue()) {
-//                    TODO add DatePicker check
                     if (notesTextField.getText().trim().equals("") || notesTextField.getText() == null
                             || tagsTextField.getText() == null || tagsTextField.getText().trim().equals("")
-                            || codeTextField.getText().trim().equals("") || codeTextField.getText() == null){
-                        Alert alert = new Alert(Alert.AlertType.ERROR);
-                        alert.setTitle("Błąd zapisu");
-                        alert.setHeaderText("Nie wypełniono wymaganych pól");
-                        alert.setContentText("Wszystkie pola są wymagane.");
-                        alert.showAndWait();
-                        editState.setValue(!editState.getValue());
+                            || govIdTextField.getText().trim().equals("") || govIdTextField.getText() == null) {
+                        if (!showAlert(Alert.AlertType.ERROR, "Błąd zaipsu",
+                                "Nie wypełniniono wymaganych pól", "Wszystkie pola są wymagane")) {
+                            editState.setValue(!editState.getValue());
+                        }
                     } else {
                         editQuery.setParameter("notes", (notesTextField.getText() == null)
                                 ? new TypedParameterValue(StandardBasicTypes.STRING, null)
@@ -237,26 +390,26 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                         editQuery.setParameter("tags", (tagsTextField.getText() == null)
                                 ? new TypedParameterValue(StandardBasicTypes.STRING, null)
                                 : tagsTextField.getText().trim());
-                        editQuery.setParameter("governmentID", (codeTextField.getText() == null)
+                        editQuery.setParameter("governmentID", (govIdTextField.getText() == null)
                                 ? new TypedParameterValue(StandardBasicTypes.STRING, null)
-                                : codeTextField.getText().trim());
+                                : govIdTextField.getText().trim());
                         editQuery.setParameter("prId", prescription.getId());
                         transaction = session.beginTransaction();
                         editQuery.executeUpdate();
                         transaction.commit();
                         ClinicApplication.getEntityManager().refresh(prescription);
+
                     }
-//                    TODO add alert for successful edit
                 }
-            } else {
-                if (notesTextField.getText().trim().equals("")
-                        || tagsTextField.getText() == null || tagsTextField.getText().trim().equals("")) {
-                    Alert alert = new Alert(Alert.AlertType.ERROR);
-                    alert.setTitle("Błąd zapisu");
-                    alert.setHeaderText("Nie wypełniono wymaganych pól");
-                    alert.setContentText("Wszystkie pola są wymagane");
-                    alert.showAndWait();
-                    editState.setValue(!editState.getValue());
+            } else { //Create
+                if (notesTextField.getText() == null || notesTextField.getText().trim().equals("")
+                        || tagsTextField.getText() == null || tagsTextField.getText().trim().equals("")
+                        || govIdTextField.getText() == null || govIdTextField.getText().trim().equals("")
+                ) {
+                    if (showAlert(Alert.AlertType.ERROR, "Błąd zapisu", "Nie wypełniniono wymaganych pól",
+                            "Wszystkie pola są wymagane")) {
+                        editState.setValue(!editState.getValue());
+                    }
                 } else {
                     transaction = session.beginTransaction();
                     Prescription newPr = new Prescription();
@@ -265,8 +418,8 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                             ? null : notesTextField.getText().trim());
                     newPr.setStringTags((tagsTextField.getText() == null)
                             ? null : tagsTextField.getText().trim());
-                    newPr.setGovernmentId((codeTextField.getText() == null)
-                            ? null : codeTextField.getText().trim());
+                    newPr.setGovernmentId((govIdTextField.getText() == null)
+                            ? null : govIdTextField.getText().trim());
                     newPr.setPatient(targetPatient);
                     newPr.setAddedDate(Instant.now());
 
@@ -274,13 +427,11 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                     transaction.commit();
                     editState.setValue(!editState.getValue());
 
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                    alert.setTitle("Dodawanie recepty");
-                    alert.setHeaderText("Pomyślnie dodano receptę");
-                    alert.setContentText("Kod recepty: " + newPr.getGovernmentId());
-                    alert.showAndWait();
-
-                    this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
+                    if(!showAlert(Alert.AlertType.CONFIRMATION, "Dodawanie recepty",
+                            "Pomyślnie dodano receptę", "Kod recepty: " + newPr.getGovernmentId())){
+                        this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
+                    }
+//                    this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
                     return;
                 }
             }
@@ -288,7 +439,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
             transaction = session.getTransaction();
-            if(transaction.isActive())
+            if (transaction.isActive())
                 transaction.rollback();
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Błąd zapisu");
@@ -302,20 +453,14 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
      */
     @FXML
     public void deletePrescription() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Usuwanie recepty");
-        alert.setHeaderText("Czy na pewno chcesz usunąć receptę?");
-        alert.setContentText("Tej operacji nie można cofnąć.");
-
-        Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == ButtonType.OK) {
+        if (showAlert(Alert.AlertType.CONFIRMATION, "Anulowanie recepty",
+                "Czy na pewno chcesz anulować receptę?",
+                "Recepta zostanie usunięta z bazy. Tej operacji nie można cofnąć")) {
             deleteQuery.setParameter("id", prescription.getId());
             Transaction transaction = session.beginTransaction();
             deleteQuery.executeUpdate();
             transaction.commit();
             this.getParentController().goBack();
-        } else {
-            alert.close();
         }
     }
 
@@ -333,18 +478,10 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
 
     @FXML
     protected void prescriptionReport() throws IOException, URISyntaxException {
-        Configuration configuration = new Configuration(Configuration.VERSION_2_3_32);
-
-        ConverterProperties properties = new ConverterProperties();
-        DefaultFontProvider fontProvider = new DefaultFontProvider(true, true, true);
-
-        fontProvider.addFont(String.valueOf(ClinicApplication.class.getResource("fonts/calibri.ttf")));
-
-        properties.setFontProvider(fontProvider);
-        properties.setCharset("UTF-8");
-
-        URL templatesURL = ClinicApplication.class.getResource("templates");
-
+        ReportObject reportObject = ReportDialog.createConfig();
+        Configuration configuration = reportObject.getConfiguration();
+        ConverterProperties properties = reportObject.getProperties();
+        URL templatesURL = reportObject.getTemplatesURL();
         try {
             configuration.setDirectoryForTemplateLoading(new File(templatesURL.toURI()));
             configuration.setDefaultEncoding("UTF-8");
@@ -373,7 +510,9 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
             HtmlConverter.convertToPdf(new FileInputStream("output.html"),
                     new FileOutputStream(file), properties);
 
-            outputFile.delete();
+            if (!outputFile.delete()) {
+                showAlert(Alert.AlertType.ERROR, "Błąd usuwania pliku", "Nie można usunąć pliku", "");
+            }
             showAlert(Alert.AlertType.INFORMATION, "Generowanie recepty", "Utworzono receptę", "");
 
         } catch (FileNotFoundException | TemplateException e) {
@@ -383,13 +522,12 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
         }
     }
 
-    private static void showAlert(Alert.AlertType type, String title, String header, String text) {
-        Alert alert = new Alert(type);
-        alert.setTitle(title);
-        alert.setHeaderText(header);
-        alert.setContentText(text);
-        alert.showAndWait();
+    /**
+     * Available window modes (details of existing prescription or creation of a new one).
+     */
+    public enum Mode {
+        VIEW,
+        CREATE,
     }
-
 
 }
