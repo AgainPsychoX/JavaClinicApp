@@ -18,6 +18,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
@@ -58,7 +59,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         ReportObject reportObject = createConfig();
-        Configuration configuration = reportObject.getConfiguration();
+        configuration = reportObject.getConfiguration();
         ConverterProperties properties = reportObject.getProperties();
         URL templatesURL = reportObject.getTemplatesURL();
 
@@ -108,7 +109,11 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
                     }
                 }
                 case USERS_ADMIN -> {
-                    refresh();
+                    try {
+                        patientsReport((List<Patient>) context[1]);
+                    } catch (IOException | URISyntaxException | TemplateModelException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
                 case USERS_DOCTOR -> {
                     refresh();
@@ -150,6 +155,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
                 }
             }
             case USERS_ADMIN -> {
+                name = "user.";
                 availableFields = new ArrayList<>();
                 availableFields.add("address");
                 availableFields.add("pesel");
@@ -159,6 +165,9 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
                 availableFields.add("id");
                 availableFields.add("internalName");
                 availableFields.add("doctorSpecialities");
+                for (String field : availableFields) {
+                    availableFieldsListView.getItems().add(resourceBundle.getString("user." + field));
+                }
             }
             case USERS_DOCTOR -> {
                 availableFields = new ArrayList<>();
@@ -258,7 +267,6 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
         for (String name : selectedFieldsListView.getItems()) {
             selectedFields.add(englishNames.get(name));
         }
-        System.out.println(selectedFields);
     }
 
     /**
@@ -308,6 +316,40 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
                 showAlert(Alert.AlertType.INFORMATION, "Generowanie raportu", "Utworzono raport", "");
 
             }
+        } catch (FileNotFoundException | TemplateException e) {
+            showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Wystąpił błąd.", e.getLocalizedMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    public void patientsReport(List<Patient> list) throws IOException, URISyntaxException, TemplateModelException {
+        try {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Zapisywanie raportu");
+            fileChooser.setInitialFileName("patientsReport.pdf");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Pliki PDF", "*.pdf"));
+
+            File file = fileChooser.showSaveDialog(new Stage());
+
+            Template template = configuration.getTemplate("usersTemplate.ftl");
+
+            File outputFile = new File("output.html");
+            Writer writer = new FileWriter(outputFile);
+
+            Map<String, Object> dataModel = new HashMap<>();
+            dataModel.put("headers", selectedFields);
+            dataModel.put("users", list);
+
+            template.process(dataModel, writer);
+
+            writer.close();
+
+            HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file), properties);
+
+            outputFile.delete();
+            showAlert(Alert.AlertType.INFORMATION, "Generowanie raportu", "Utworzono raport", "");
+
         } catch (FileNotFoundException | TemplateException e) {
             showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Wystąpił błąd.", e.getLocalizedMessage());
             throw new RuntimeException(e);
@@ -369,7 +411,9 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
     }
 
     public static ReportObject createConfig(){
-        freemarker.template.Configuration configuration = new freemarker.template.Configuration(freemarker.template.Configuration.VERSION_2_3_32);
+        freemarker.template.Configuration configuration =
+                new freemarker.template.Configuration(freemarker.template.Configuration.VERSION_2_3_32);
+
 
         Locale locale = new Locale("pl", "PL");
         configuration.setLocale(locale);
