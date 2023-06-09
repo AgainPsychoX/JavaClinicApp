@@ -1,7 +1,10 @@
 package pl.edu.ur.pz.clinicapp.models;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Date;
 
 @NamedNativeQueries(
         {
@@ -102,6 +105,11 @@ public class Referral extends MedicalHistoryEntry {
 
     public Instant getFulfilmentDate() {
         return fulfilmentDate;
+    }
+    public LocalDate getFulfilmentDateFormatted() {
+        if(this.getFulfilmentDate()!=null) {
+            return Timestamp.from(this.getFulfilmentDate()).toLocalDateTime().toLocalDate();
+        }else return null;
     }
 
     public void setFulfilmentDate(Instant fulfilmentDate) {

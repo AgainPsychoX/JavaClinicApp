@@ -2,7 +2,9 @@ package pl.edu.ur.pz.clinicapp.models;
 
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @MappedSuperclass
@@ -84,6 +86,9 @@ public abstract class MedicalHistoryEntry {
     private Instant addedDate;
     public Instant getAddedDate() {
         return addedDate;
+    }
+    public LocalDate getAddedDateFormatted() {
+        return Timestamp.from(this.getAddedDate()).toLocalDateTime().toLocalDate();
     }
     public void setAddedDate(Instant addedDate) {
         this.addedDate = addedDate;
