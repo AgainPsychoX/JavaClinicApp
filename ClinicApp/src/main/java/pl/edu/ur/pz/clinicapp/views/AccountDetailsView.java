@@ -171,14 +171,14 @@ public class AccountDetailsView extends ChildControllerBase<MainWindowController
         var user = ClinicApplication.getUser();
         var mode = Mode.VIEW;
 
-        if (context.length >= 1) {
+        if (context.length > 0) {
             if (context[0] instanceof User x) {
                 user = x;
             } else {
                 throw new IllegalArgumentException();
             }
 
-            if (context.length >= 2) {
+            if (context.length > 1) {
                 if (context[1] instanceof Mode y) {
                     mode = y;
                 } else {

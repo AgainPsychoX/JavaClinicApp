@@ -9,11 +9,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.io.IOException;
 import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.linkStageSizeToPane;
 import static pl.edu.ur.pz.clinicapp.utils.ProblemHandlingUtils.reportExceptionNicely;
 
 /**
@@ -94,30 +92,19 @@ public abstract class BaseEditDialog extends Stage {
      * @param mode Mode of the dialog.
      */
     protected BaseEditDialog(URL fxml, Mode mode) {
-        pane = new BorderPane();
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
-        fxmlLoader.setRoot(pane);
         fxmlLoader.setController(this);
 
         try {
-            fxmlLoader.load();
+            pane = fxmlLoader.load();
         }
-        catch (IOException exception) {
-            Logger.getGlobal().log(
-                    Level.SEVERE,
-                    "Error creating edit dialog!" +
-                            "\n\tFXML: " + fxml
-            );
+        catch (Exception exception) {
             throw new RuntimeException(exception);
         }
 
         // Default styling & window (stage) properties
         initModality(Modality.APPLICATION_MODAL);
-        minWidthProperty().bind(pane.minWidthProperty());
-        maxWidthProperty().bind(pane.maxWidthProperty());
-        minHeightProperty().bind(pane.minHeightProperty());
-        maxHeightProperty().bind(pane.maxHeightProperty());
-        setResizable(pane.getMinHeight() == pane.getMaxHeight() && pane.getMinWidth() == pane.getMaxWidth());
+        linkStageSizeToPane(this, pane);
         setScene(new Scene(pane));
 
         setState(State.FRESH);

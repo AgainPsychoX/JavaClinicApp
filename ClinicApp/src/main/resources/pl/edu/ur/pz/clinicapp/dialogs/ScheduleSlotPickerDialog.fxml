@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.text.Text?>
+<?import pl.edu.ur.pz.clinicapp.controls.LocalTimeSpinner?>
+<?import pl.edu.ur.pz.clinicapp.controls.WeekPane?>
+
+<BorderPane maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="400.0" minWidth="600.0" prefHeight="540.0" prefWidth="720.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+   <center>
+      <WeekPane fx:id="weekPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
+   </center>
+   <top>
+      <GridPane BorderPane.alignment="CENTER">
+         <columnConstraints>
+            <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints halignment="CENTER" hgrow="NEVER" minWidth="10.0" />
+            <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Text fx:id="headerText" strokeType="OUTSIDE" strokeWidth="0.0" text="Wybór miejsca w harmonogramie" />
+            <HBox alignment="CENTER" spacing="8.0" GridPane.columnIndex="1">
+               <children>
+                  <Button fx:id="previousWeekButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#goPreviousWeekAction" prefWidth="25.0" text="&lt;" />
+                  <DatePicker fx:id="datePicker" minWidth="-Infinity" onAction="#datePickerAction" prefWidth="108.0" styleClass="prompt-text-as-regular" stylesheets="@../views/timetableEffectiveDatePicker.css" />
+                  <Button fx:id="nextWeekButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#goNextWeekAction" prefWidth="25.0" text="&gt;" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER" spacing="4.0" GridPane.columnIndex="2">
+               <children>
+                  <Label text="Od">
+                     <HBox.margin>
+                        <Insets left="16.0" />
+                     </HBox.margin>
+                  </Label>
+                  <LocalTimeSpinner fx:id="startTimeSpinner" minWidth="-Infinity" pattern="HH:mm" prefWidth="70.0">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </LocalTimeSpinner>
+                  <Label text="do" />
+                  <LocalTimeSpinner fx:id="endTimeSpinner" minWidth="-Infinity" pattern="HH:mm" prefWidth="70.0" />
+               </children>
+            </HBox>
+         </children>
+         <BorderPane.margin>
+            <Insets bottom="8.0" />
+         </BorderPane.margin>
+      </GridPane>
+   </top>
+   <padding>
+      <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+   </padding>
+   <bottom>
+      <HBox spacing="8.0" BorderPane.alignment="CENTER">
+         <BorderPane.margin>
+            <Insets top="8.0" />
+         </BorderPane.margin>
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="8.0" HBox.hgrow="SOMETIMES">
+               <children>
+                  <Text fx:id="extraTextBelow" strokeType="OUTSIDE" strokeWidth="0.0" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_RIGHT" spacing="8.0">
+               <children>
+                <Button fx:id="cancelButton" cancelButton="true" mnemonicParsing="false" onAction="#cancelAction" styleClass="reset-default-button-color" text="Anuluj" />
+                  <Button fx:id="acceptButton" defaultButton="true" mnemonicParsing="false" onAction="#acceptAction" styleClass="reset-default-button-color" text="Wybierz" />
+               </children>
+            </HBox>
+         </children>
+      </HBox>
+   </bottom>
+</BorderPane>

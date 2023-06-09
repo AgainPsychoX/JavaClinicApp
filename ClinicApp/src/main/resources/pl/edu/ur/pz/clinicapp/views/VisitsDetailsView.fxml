@@ -26,7 +26,7 @@
                 <Cursor fx:constant="HAND" />
             </cursor>
             <VBox.margin>
-                <Insets left="4.0" top="15.0" />
+                <Insets left="20.0" top="15.0" />
             </VBox.margin>
         </Text>
         <GridPane prefHeight="301.0" prefWidth="482.0">
@@ -44,7 +44,7 @@
             <children>
                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Pacjent" wrappingWidth="118.716796875">
                     <GridPane.margin>
-                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                        <Insets bottom="4.0" left="20.0" right="4.0" top="4.0" />
                     </GridPane.margin></Text>
                 <ComboBox fx:id="patientCombo" GridPane.columnIndex="1">
                     <GridPane.margin>
@@ -52,7 +52,7 @@
                     </GridPane.margin></ComboBox>
                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Lekarz" wrappingWidth="118.716796875" GridPane.rowIndex="1">
                     <GridPane.margin>
-                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                        <Insets bottom="4.0" left="20.0" right="4.0" top="4.0" />
                     </GridPane.margin>
                 </Text>
                 <ComboBox fx:id="doctorCombo" GridPane.columnIndex="1" GridPane.rowIndex="1">
@@ -62,22 +62,22 @@
                 </ComboBox>
                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Data" wrappingWidth="118.716796875" GridPane.rowIndex="2">
                     <GridPane.margin>
-                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                        <Insets bottom="4.0" left="20.0" right="4.0" top="4.0" />
                     </GridPane.margin>
                 </Text>
-                <DatePicker fx:id="datePicker" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                <TextField fx:id="pickedDate" GridPane.columnIndex="1" GridPane.rowIndex="2" maxWidth="170">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
-                </DatePicker>
-                <ComboBox fx:id="hourPicker" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                </TextField>
+                <Button fx:id="datePicker" GridPane.columnIndex="1" GridPane.rowIndex="2" onAction="#pickDate" text="Wybierz datę">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="200.0" right="4.0" top="4.0" />
                     </GridPane.margin>
-                </ComboBox>
+                </Button>
                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Szczegóły wizyty" wrappingWidth="118.716796875" GridPane.rowIndex="3">
                     <GridPane.margin>
-                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                        <Insets bottom="4.0" left="20.0" right="4.0" top="4.0" />
                     </GridPane.margin></Text>
                 <TextArea fx:id="notesTextField" prefHeight="196.0" prefWidth="340.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
                     <GridPane.margin>

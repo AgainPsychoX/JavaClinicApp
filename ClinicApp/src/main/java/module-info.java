@@ -10,9 +10,10 @@ module pl.edu.ur.pz.clinicapp {
     requires java.desktop;
     requires org.jetbrains.annotations;
 
-
     exports pl.edu.ur.pz.clinicapp;
+    exports pl.edu.ur.pz.clinicapp.controls;
     exports pl.edu.ur.pz.clinicapp.models;
+    exports pl.edu.ur.pz.clinicapp.utils;
 
     opens pl.edu.ur.pz.clinicapp to javafx.fxml;
     opens pl.edu.ur.pz.clinicapp.controls to javafx.fxml;
@@ -20,6 +21,4 @@ module pl.edu.ur.pz.clinicapp {
     opens pl.edu.ur.pz.clinicapp.models to org.hibernate.orm.core;
     opens pl.edu.ur.pz.clinicapp.utils to org.hibernate.orm.core, javafx.fxml;
     opens pl.edu.ur.pz.clinicapp.views to javafx.fxml;
-
-
 }

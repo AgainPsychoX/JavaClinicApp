@@ -54,6 +54,8 @@ $$;
 
 REVOKE EXECUTE ON FUNCTION public.create_database_user FROM gp_receptionists, gp_doctors, gp_admins;
 
+
+
 --------------------------------------------------------------------------------
 -- Roles
 --------------------------------------------------------------------------------
@@ -80,6 +82,33 @@ GRANT EXECUTE ON FUNCTION public.create_database_user TO gp_receptionists, gp_do
 -- >
 -- > &mdash; <cite>https://www.postgresql.org/docs/current/role-membership.html</cite>
 -- so those need to be explicitly added.
+
+
+
+--------------------------------------------------------------------------------
+-- Views
+--------------------------------------------------------------------------------
+
+-- View to provide info about schedule entries of users with schedules (doctors) without leaking details.
+CREATE OR REPLACE VIEW schedule_busy_view AS
+    SELECT user_id, begin_time, end_time, type FROM schedule_simple_entries WHERE type NOT IN ('OPEN', 'EXTRA')
+    UNION
+        SELECT
+            patient_id AS user_id,
+            date AS begin_time,
+            (date + duration * INTERVAL '1 minute') AS end_time,
+            'APPOINTMENT'::schedule_simple_entry_type AS type
+        FROM appointments
+    UNION
+        SELECT
+            doctor_id  AS user_id,
+            date AS begin_time,
+            (date + duration * INTERVAL '1 minute') AS end_time,
+            'APPOINTMENT'::schedule_simple_entry_type AS type
+        FROM appointments
+    ORDER BY user_id, begin_time;
+
+
 
 --------------------------------------------------------------------------------
 -- Row Level Security

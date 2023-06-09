@@ -49,7 +49,7 @@ public abstract class MedicalHistoryEntry {
     /**
      * Patient the entry belongs to.
      */
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "patient_id", referencedColumnName = "id", nullable = false)
     private Patient patient;
     public Patient getPatient() {
@@ -69,7 +69,7 @@ public abstract class MedicalHistoryEntry {
     /**
      * User who added the entry.
      */
-    @ManyToOne(fetch = FetchType.EAGER, optional = false, targetEntity = User.class)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = User.class)
     @JoinColumn(name = "added_by_user_id", referencedColumnName = "id", nullable = false)
     private User addedBy;
     public User getAddedBy() {

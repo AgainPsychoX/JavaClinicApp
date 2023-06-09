@@ -3,7 +3,6 @@ package pl.edu.ur.pz.clinicapp.utils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
-import java.util.logging.Logger;
 
 public class HistoryTracker<T> {
     static public class HistoryPoint<T> {
@@ -42,13 +41,11 @@ public class HistoryTracker<T> {
     }
 
     public void reset(T first) {
-        Logger.getGlobal().finer("Resetting to: " + first);
         stack.clear();
         stack.add(new HistoryPoint<>(first));
     }
 
     public void go(T next, Object... context) {
-        Logger.getGlobal().finer("Going to: " + next);
         stack.push(new HistoryPoint<>(next, context));
     }
 
@@ -56,7 +53,6 @@ public class HistoryTracker<T> {
         if (stack.size() > 1) {
             stack.pop();
         }
-        Logger.getGlobal().finer("Back to: " + stack.peek());
         return getCurrent();
     }
 
