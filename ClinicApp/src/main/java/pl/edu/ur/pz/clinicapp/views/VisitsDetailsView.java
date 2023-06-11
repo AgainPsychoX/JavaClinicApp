@@ -19,6 +19,7 @@ import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -373,8 +374,13 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
         final var dialog = new ScheduleSlotPickerDialog(
                 schedule, nullCoalesce(LocalDateTime.now()));
         dialog.showAndWait();
-        pickedDate.setText(dialog.getResultDateTime().get().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
-        timestamp = Timestamp.valueOf(dialog.getResultDateTime().get());
-        System.out.println(timestamp);
+        final var selection = dialog.getResult();
+        if (selection.isPresent()) {
+            final var begin = selection.get().getBeginTime().atZone(ZoneId.systemDefault());
+            // TODO: use one picker for both point and duration
+            pickedDate.setText(begin.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
+            timestamp = Timestamp.valueOf(begin.toLocalDateTime());
+            // TODO: ditch the Timestamp class for Instant or ZonedDateTime
+        }
     }
 }
