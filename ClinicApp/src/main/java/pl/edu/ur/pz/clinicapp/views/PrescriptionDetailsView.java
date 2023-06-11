@@ -47,10 +47,8 @@ import java.util.*;
 
 
 /**
- * Available window modes (details of existing referral or creation of a new one).
+ * View controller to edit, delete or display details of a {@link Prescription}.
  */
-
-
 public class PrescriptionDetailsView extends ChildControllerBase<MainWindowController> implements Initializable {
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -81,6 +79,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
 
     private Prescription prescription;
     private Patient targetPatient;
+    private boolean isTarget;
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * State
@@ -188,7 +187,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
         }
 
         switch (mode) {
-            case VIEW -> {
+            case DETAILS -> {
                 patientTextField.setEditable(false);
 
                 for (final var node : patientOnlyThings) {
@@ -242,11 +241,12 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
      */
     @Override
     public void populate(Object... context) {
-        var mode = Mode.VIEW;
+        var mode = Mode.DETAILS;
         var user = ClinicApplication.getUser();
 
         targetPatient = null;
         prescription = null;
+        isTarget = context.length > 2;
 
         if (context.length >= 1) {
             if (context[0] instanceof Mode m) {
@@ -260,6 +260,8 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                     targetPatient = prescription.getPatient();
                 } else if (context[1] instanceof User p) {
                     targetPatient = p.asPatient();
+                } else if (context[1] instanceof Patient p){
+                    targetPatient = p;
                 } else {
                     throw new IllegalArgumentException();
                 }
@@ -317,14 +319,26 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
      * Checks if window is in edit state and accordingly displays alert and/or changes view to previous one.
      */
     public void onBackClick() {
+//        if (editState.getValue()) {
+//            if (showAlert(Alert.AlertType.CONFIRMATION, "Niezapisane zmiany", "Widok w trybie edycji",
+//                    "Wszystkie niezapisane zmiany zostaną utracone.")) {
+//                editState.setValue(!editState.getValue());
+//                this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
+//            }
+//        } else {
+//            this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
+//        }
         if (editState.getValue()) {
-            if (showAlert(Alert.AlertType.CONFIRMATION, "Niezapisane zmiany", "Widok w trybie edycji",
-                    "Wszystkie niezapisane zmiany zostaną utracone.")) {
+            if (exitConfirm()) {
                 editState.setValue(!editState.getValue());
-                this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
+                if (isTarget) {
+                    this.getParentController().goToView(MainWindowController.Views.PRESCRIPTIONS, targetPatient);
+                } else this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
             }
         } else {
-            this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
+            if (isTarget) {
+                this.getParentController().goToView(MainWindowController.Views.PRESCRIPTIONS, targetPatient);
+            } else this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
         }
     }
 
@@ -333,7 +347,6 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
      */
     @Override
     public void dispose() {
-        System.out.println("DUPA");
         buttonBox.getChildren().removeAll();
         doctorTextField.setText(null);
         notesTextField.setText(null);
@@ -348,8 +361,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
      */
     @Override
     public void refresh() {
-
-        if (getMode() == Mode.VIEW) {
+        if (getMode() == Mode.DETAILS) {
             doctorTextField.setText(prescription.getDoctorName());
             notesTextField.setText(prescription.getNotes());
             tagsTextField.setText(prescription.getTags());
@@ -363,18 +375,14 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
             patientTextField.setText(targetPatient.getDisplayName());
             addedDatePicker.setValue(LocalDate.now());
         }
-
-
-//        final var entityManager = ClinicApplication.getEntityManager();
-//        entityManager.refresh(user);
-//        populate(user, getMode());
     }
 
     @FXML
     public void editSave() {
         Transaction transaction;
+
         try {
-            if (getMode() == Mode.VIEW) {
+            if (getMode() == Mode.DETAILS) {
                 if (editState.getValue()) {
                     if (notesTextField.getText().trim().equals("") || notesTextField.getText() == null
                             || tagsTextField.getText() == null || tagsTextField.getText().trim().equals("")
@@ -401,7 +409,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
 
                     }
                 }
-            } else { //Create
+            } else {
                 if (notesTextField.getText() == null || notesTextField.getText().trim().equals("")
                         || tagsTextField.getText() == null || tagsTextField.getText().trim().equals("")
                         || govIdTextField.getText() == null || govIdTextField.getText().trim().equals("")
@@ -431,7 +439,6 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                             "Pomyślnie dodano receptę", "Kod recepty: " + newPr.getGovernmentId())){
                         this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
                     }
-//                    this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
                     return;
                 }
             }
@@ -526,7 +533,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
      * Available window modes (details of existing prescription or creation of a new one).
      */
     public enum Mode {
-        VIEW,
+        DETAILS,
         CREATE,
     }
 

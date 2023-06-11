@@ -253,7 +253,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
     @FXML
     public void printReferrals(){
-        this.getParentController().goToView(MainWindowController.Views.REPORTS, ReportDialog.ReportMode.REFERRAL, referrals);
+        this.getParentController().goToView(MainWindowController.Views.REPORTS, ReportDialog.Mode.REFERRAL, referrals);
     }
 
 
