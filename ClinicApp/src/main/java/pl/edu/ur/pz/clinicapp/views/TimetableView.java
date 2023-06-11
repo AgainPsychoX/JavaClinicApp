@@ -1090,6 +1090,4 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
         interactionGuard.end();
     }
 
-
-
 }

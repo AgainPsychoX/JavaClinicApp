@@ -10,10 +10,13 @@ import freemarker.template.TemplateModelException;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
+import javafx.scene.image.WritableImage;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
@@ -25,6 +28,9 @@ import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DateUtils;
 import pl.edu.ur.pz.clinicapp.utils.ReportObject;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.awt.image.RenderedImage;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -38,6 +44,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
     @FXML private DatePicker endDatePicker;
     @FXML private ListView<String> availableFieldsListView;
     @FXML private ListView<String> selectedFieldsListView;
+    @FXML private VBox content;
     private ReportMode mode;
 
 
@@ -429,6 +436,56 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
         properties.setCharset("UTF-8");
         URL templatesURL = ClinicApplication.class.getResource("templates");
         return new ReportObject(configuration, properties, templatesURL);
+    }
+
+    private void timetableReport(VBox content) throws IOException {
+        WritableImage snapshot = content.snapshot(new SnapshotParameters(), null);
+        BufferedImage bufferedImage = new BufferedImage(550, 400, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage image = javafx.embed.swing.SwingFXUtils.fromFXImage(snapshot, bufferedImage);
+        String finalImage;
+        try {
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", os);
+            byte[] bytes = os.toByteArray();
+            byte[] encoded = Base64.getEncoder().encode(bytes);
+            String imageAsBase64 = new String(encoded);
+            finalImage = "data:image/png;base64," + imageAsBase64;
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Zapisywanie raportu");
+            fileChooser.setInitialFileName("timetableReport.pdf");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Pliki PDF", "*.pdf"));
+
+            File file = fileChooser.showSaveDialog(new Stage());
+
+            Template template = configuration.getTemplate("timetableTemplate.ftl");
+
+            File outputFile = new File("output.html");
+            Writer writer = new FileWriter(outputFile);
+
+            Map<String, Object> dataModel = new HashMap<>();
+            dataModel.put("timetable", finalImage);
+
+            template.process(dataModel, writer);
+
+            writer.close();
+
+            HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file), properties);
+
+            outputFile.delete();
+            showAlert(Alert.AlertType.INFORMATION, "Generowanie raportu", "Utworzono raport", "");
+
+
+        } catch (FileNotFoundException | TemplateException e) {
+            showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Wystąpił błąd.", e.getLocalizedMessage());
+            throw new RuntimeException(e);
+        }
     }
 
 
