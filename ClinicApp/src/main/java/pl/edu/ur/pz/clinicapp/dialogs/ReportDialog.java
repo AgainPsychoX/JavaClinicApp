@@ -497,7 +497,13 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
         }
     }
 
+    @FXML
+    public void onBackClick() {
+        this.getParentController().goBack();
+    }
+
+
     public enum Mode {PRESCRIPTION, REFERRAL, USERS_ADMIN, USERS_DOCTOR}
-
-
 }
+
+

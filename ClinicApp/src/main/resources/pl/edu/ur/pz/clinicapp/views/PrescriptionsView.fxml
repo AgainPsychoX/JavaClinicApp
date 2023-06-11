@@ -68,7 +68,7 @@
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>
                   </Button>
-                  <Button mnemonicParsing="false" onAction="#printPrescriptions" prefHeight="33.0" prefWidth="166.0" styleClass="my-primary-button" text="Drukuj recepty ">
+                  <Button fx:id="reportButton" mnemonicParsing="false" onAction="#printPrescriptions" prefHeight="33.0" prefWidth="166.0" styleClass="my-primary-button" text="Drukuj recepty ">
                      <padding>
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>

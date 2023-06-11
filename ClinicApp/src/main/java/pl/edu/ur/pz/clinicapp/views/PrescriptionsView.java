@@ -50,6 +50,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     @FXML protected ComboBox filter;
     @FXML protected HBox buttonBox;
     @FXML protected Text backText;
+    @FXML protected Button reportButton;
 
     protected ObservableList<Prescription> prescriptions = FXCollections.observableArrayList();
     protected FilteredList<Prescription> filteredPrescriptions = new FilteredList<>(prescriptions, b -> true);
@@ -136,11 +137,13 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
         buttonBox.getChildren().clear();
         if (targetPatient != null){
             buttonBox.getChildren().add(detailsButton);
+            buttonBox.getChildren().add(reportButton);
             if (!(currUserRole == User.Role.RECEPTION)) buttonBox.getChildren().add(addButton);
             if (!vBox.getChildren().contains(backText)) vBox.getChildren().add(1, backText);
             backText.setText("< Powrót do pacjenta " + targetPatient.getDisplayName());
         }else {
             buttonBox.getChildren().add(detailsButton);
+            buttonBox.getChildren().add(reportButton);
             vBox.getChildren().remove(backText);
         }
 
@@ -260,7 +263,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     @FXML
     public void onBackClick(){
         this.getParentController().goToView(MainWindowController.Views.PATIENT_DETAILS,
-        PatientDetailsView.RefMode.DETAILS, targetPatient); // tu chyba pres mode
+        PatientDetailsView.RefMode.DETAILS, targetPatient);
     }
 
     @FXML
