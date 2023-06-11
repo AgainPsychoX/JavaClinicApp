@@ -5,7 +5,6 @@ import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import javax.persistence.*;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 
 /**
  * Model representing patient registered visit to clinic to see selected doctor.
@@ -38,6 +37,10 @@ import java.util.List;
         )
 })
 @NamedNativeQueries({
+        @NamedNativeQuery(
+                name = "validate_new_appointment",
+                query = "SELECT validate_new_appointment(:patient_id, :doctor_id, :begin_date, :duration)"
+        ),
         // TODO: use Hibernate `persist` (or `merge`) to insert/update and `remove` to delete
         @NamedNativeQuery(
                 name = "editAppointment",
@@ -52,20 +55,42 @@ import java.util.List;
 })
 public class Appointment extends MedicalHistoryEntry implements Schedule.Entry {
     /**
-     * Queries and returns all appointments for given user in given range of time.
+     * Prepares query to select all appointments for given user in given range of time.
      * Note: Might return partial data (logged-in user permissions might limit viewing other users' data).
      * @param userReference Reference to user (user, patient or doctor).
      * @param from Begin timestamp of the time range (inclusive).
      * @param to End timestamp of the time range (inclusive).
-     * @return List of the appointments.
+     * @return Query for the appointments  (in natural order by date).
      */
-    public static List<Appointment> forUserBetweenDates(UserReference userReference, Instant from, Instant to) {
+    public static TypedQuery<Appointment> queryForUserBetweenDates(UserReference userReference, Instant from, Instant to) {
         final var query = ClinicApplication.getEntityManager()
                 .createNamedQuery("Appointments.forUser.betweenDates", Appointment.class);
         query.setParameter("user_id", userReference.getId());
         query.setParameter("from", from);
         query.setParameter("to", to);
-        return query.getResultList();
+        return query;
+    }
+
+    public enum NewAppointmentValidationStatus {
+        GOOD, INVALID_DURATION, TOO_FAR_IN_ADVANCE, TIMETABLE_CROSSED, OUTSIDE_TIMETABLE, DOCTOR_BUSY
+    }
+
+    /**
+     * Validates schedule-sensitive fields for potential new appointment.
+     * @param patient related patient (if null, tries to validate patient-independently)
+     * @param doctor related doctor
+     * @param beginTime begin time of the potential slot in the schedule
+     * @param duration requested (expected) duration
+     * @return 0 if good, non-zero error code otherwise.
+     */
+    public static NewAppointmentValidationStatus validateNewAppointment(Patient patient, Doctor doctor, Instant beginTime, Duration duration) {
+        final var query = ClinicApplication.getEntityManager()
+                .createNamedQuery("validate_new_appointment", Integer.class);
+        query.setParameter("patient_id", patient == null ? 0 : patient.getId());
+        query.setParameter("doctor_id", doctor.getId());
+        query.setParameter("begin_date", beginTime);
+        query.setParameter("duration", duration.toMinutes());
+        return NewAppointmentValidationStatus.values()[query.getSingleResult()];
     }
 
 

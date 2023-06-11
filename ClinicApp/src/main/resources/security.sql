@@ -86,7 +86,20 @@ GRANT EXECUTE ON FUNCTION public.create_database_user TO gp_receptionists, gp_do
 
 
 --------------------------------------------------------------------------------
--- Views
+-- Utils functions
+--------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION minute_of_day(p_timestamp TIMESTAMP WITH TIME ZONE)
+    RETURNS INTEGER
+    LANGUAGE sql
+AS $$
+    SELECT (EXTRACT(MINUTE FROM p_timestamp) + EXTRACT(HOUR FROM p_timestamp) * 60)::int;
+$$;
+
+
+
+--------------------------------------------------------------------------------
+-- Schedule logic
 --------------------------------------------------------------------------------
 
 -- View to provide info about schedule entries of users with schedules (doctors) without leaking details.
@@ -101,12 +114,94 @@ CREATE OR REPLACE VIEW schedule_busy_view AS
         FROM appointments
     UNION
         SELECT
-            doctor_id  AS user_id,
+            doctor_id AS user_id,
             date AS begin_time,
             (date + duration * INTERVAL '1 minute') AS end_time,
             'APPOINTMENT'::schedule_simple_entry_type AS type
         FROM appointments
-    ORDER BY user_id, begin_time;
+    ORDER BY user_id, begin_time
+;
+
+GRANT SELECT ON schedule_busy_view TO PUBLIC;
+
+-- Function to get effective timetable for given user for give timestamp
+CREATE OR REPLACE FUNCTION public.get_effective_timetable(p_user_id INTEGER, p_date TIMESTAMP WITH TIME ZONE)
+    RETURNS RECORD
+    LANGUAGE plpgsql
+AS $$
+	DECLARE
+		v_result RECORD;
+    BEGIN
+		SELECT * FROM timetables INTO v_result
+			WHERE user_id = p_user_id AND effective_date <= p_date
+			ORDER BY effective_date DESC
+			LIMIT 1;
+		RETURN v_result;
+    END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_effective_timetable TO PUBLIC;
+
+-- Function to validate new appointment addition
+CREATE OR REPLACE FUNCTION public.validate_new_appointment(p_patient_id INTEGER, p_doctor_id INTEGER, p_begin_time TIMESTAMP, p_duration INTEGER)
+    RETURNS INTEGER
+    LANGUAGE plpgsql
+    SECURITY DEFINER
+AS $$
+    DECLARE
+        v_end_time TIMESTAMP;
+        v_doctor_timetable RECORD;
+        v_start_minute INTEGER;
+        v_end_minute INTEGER;
+        v_max_days_in_advance INTEGER;
+    BEGIN
+        IF p < 5 OR 12 * 60 < p THEN
+            RETURN 1; -- Duration must be at least 5 minutes and max 12 hours
+        END IF;
+
+        v_end_time := p_begin_time + p_duration * INTERVAL '1 minute';
+        SELECT max_days_in_advance INTO v_max_days_in_advance FROM doctors WHERE id = p_doctor_id;
+        IF CURRENT_TIMESTAMP + (v_max_days_in_advance * INTERVAL '1 day') < v_end_time THEN
+            RETURN 2; -- Cannot add appointments beyond max days in advance specified by the doctor
+        END IF;
+
+        v_doctor_timetable := public.get_effective_timetable(p_doctor_id, p_begin_time);
+        IF v_doctor_timetable != public.get_effective_timetable(p_doctor_id, p_end_time) THEN
+            RETURN 3; -- Appointment cannot span over multiple timetables
+        END IF;
+
+        v_start_minute := minute_of_day(p_from);
+        v_end_minute := minute_of_day(p_to);
+        IF (
+            NOT EXISTS (
+                -- We assume timetables_entries are consolidated concatenated if they touch,
+                -- and that appointments cannot span on multiple days (like thought mid-night).
+                SELECT 1 FROM timetable_entries
+                WHERE timetable_id = v_doctor_timetable.id
+                    AND start_minute <= v_start_minute AND v_end_minute <= end_minute
+            )
+            AND NOT EXISTS (
+                SELECT 1 FROM schedule_simple_entries
+                WHERE user_id = p_doctor_id
+                    AND begin_time <= p_begin_time AND p_begin_time <= end_time
+                    AND type = 'EXTRA'
+            )
+        ) THEN
+            RETURN 4; -- Doctor doesn't work in specified range (or at least, not fully)
+        END IF;
+
+        IF EXISTS (
+            SELECT 1 FROM schedule_busy_view
+            WHERE user_id = p_doctor_id AND (begin_time, end_time) OVERLAPS (p_begin_time, p_end_time)
+        ) THEN
+            RETURN 5; -- Doctor is busy already
+        END IF;
+
+        RETURN 0;
+    END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.validate_new_appointment TO PUBLIC;
 
 
 

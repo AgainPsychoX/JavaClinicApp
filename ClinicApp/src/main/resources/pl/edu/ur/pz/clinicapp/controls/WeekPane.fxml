@@ -15,13 +15,13 @@
       <GridPane fx:id="headerGridPane">
         <columnConstraints>
           <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="64.0" />
-          <ColumnConstraints hgrow="SOMETIMES" minWidth="-Infinity" prefWidth="80.0" />
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="-Infinity" prefWidth="80.0" />
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="-Infinity" prefWidth="80.0" />
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="-Infinity" prefWidth="80.0" />
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="-Infinity" prefWidth="80.0" />
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="-Infinity" prefWidth="80.0" />
-            <ColumnConstraints hgrow="SOMETIMES" minWidth="-Infinity" prefWidth="80.0" />
+          <ColumnConstraints hgrow="ALWAYS" minWidth="-Infinity" prefWidth="80.0" />
+            <ColumnConstraints hgrow="ALWAYS" minWidth="-Infinity" prefWidth="80.0" />
+            <ColumnConstraints hgrow="ALWAYS" minWidth="-Infinity" prefWidth="80.0" />
+            <ColumnConstraints hgrow="ALWAYS" minWidth="-Infinity" prefWidth="80.0" />
+            <ColumnConstraints hgrow="ALWAYS" minWidth="-Infinity" prefWidth="80.0" />
+            <ColumnConstraints hgrow="ALWAYS" minWidth="-Infinity" prefWidth="80.0" />
+            <ColumnConstraints hgrow="ALWAYS" minWidth="-Infinity" prefWidth="80.0" />
         </columnConstraints>
         <rowConstraints>
           <RowConstraints maxHeight="-Infinity" minHeight="-Infinity" prefHeight="30.0" vgrow="SOMETIMES" />

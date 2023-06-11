@@ -64,3 +64,17 @@
 }
 
 
+
+/* Week pane coloring (for `Schedule.Entry.Type`s)  */
+.week-pane .entry.open              { -entry-color: #c2ffbd; }
+.week-pane .entry.closed            { -entry-color: #ff9191; }
+.week-pane .entry.vacation          { -entry-color: #ffa6e1; }
+.week-pane .entry.holidays          { -entry-color: #fffa91; }
+.week-pane .entry.sick_leave        { -entry-color: #ffbb91; }
+.week-pane .entry.emergency_leave   { -entry-color: #ffbb91; }
+.week-pane .entry.appointment       { -entry-color: #a4c2fd; }
+.week-pane .entry.other.appointment { -entry-color: #d4d4d4; }
+.week-pane .entry.extra             { -entry-color: #abfda4; }
+.week-pane .entry.other             { -entry-color: #d4d4d4; }
+
+.timetable-view .week-pane .entry { -entry-color: #7bff70; }

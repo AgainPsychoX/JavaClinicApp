@@ -140,8 +140,4 @@ public class Doctor implements UserReference {
     public List<Timetable> getTimetables() {
         return Timetable.forUser(this);
     }
-
-    public Schedule getSchedule() {
-        return DoctorSchedule.of(this);
-    }
 }

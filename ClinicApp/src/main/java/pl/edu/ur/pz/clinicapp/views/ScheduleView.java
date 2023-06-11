@@ -12,8 +12,8 @@ import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneFreeSelectionModel;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneScheduleEntryCell;
+import pl.edu.ur.pz.clinicapp.dialogs.AppointmentSlotPickerDialog;
 import pl.edu.ur.pz.clinicapp.dialogs.ScheduleSimpleEntryEditDialog;
-import pl.edu.ur.pz.clinicapp.dialogs.ScheduleSlotPickerDialog;
 import pl.edu.ur.pz.clinicapp.models.*;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.InteractionGuard;
@@ -110,7 +110,8 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
      */
     @Override
     public void populate(Object... context) {
-        UserReference userReference = ClinicApplication.getUser();
+        final var loggedInUser = ClinicApplication.requireUser();
+        UserReference userReference = loggedInUser;
         var preselectedDate = LocalDate.now();
 
         if (context.length > 0) {
@@ -137,11 +138,11 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
             throw new IllegalStateException();
         }
 
-        schedule = Schedule.of(userReference);
-
-        if (userReference.equals(ClinicApplication.getUser())) {
+        if (userReference.equals(loggedInUser)) {
+            schedule = Schedule.of(loggedInUser);
             headerText.setText("Twój harmonogram");
         } else {
+            schedule = Schedule.of(userReference);
             if (userReference instanceof Doctor doctor && doctor.getSpeciality() != null) {
                 headerText.setText("Harmonogram dla %s (%s)".formatted(
                         doctor.getDisplayName(), doctor.getSpeciality()));
@@ -216,12 +217,10 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
         //  as I don't have mental at this moment to deal with shit in VisitsDetailsView
         {
             runDelayed(333, () -> {
-                final var dialog = new ScheduleSlotPickerDialog(
+                final var dialog = new AppointmentSlotPickerDialog(
                         schedule, nullCoalesce(getSelectedDateTime(), getDate().atStartOfDay()));
-                dialog.setHeaderText("Test 123");
                 dialog.showAndWait();
-                System.out.println(dialog.getResultDateTime());
-                System.out.println(dialog.getResultDuration());
+                System.out.println(dialog.getResult());
             });
         }
     }

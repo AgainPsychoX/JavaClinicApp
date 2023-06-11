@@ -97,17 +97,19 @@ public class ScheduleSimpleEntryEditDialog extends BaseEditDialog {
                 Arrays.stream(Schedule.Entry.Type.values()).filter(this::shouldShowType).toList()));
 
         beginDateTimePicker.setEditable(false);
-        beginDateTimePicker.setOnMouseClicked(event -> openDialogToPickBeginTime());
+        beginDateTimePicker.setOnMouseClicked(event -> openDialogToPickTimeRange());
         endDateTimePicker.setOnKeyPressed(event -> {
             event.consume();
-            openDialogToPickBeginTime();
+            beginDateTimePicker.hide();
+            openDialogToPickTimeRange();
         });
 
         endDateTimePicker.setEditable(false);
-        endDateTimePicker.setOnMouseClicked(event -> openDialogToPickEndTime());
+        endDateTimePicker.setOnMouseClicked(event -> openDialogToPickTimeRange());
         endDateTimePicker.setOnKeyPressed(event -> {
             event.consume();
-            openDialogToPickEndTime();
+            endDateTimePicker.hide();
+            openDialogToPickTimeRange();
         });
 
         assert this.entry != null; // should be always true
@@ -132,32 +134,14 @@ public class ScheduleSimpleEntryEditDialog extends BaseEditDialog {
         };
     }
 
-    protected void openDialogToPickBeginTime() {
-        beginDateTimePicker.hide();
-        final var dialog = new SchedulePointPickerDialog(schedule, beginDateTimePicker.getDateTimeValue());
-        dialog.setHeaderText("Wybierz początek czasu trwania");
-        // TODO: hide current entry & show end time?
+    protected void openDialogToPickTimeRange() {
+        final var dialog = new ScheduleSlotPickerDialog(
+                schedule, beginDateTimePicker.getDateTimeValue(), endDateTimePicker.getDateTimeValue());
         dialog.showAndWait();
-        dialog.getResultDateTime().ifPresent(dateTimeValue -> {
-            beginDateTimePicker.setDateTimeValue(dateTimeValue);
-            keepBeginEndSorted();
+        dialog.getResult().ifPresent(entry -> {
+            beginDateTimePicker.setDateTimeValue(entry.getBeginTime().atZone(ZoneId.systemDefault()).toLocalDateTime());
+            endDateTimePicker.setDateTimeValue(entry.getEndTime().atZone(ZoneId.systemDefault()).toLocalDateTime());
         });
-    }
-
-    protected void openDialogToPickEndTime() {
-        endDateTimePicker.hide();
-        final var dialog = new SchedulePointPickerDialog(schedule, endDateTimePicker.getDateTimeValue());
-        dialog.setHeaderText("Wybierz koniec czasu trwania");
-        // TODO: hide current entry & show start time?
-        dialog.showAndWait();
-        dialog.getResultDateTime().ifPresent(dateTimeValue -> {
-            endDateTimePicker.setDateTimeValue(dateTimeValue);
-            keepBeginEndSorted();
-        });
-    }
-
-    protected void keepBeginEndSorted() {
-        // TODO: reorder if end < begin
     }
 
     protected Duration getDuration() {
@@ -179,7 +163,7 @@ public class ScheduleSimpleEntryEditDialog extends BaseEditDialog {
             entry.setType(typeChoiceBox.getValue());
             entry.setBeginTime(beginDateTimePicker.getDateTimeValue().atZone(ZoneId.systemDefault()).toInstant());
             entry.setEndTime(endDateTimePicker.getDateTimeValue().atZone(ZoneId.systemDefault()).toInstant());
-            entry.setUser(schedule.getUser());
+            entry.setUser(schedule.getUserReference().asUser());
 
             if (entry.getId() == null) {
                 em.persist(entry);

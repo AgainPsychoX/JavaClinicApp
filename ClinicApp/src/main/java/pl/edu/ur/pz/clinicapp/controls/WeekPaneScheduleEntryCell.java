@@ -26,23 +26,30 @@ public class WeekPaneScheduleEntryCell<T extends WeekPane.Entry> extends WeekPan
                         appointment.getStartAsLocalTime().toString().replaceFirst("^0+(?!$)", ""),
                         patient.getName().charAt(0), patient.getSurname()
                 ));
-            } else if (item instanceof Schedule.SimpleEntry
-                    || item instanceof Schedule.ProxyWeekPaneEntry) {
-                final var entry = (Schedule.Entry) item;
+                return;
+            }
+
+            Schedule.Entry original = null;
+            if (item instanceof Schedule.ProxyWeekPaneEntry proxy) {
+                original = proxy.getOriginal();
+            } else if (item instanceof Schedule.Entry entry) {
+                original = entry;
+            }
+            if (original != null) {
                 setTextAlignment(TextAlignment.CENTER);
-                if (entry.getType() == Schedule.Entry.Type.APPOINTMENT) {
+                if (original.getType() == Schedule.Entry.Type.APPOINTMENT) {
                     // If it's simple entry appointment, it means user (most likely patient)
                     // doesn't have permissions to know about details of not-theirs appointment.
                     setText("(inna wizyta)");
                     getStyleClass().addAll("appointment", "other");
+                } else {
+                    setText("(" + original.getType().localizedName() + ")");
+                    getStyleClass().add(original.getType().name().toLowerCase());
                 }
-                else {
-                    setText("(" + entry.getType().localizedName() + ")");
-                    getStyleClass().add(entry.getType().name().toLowerCase());
-                }
-            } else {
-                assert false;
+                return;
             }
+
+            assert false;
         }
     }
 }

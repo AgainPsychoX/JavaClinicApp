@@ -29,6 +29,11 @@ import java.util.List;
                 resultClass = User.class),
 })
 public final class User implements UserReference {
+    @Override
+    public User asUser() {
+        return this;
+    }
+
     public enum Role {
         ANONYMOUS,
         // TODO: rethink role field (as users can be both patients & doctors at the same time, no?

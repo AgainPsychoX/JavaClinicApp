@@ -3,6 +3,7 @@ package pl.edu.ur.pz.clinicapp.controls;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.WeakListChangeListener;
 import javafx.fxml.FXML;
@@ -139,10 +140,6 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             return (double) minuteOfDay % stepInMinutes / stepInMinutes * rowHeight;
         }
 
-        public double calculateEntryHeight(Entry entry) {
-            return calculateEntryHeight(entry.getDurationMinutes());
-        }
-
         public double calculateEntryHeight(long minutes) {
             return (double) minutes / stepInMinutes * rowHeight;
         }
@@ -181,6 +178,7 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
     }
     private final ObjectProperty<ObservableList<T>> entries = new SimpleObjectProperty<>(this, "entries") {
         private WeakReference<ObservableList<T>> weakEntriesRef = new WeakReference<>(null);
+        private WeakListChangeListener<T> weakChangeListener = null;
 
         @Override
         protected void invalidated() {
@@ -188,10 +186,11 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             final var oldEntries = weakEntriesRef.get();
             weakEntriesRef = new WeakReference<>(newEntries);
             if (oldEntries != null) {
-                oldEntries.removeListener(entriesListChangeListener);
+                oldEntries.removeListener(weakChangeListener);
             }
             if (newEntries != null) {
-                getValue().addListener(entriesListChangeListener);
+                weakChangeListener = new WeakListChangeListener<>(entriesListChangeListener);
+                getValue().addListener(weakChangeListener);
             }
             // TODO: make there are enough rows
             WeekPane.this.layoutEntries();
@@ -212,34 +211,36 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
         return entries.get();
     }
 
-    private final WeakListChangeListener<T> entriesListChangeListener =
-            new WeakListChangeListener<>(c -> {
-                // TODO: ensure entries sorted:
-                //  + if single entry added - insert at binary searched index
-                //  + if more entries added - full sort
+    private final ListChangeListener<T> entriesListChangeListener = change -> {
+        // Why sorted? TimetableView operates on managed collection, which is expected to be kept sorted.
+        // TODO: move it to TimetableView or Timetable? wrap timetables.getEntries into observable to keep it sorted
+        //  WeekPane should be kept as much as possible independent from the business details.
+        // TODO (OLD): ensure entries sorted:
+        //  + if single entry added - insert at binary searched index
+        //  + if more entries added - full sort
 
-                boolean needSorting = false;
-                boolean needRelayout = false;
-                while (c.next()) {
-                    if (c.wasAdded()) {
-                        needSorting = true;
-                        needRelayout = true;
-                    }
-                    if (c.wasRemoved()) {
-                        for (final var entry : c.getRemoved()) {
-                            gridPane.getChildren().remove(findEntryCell(entry));
-                        }
-                    }
+        boolean needSorting = false;
+        boolean needRelayout = false;
+        while (change.next()) {
+            if (change.wasAdded()) {
+                needSorting = true;
+                needRelayout = true;
+            }
+            if (change.wasRemoved()) {
+                for (final var entry : change.getRemoved()) {
+                    gridPane.getChildren().remove(findEntryCell(entry));
                 }
+            }
+        }
 
-                if (needSorting) {
-                    WeekPane.this.getEntries().sort(WeekPane.Entry::compareTo);
-                }
-                if (needRelayout) {
-                    WeekPane.this.layoutEntries();
-                }
-                WeekPane.this.updateWeekendColumns();
-            });
+        if (needSorting) {
+            WeekPane.this.getEntries().sort(WeekPane.Entry::compareTo);
+        }
+        if (needRelayout) {
+            WeekPane.this.layoutEntries();
+        }
+        WeekPane.this.updateWeekendColumns();
+    };
 
     /**
      * Setting cell factory allows to customize entry cell creation.
@@ -402,13 +403,19 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
 
     protected void layoutEntry(T entry, EntryCell<T> cell) {
         final var rgp = getRowGenerationParams();
+        var startMinute = entry.getStartMinute();
+        var durationMinutes = entry.getDurationMinutes();
+        if (entry.getStartMinute() < rgp.startMinuteOfDay) {
+            durationMinutes -= (rgp.startMinuteOfDay - startMinute);
+            startMinute = rgp.startMinuteOfDay;
+        }
         cell.getStyleClass().add("entry");
         cell.setMinSize(USE_PREF_SIZE, USE_PREF_SIZE);
-        cell.setPrefSize(DEFAULT_DAY_COLUMN_WIDTH, rgp.calculateEntryHeight(entry));
+        cell.setPrefSize(DEFAULT_DAY_COLUMN_WIDTH, rgp.calculateEntryHeight(durationMinutes));
         cell.setMaxSize(Double.MAX_VALUE, USE_PREF_SIZE);
-        gridPane.add(cell, entry.getDayOfWeek().ordinal() + 1, rgp.calculateRowIndex(entry.getStartMinute()));
+        gridPane.add(cell, entry.getDayOfWeek().ordinal() + 1, rgp.calculateRowIndex(startMinute));
         GridPane.setValignment(cell, VPos.TOP);
-        GridPane.setMargin(cell, new Insets(rgp.calculateRowOffset(entry.getStartMinute()), 0, 0, 0));
+        GridPane.setMargin(cell, new Insets(rgp.calculateRowOffset(startMinute), 0, 0, 0));
         cell.updateItem(entry, false); // late, to allow overriding and querying size
     }
 
@@ -474,10 +481,10 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
 
     protected void showColumn(int index) {
         final var hcc = headerGridPane.getColumnConstraints().get(index);
-        hcc.setHgrow(Priority.SOMETIMES);
+        hcc.setHgrow(Priority.ALWAYS);
         hcc.setPrefWidth(DEFAULT_DAY_COLUMN_WIDTH);
         final var rcc = gridPane.getColumnConstraints().get(index);
-        rcc.setHgrow(Priority.SOMETIMES);
+        rcc.setHgrow(Priority.ALWAYS);
         rcc.setPrefWidth(DEFAULT_DAY_COLUMN_WIDTH);
     }
 

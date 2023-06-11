@@ -187,7 +187,7 @@ public class Timetable implements Comparable<Timetable> {
         }
 
         /**
-         * Minute mark when the timetable entry starts in the weekday. Example: 13:49 = 13*60+49 = 829.
+         * Minute mark when the timetable entry starts on the weekday. Example: 13:49 = 13*60+49 = 829.
          */
         @Column(nullable = false)
         private int startMinute;
@@ -197,7 +197,7 @@ public class Timetable implements Comparable<Timetable> {
         }
 
         /**
-         * Minute mark when the timetable entry ends in the weekday. Example: 13:49 = 13*60+49 = 829.
+         * Minute mark when the timetable entry ends on the weekday. Example: 13:49 = 13*60+49 = 829.
          */
         @Column(nullable = false)
         private int endMinute;

@@ -1,5 +1,6 @@
 package pl.edu.ur.pz.clinicapp.dialogs;
 
+import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -13,16 +14,18 @@ import javafx.stage.Stage;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.controls.LocalTimeSpinner;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
-import pl.edu.ur.pz.clinicapp.controls.WeekPaneFreeSelectionModel;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneScheduleEntryCell;
 import pl.edu.ur.pz.clinicapp.models.Doctor;
 import pl.edu.ur.pz.clinicapp.models.Schedule;
+import pl.edu.ur.pz.clinicapp.utils.InteractionGuard;
+import pl.edu.ur.pz.clinicapp.utils.javafx.Debouncer;
 
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.*;
+import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.linkStageSizeToPane;
 import static pl.edu.ur.pz.clinicapp.utils.TemporalUtils.alignDateToWeekStart;
@@ -38,15 +41,13 @@ public class ScheduleSlotPickerDialog extends Stage {
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
     @FXML protected Text headerText;
-    @FXML protected DatePicker datePicker;
-    @FXML protected Button previousWeekButton;
-    @FXML protected Button nextWeekButton;
+    @FXML protected DatePicker beginDatePicker;
+    @FXML protected LocalTimeSpinner beginTimeSpinner;
 
-    @FXML protected LocalTimeSpinner startTimeSpinner;
+    @FXML protected DatePicker endDatePicker;
     @FXML protected LocalTimeSpinner endTimeSpinner;
 
     @FXML protected WeekPane<WeekPane.Entry> weekPane;
-    protected WeekPaneFreeSelectionModel<WeekPane.Entry> weekPaneSelectionModel;
 
     @FXML protected Text extraTextBelow;
     @FXML protected Button acceptButton;
@@ -62,14 +63,18 @@ public class ScheduleSlotPickerDialog extends Stage {
     }
 
     public ScheduleSlotPickerDialog(Schedule schedule) {
-        this(schedule, null);
+        this(schedule, LocalDateTime.now());
     }
 
     public ScheduleSlotPickerDialog(Schedule schedule, LocalDateTime dateTime) {
-        this(schedule, dateTime, null);
+        this(schedule, dateTime, getDefaultDuration(schedule));
     }
 
-    public ScheduleSlotPickerDialog(Schedule schedule, LocalDateTime dateTime, Duration duration) {
+    public ScheduleSlotPickerDialog(Schedule schedule, LocalDateTime beginDateTime, Duration duration) {
+        this(schedule, beginDateTime, beginDateTime.plus(duration));
+    }
+
+    public ScheduleSlotPickerDialog(Schedule schedule, LocalDateTime beginDateTime, LocalDateTime endDateTime) {
         var fxml = ClinicApplication.class.getResource("dialogs/ScheduleSlotPickerDialog.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(fxml);
         fxmlLoader.setController(this);
@@ -86,102 +91,58 @@ public class ScheduleSlotPickerDialog extends Stage {
         setScene(new Scene(pane));
         setTitle("Wybór miejsca w terminarzu");
 
-        if (dateTime == null) dateTime = LocalDateTime.now();
-        if (duration == null) duration = getDefaultDuration(schedule);
-
         this.schedule = schedule;
 
-        /* Changes to start/end time spinners should be propagated to free selection model and vice versa.
-         * There is no binding possible, as selection model properties are read-only, so listeners are used.
-         * Far away from my best piece of code... :Aware.gif:
-         *
-         * TODO: remember selection despite switching weeks? (and maybe refactor)
-         * TODO: add some accessibility (keyboard) controls to move the week pane free selection
-         */
+        weekPane.setEntryCellFactory(weekPane -> new WeekPaneScheduleEntryCell<>() {
+            @Override
+            public void updateItem(WeekPane.Entry item, boolean empty) {
+                super.updateItem(item, empty);
 
-        weekPaneSelectionModel = new WeekPaneFreeSelectionModel<>(weekPane);
-        weekPane.setEntryCellFactory(weekPane -> new WeekPaneScheduleEntryCell<>());
-        weekPaneSelectionModel.selectedDayOfWeekProperty().addListener((o, oldDayOfWeek, newDayOfWeek) -> {
-            logger.finer("Selected day of week: " + newDayOfWeek);
-            if (newDayOfWeek == null) {
-                acceptButton.setDisable(false);
-                return;
-            }
-            datePicker.setValue(alignDateToWeekStart(getDate()).plusDays(newDayOfWeek.ordinal()));
-            updateAcceptButton();
-        });
-        weekPaneSelectionModel.selectedTimeOfDayProperty().addListener((o, oldTimeOfDay, newTimeOfDay) -> {
-            logger.finer("Selected time of day: " + newTimeOfDay);
-            if (newTimeOfDay != null) {
-                startTimeSpinner.getValueFactory().setValue(newTimeOfDay);
-            }
-            updateAcceptButton();
-        });
-
-        // TODO: allow selection of all hours, work needed in week pane code...
-        final var weekPaneStartTime = weekPane.getRowGenerationParams().startTimeOfDay();
-        var time = dateTime.toLocalTime();
-        if (time.isBefore(weekPaneStartTime)) {
-            time = weekPaneStartTime;
-        }
-
-        startTimeSpinner.getValueFactory().setValue(time);
-        startTimeSpinner.valueProperty().addListener((o, oldValue, newValue) -> {
-            logger.finer("Start time spinner: " + newValue);
-
-            // TODO: allow selection of all hours, work needed in week pane code...
-            if (newValue.isBefore(weekPaneStartTime)) {
-                // Prevent change
-                logger.finer("Prevent change, back to: " + oldValue);
-                startTimeSpinner.getValueFactory().setValue(oldValue);
-                return;
-            }
-
-            /* Weird thing happens here. Everything seems to work finer, but once you add debugger breakpoint
-             * the spinner keeps being updated, firing change events as it was held.
-             */
-            weekPaneSelectionModel.select(getDate().getDayOfWeek(), newValue);
-
-            final var d = Duration.between(oldValue, endTimeSpinner.getValue()).abs();
-            endTimeSpinner.getValueFactory().setValue(newValue.plus(d));
-        });
-        endTimeSpinner.getValueFactory().setValue(time.plus(duration));
-        endTimeSpinner.valueProperty().addListener((o, oldValue, newValue) -> {
-            logger.finer("End time spinner: " + newValue);
-            updateSelectorHeight();
-        });
-        // TODO: add minValueProperty and maxValueProperty in LocalTimeSpinner to prevent reordering here
-
-        datePicker.valueProperty().addListener((o, oldValue, newValue) -> {
-            final var newWeekStart = alignDateToWeekStart(newValue);
-
-            boolean sameWeek = false;
-            if (oldValue != null) {
-                final var oldWeekStart = alignDateToWeekStart(oldValue);
-                if (oldWeekStart.isEqual(newWeekStart)) {
-                    sameWeek = true;
+                Schedule.Entry original = null;
+                if (item instanceof Schedule.ProxyWeekPaneEntry proxy) {
+                    original = proxy.getOriginal();
+                } else if (item instanceof Schedule.Entry entry) {
+                    original = entry;
+                }
+                if (original instanceof SelectionEntry) {
+                    getStyleClass().add("selection");
+                    setText("");
                 }
             }
-
-            if (sameWeek) {
-                logger.finer("Date picker (same week): " + newValue);
-                weekPaneSelectionModel.select(newValue.getDayOfWeek(), startTimeSpinner.getValue());
-            }
-            else {
-                logger.finer("Date picker (new week): " + newValue);
-                weekPane.setEntries(schedule.generateWeekPaneEntriesForSchedule(newWeekStart));
-                weekPaneSelectionModel.clearSelection();
-            }
         });
-        datePicker.setValue(dateTime.toLocalDate());
-        weekPaneSelectionModel.select(dateTime.getDayOfWeek(), time);
-        updateSelectorHeight();
-    }
 
-    private void updateSelectorHeight() {
-        final var rgp = weekPane.getRowGenerationParams();
-        final var height = rgp.calculateEntryHeight(Math.max(getDuration().toMinutes(), 1));
-        weekPaneSelectionModel.selector.setPrefHeight(height);
+        // TODO: allow mouse controls
+        //  + click = expand/cut closest direction if above 4 hours, or move if equal/shorter than 4 hours;
+        //  + SHIFT to always expand/cut, CTRL to always move
+        // TODO: add some accessibility (keyboard) controls to move the week pane free selection
+        //  + arrows + modifiers: SHIFT expand, ALT cut, CTRL move.
+
+        beginTimeSpinner.getValueFactory().setValue(beginDateTime.toLocalTime());
+        beginTimeSpinner.valueProperty().addListener(beginTimeListener);
+
+        endTimeSpinner.getValueFactory().setValue(endDateTime.toLocalTime());
+        endTimeSpinner.valueProperty().addListener(endTimeListener);
+
+        final ChangeListener<? super Boolean> beginFocusListener = (observable, wasFocused, isFocused) -> {
+            if (isFocused) {
+                showWeek(beginDatePicker.getValue());
+            }
+        };
+        beginDatePicker.focusedProperty().addListener(beginFocusListener);
+        beginTimeSpinner.focusedProperty().addListener(beginFocusListener);
+
+        final ChangeListener<? super Boolean> endFocusListener = (observable, wasFocused, isFocused) -> {
+            if (isFocused) {
+                showWeek(endDatePicker.getValue());
+            }
+        };
+        endDatePicker.focusedProperty().addListener(endFocusListener);
+        endTimeSpinner.focusedProperty().addListener(endFocusListener);
+
+        beginDatePicker.setValue(beginDateTime.toLocalDate());
+        endDatePicker.setValue(endDateTime.toLocalDate());
+
+        showWeek(beginDateTime.toLocalDate());
     }
 
     public void setHeaderText(String text) {
@@ -198,97 +159,219 @@ public class ScheduleSlotPickerDialog extends Stage {
 
     final protected Schedule schedule;
 
-    protected LocalDate getDate() {
-        return datePicker.getValue();
+    private LocalDate currentWeekStart = LocalDate.ofEpochDay(0);
+
+    protected LocalDate getCurrentWeekStart() {
+        return currentWeekStart;
     }
 
-    protected LocalDateTime getDateTime() {
-        return getDate().atTime(startTimeSpinner.getValue());
+    final protected Schedule.Entry selectionScheduleEntry = new SelectionEntry();
+
+    private class SelectionEntry implements Schedule.Entry {
+        @Override
+        public Type getType() {
+            return Type.NONE;
+        }
+
+        @Override
+        public Instant getBeginTime() {
+            return getBeginDateTime().atZone(ZoneId.systemDefault()).toInstant();
+        }
+
+        @Override
+        public int getStartMinute() {
+            return beginTimeSpinner.getValue().toSecondOfDay() / 60;
+        }
+
+        @Override
+        public Instant getEndTime() {
+            return getEndDateTime().atZone(ZoneId.systemDefault()).toInstant();
+        }
+
+        @Override
+        public int getEndMinute() {
+            if (beginDatePicker.getValue().equals(endDatePicker.getValue())) {
+                return endTimeSpinner.getValue().toSecondOfDay() / 60;
+            }
+            else {
+                return 1440;
+            }
+        }
     }
 
-    protected Duration getDuration() {
-        return Duration.between(endTimeSpinner.getValue(), startTimeSpinner.getValue()).abs();
+    protected LocalDateTime getBeginDateTime() {
+        return beginDatePicker.getValue().atTime(beginTimeSpinner.getValue());
     }
 
-    protected LocalDateTime resultDateTime;
-    protected Duration resultDuration;
+    protected LocalDateTime getEndDateTime() {
+        return endDatePicker.getValue().atTime(endTimeSpinner.getValue());
+    }
 
     /**
-     * @return selected slot date time, empty if cancelled.
+     * List of {@link WeekPane.Entry}ies currently used to represent the selected range on the week pane.
+     * Might include one original {@link Schedule.Entry} and many {@link Schedule.ProxyWeekPaneEntry}ies.
+     * Should be kept in natural order.
      */
-    public Optional<LocalDateTime> getResultDateTime() {
-        return Optional.ofNullable(resultDateTime);
+    private List<WeekPane.Entry> selectionWeekPaneEntries;
+
+    protected void showWeek(LocalDate weekStart) {
+        weekStart = alignDateToWeekStart(weekStart);
+
+        if (currentWeekStart.isEqual(weekStart)) {
+            logger.finest("Showing the same week, no need to (re)generate week pane entries.");
+        }
+        else {
+            logger.finer("Showing different week: " + weekStart);
+            currentWeekStart = weekStart;
+            final var entries = schedule.generateWeekPaneEntriesForSchedule(weekStart);
+            selectionWeekPaneEntries = schedule.generateWeekPaneEntriesForScheduleEntries(
+                    weekStart, List.of(selectionScheduleEntry));
+            entries.addAll(selectionWeekPaneEntries);
+            weekPane.setEntries(entries);
+        }
+    }
+
+    protected void refreshWeekPaneAfterDateChanges() {
+        // Change in dates means there are new week pane entries need to be added, or some need to be removed,
+        // so let's regenerate all of them.
+        logger.finest("Refreshing week pane after date changes");
+        weekPane.getEntries().removeAll(selectionWeekPaneEntries);
+        selectionWeekPaneEntries = schedule.generateWeekPaneEntriesForScheduleEntries(
+                getCurrentWeekStart(), List.of(selectionScheduleEntry));
+        weekPane.getEntries().addAll(selectionWeekPaneEntries);
     }
 
     /**
-     * @return selected slot duration, empty if cancelled.
+     * Performs reordering of begin & end - date pickers and time spinners if necessary.
+     * @return true if reordering was needed (refreshing week pane already performed after reordering),
+     *         false otherwise (refreshing week pane might be required).
      */
-    public Optional<Duration> getResultDuration() {
-        return Optional.ofNullable(resultDuration);
+    protected boolean reorderIfNecessary() {
+        final var endDateTime = getEndDateTime();
+        final var beginDateTime = getBeginDateTime();
+
+        if (beginDateTime.isAfter(endDateTime)) {
+            logger.finer("Reordering");
+            beginTimeSpinner.getValueFactory().setValue(endDateTime.toLocalTime());
+            beginDatePicker.setValue(endDateTime.toLocalDate());
+            endTimeSpinner.getValueFactory().setValue(beginDateTime.toLocalTime());
+            endDatePicker.setValue(beginDateTime.toLocalDate());
+            refreshWeekPaneAfterDateChanges();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    protected Schedule.Entry result;
+
+    /**
+     * @return selected area in the schedule as {@link Schedule.Entry} (type: {@link Schedule.Entry.Type#NONE})
+     */
+    public Optional<Schedule.Entry> getResult() {
+        return Optional.ofNullable(result);
     }
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-     * Action handlers (other than listeners)
+     * Action handlers
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
-    protected void updateAcceptButton() {
-        acceptButton.setDisable(!validateSelection());
+    private final InteractionGuard interactionGuard = new InteractionGuard();
+
+    final protected ChangeListener<LocalTime> beginTimeListener = (o, oldValue, newValue) -> {
+        if (interactionGuard.begin()) return;
+        logger.finer("Begin time changed: " + newValue);
+        // TODO: roll over the date if overflow
+        if (!reorderIfNecessary()) {
+            logger.finest("Refreshing first entry");
+            weekPane.refreshEntry(selectionScheduleEntry);
+        }
+        updateAcceptButtonDebounced();
+        interactionGuard.end();
+    };
+
+    final protected ChangeListener<LocalTime> endTimeListener = (o, oldValue, newValue) -> {
+        if (interactionGuard.begin()) return;
+        logger.finer("End time changed: " + newValue);
+        // TODO: roll back the date if underflow
+        if (!reorderIfNecessary()) {
+            logger.finest("Refreshing last entry");
+            final var last = selectionWeekPaneEntries.get(selectionWeekPaneEntries.size() - 1);
+            if (last instanceof Schedule.ProxyWeekPaneEntry proxy) {
+                proxy.endMinute = newValue.toSecondOfDay() / 60;
+            }
+            weekPane.refreshEntry(last);
+        }
+        updateAcceptButtonDebounced();
+        interactionGuard.end();
+    };
+
+    @FXML
+    protected void beginDatePickerAction(ActionEvent actionEvent) {
+        if (interactionGuard.begin()) return;
+        final var newDateTime = getBeginDateTime();
+        logger.finer("Begin date changed: " + newDateTime);
+        if (!reorderIfNecessary()) {
+            refreshWeekPaneAfterDateChanges();
+        }
+        updateAcceptButtonDebounced();
+        interactionGuard.end();
     }
 
-    protected boolean validateSelection() {
-        final var startTime = weekPaneSelectionModel.getSelectedTimeOfDay();
-        if (startTime == null) {
-            return false;
+    @FXML
+    protected void endDatePickerAction(ActionEvent actionEvent) {
+        if (interactionGuard.begin()) return;
+        final var newDateTime = getEndDateTime();
+        logger.finer("End date changed: " + newDateTime);
+        if (!reorderIfNecessary()) {
+            refreshWeekPaneAfterDateChanges();
         }
-        final var endTime = startTime.plus(getDuration());
+        updateAcceptButtonDebounced();
+        interactionGuard.end();
+    }
 
-        // TODO: checkbox to force selection? only for admin/owner (doctor)
+    final private Debouncer acceptButtonUpdateDebouncer = new Debouncer(this::updateAcceptButton);
 
-        for (final var entry : weekPane.getEntries()) {
-            if (entry.getDayOfWeek() == getDate().getDayOfWeek()
-                    && entry.getEndAsLocalTime().isAfter(startTime)
-                    && !entry.getStartAsLocalTime().isAfter(endTime)) {
-                Schedule.Entry original;
-                if (entry instanceof Schedule.ProxyWeekPaneEntry proxy) {
-                    original = proxy.getOriginal();
-                } else if (entry instanceof Schedule.Entry simple) {
-                    original = simple;
-                } else {
-                    // Should never happen...?
-                    assert false;
-                    return false;
-                }
+    protected void updateAcceptButtonDebounced() {
+        acceptButtonUpdateDebouncer.call();
+    }
 
-                if (original.getType().isBusy()) {
-                    logger.finest("Validation failed, overlapping with " + original);
-                    return false;
-                }
+    protected void updateAcceptButton() {
+        acceptButton.setDisable(!validate());
+    }
+
+    /**
+     * Helper method to find overlapping entries from currently selected (loaded) week for early validation.
+     * To be used for early validation to avoid running queries.
+     * @return stream of the overlapping entries from currently selected week
+     */
+    protected Stream<Schedule.Entry> getEarlyOverlapping() {
+        return weekPane.getEntries().stream().map((Function<WeekPane.Entry, Optional<Schedule.Entry>>) entry -> {
+            Schedule.Entry original;
+            if (entry instanceof Schedule.ProxyWeekPaneEntry proxy) {
+                original = proxy.getOriginal();
+            } else if (entry instanceof Schedule.SimpleEntry simple) {
+                original = simple;
+            } else {
+                assert entry == selectionScheduleEntry;
+                return Optional.empty();
             }
-        }
 
-        logger.finest("Validation succeed");
+            if (selectionScheduleEntry.overlaps(original)) {
+                return Optional.of(original);
+            } else {
+                return Optional.empty();
+            }
+        }).flatMap(Optional::stream);
+    }
+
+    protected boolean validate() {
         return true;
     }
 
     @FXML
-    protected void datePickerAction(ActionEvent actionEvent) {
-        // Not used, logic handled by listener as old value was needed too
-    }
-
-    @FXML
-    protected void goPreviousWeekAction(ActionEvent actionEvent) {
-        datePicker.setValue(getDate().minusDays(7)); // will also cause `datePickerAction`
-    }
-
-    @FXML
-    protected void goNextWeekAction(ActionEvent actionEvent) {
-        datePicker.setValue(getDate().plusDays(7)); // will also cause `datePickerAction`
-    }
-
-    @FXML
     void acceptAction(ActionEvent event) {
-        resultDateTime = getDateTime();
-        resultDuration = getDuration();
+        result = selectionScheduleEntry;
         close();
     }
 

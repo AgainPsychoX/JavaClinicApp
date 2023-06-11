@@ -28,27 +28,22 @@
             <RowConstraints vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
-            <Text fx:id="headerText" strokeType="OUTSIDE" strokeWidth="0.0" text="Wybór miejsca w harmonogramie" />
-            <HBox alignment="CENTER" spacing="8.0" GridPane.columnIndex="1">
-               <children>
-                  <Button fx:id="previousWeekButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#goPreviousWeekAction" prefWidth="25.0" text="&lt;" />
-                  <DatePicker fx:id="datePicker" minWidth="-Infinity" onAction="#datePickerAction" prefWidth="108.0" styleClass="prompt-text-as-regular" stylesheets="@../views/timetableEffectiveDatePicker.css" />
-                  <Button fx:id="nextWeekButton" minWidth="-Infinity" mnemonicParsing="false" onAction="#goNextWeekAction" prefWidth="25.0" text="&gt;" />
-               </children>
-            </HBox>
-            <HBox alignment="CENTER" spacing="4.0" GridPane.columnIndex="2">
+            <Text fx:id="headerText" strokeType="OUTSIDE" strokeWidth="0.0" text="Wybór miejsca w terminarzu" />
+            <HBox alignment="CENTER" spacing="8.0" GridPane.columnIndex="1" GridPane.columnSpan="2">
                <children>
                   <Label text="Od">
                      <HBox.margin>
                         <Insets left="16.0" />
                      </HBox.margin>
                   </Label>
-                  <LocalTimeSpinner fx:id="startTimeSpinner" minWidth="-Infinity" pattern="HH:mm" prefWidth="70.0">
+                  <DatePicker fx:id="beginDatePicker" minWidth="-Infinity" onAction="#beginDatePickerAction" prefWidth="108.0" styleClass="prompt-text-as-regular" stylesheets="@../views/timetableEffectiveDatePicker.css" />
+                  <LocalTimeSpinner fx:id="beginTimeSpinner" minWidth="-Infinity" pattern="HH:mm" prefWidth="70.0">
                      <HBox.margin>
                         <Insets />
                      </HBox.margin>
                   </LocalTimeSpinner>
                   <Label text="do" />
+                  <DatePicker fx:id="endDatePicker" minWidth="-Infinity" onAction="#endDatePickerAction" prefWidth="108.0" styleClass="prompt-text-as-regular" stylesheets="@../views/timetableEffectiveDatePicker.css" />
                   <LocalTimeSpinner fx:id="endTimeSpinner" minWidth="-Infinity" pattern="HH:mm" prefWidth="70.0" />
                </children>
             </HBox>
