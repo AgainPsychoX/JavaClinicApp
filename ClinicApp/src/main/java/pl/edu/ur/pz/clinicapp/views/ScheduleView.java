@@ -209,7 +209,7 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
     protected void newVisitAction(ActionEvent actionEvent) {
         getParentController().goToView(
                 MainWindowController.Views.VISIT_DETAILS,
-                VisitsDetailsView.PrMode.CREATE
+                VisitsDetailsView.Mode.CREATE
         );
         // TODO: allow passing preset info, like date = getSelectedDateTime()
 
@@ -242,7 +242,7 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
         if (entry instanceof Appointment appointment) {
             getParentController().goToView(
                     MainWindowController.Views.VISIT_DETAILS,
-                    VisitsDetailsView.PrMode.DETAILS,
+                    VisitsDetailsView.Mode.DETAILS,
                     appointment
             );
         } else if (entry instanceof Schedule.SimpleEntry simpleEntry) {
