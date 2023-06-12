@@ -1,5 +1,6 @@
 package pl.edu.ur.pz.clinicapp.views;
 
+import freemarker.template.TemplateModelException;
 import javafx.animation.PauseTransition;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
@@ -16,9 +17,12 @@ import javafx.scene.control.TextField;
 import javafx.util.Duration;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -102,8 +106,7 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
             if (patients.getSurname().toLowerCase().contains(text)) return true;
             if (patients.getPhone() != null && patients.getPhone().toLowerCase().contains(text)) return true;
             if (patients.getPESEL().toLowerCase().contains(text)) return true;
-            if (patients.getEmail() != null && patients.getEmail().toLowerCase().contains(text)) return true;
-            return false;
+            return patients.getEmail() != null && patients.getEmail().toLowerCase().contains(text);
         });
 
         SortedList<Patient> sortedPatients = new SortedList<>(filteredPatients);
@@ -130,6 +133,10 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
     }
 
 
-    public void report(ActionEvent event) {
+    public void report(ActionEvent event) throws TemplateModelException, IOException, URISyntaxException {
+        ReportDialog rd = new ReportDialog();
+        ReportDialog.createConfig();
+        rd.initialize(null, null);
+        rd.patientsReport(patients.subList(patients.size()-20, patients.size()));
     }
 }

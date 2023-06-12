@@ -5,12 +5,12 @@ import javax.persistence.*;
 @Entity
 @Table(name = "prescriptions")
 @NamedNativeQueries({
-        @NamedNativeQuery(
-                name = "findUserPrescriptions",
-                query = "SELECT * FROM prescriptions Pr INNER JOIN patients Pat ON Pr.patient_id = Pat.id " +
-                        "INNER JOIN users U on U.id = Pat.id WHERE U.internal_name = :uname",
-                resultClass = Prescription.class
-        ),
+//        @NamedNativeQuery(
+//                name = "findUserPrescriptions",
+//                query = "SELECT * FROM prescriptions Pr INNER JOIN patients Pat ON Pr.patient_id = Pat.id " +
+//                        "INNER JOIN users U on U.id = Pat.id WHERE U.internal_name = :uname",
+//                resultClass = Prescription.class
+//        ),
         @NamedNativeQuery(
                 name = "editPrescription",
                 query = "UPDATE prescriptions " +
@@ -29,6 +29,10 @@ import javax.persistence.*;
 })
 
 @NamedQueries({
+            @NamedQuery(
+                    name = "findUsersPrescriptions",
+                    query = "FROM Prescription P WHERE P.patient = :patient"
+            ),
             @NamedQuery(
                     name = "allPrescriptions",
                     query = "FROM Prescription"

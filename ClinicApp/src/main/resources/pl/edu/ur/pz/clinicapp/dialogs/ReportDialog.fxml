@@ -7,9 +7,23 @@
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
 
-<VBox alignment="CENTER" centerShape="false" prefHeight="544.0" prefWidth="694.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.dialogs.ReportDialog">
+<VBox fx:id="content" alignment="CENTER" centerShape="false" prefHeight="544.0" prefWidth="694.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.dialogs.ReportDialog">
     <children>
+      <HBox alignment="CENTER_LEFT">
+         <children>
+            <Text fill="#4d89ff" onMouseClicked="#onBackClick" strokeType="OUTSIDE" strokeWidth="0.0" text="&lt; Powrót">
+               <font>
+                  <Font name="System Bold" size="16.0" />
+               </font>
+            </Text>
+         </children>
+         <VBox.margin>
+            <Insets bottom="5.0" />
+         </VBox.margin>
+      </HBox>
         <HBox prefWidth="0.0">
             <ListView fx:id="availableFieldsListView" nodeOrientation="LEFT_TO_RIGHT" prefHeight="400.0" prefWidth="210.0">
                 <opaqueInsets>
@@ -18,6 +32,7 @@
 
             <VBox alignment="CENTER" prefHeight="400.0" prefWidth="108.0">
                 <Button onAction="#addField" prefHeight="25.0" prefWidth="82.0" text="Dodaj">
+
                     <VBox.margin>
                         <Insets bottom="10.0" />
                     </VBox.margin></Button>

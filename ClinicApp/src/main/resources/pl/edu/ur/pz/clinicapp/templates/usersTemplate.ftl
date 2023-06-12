@@ -40,10 +40,7 @@
 
 </body>
 <div>
-    <h2>Lista recept</h2>
-    <#if startDate?has_content && endDate?has_content>
-        <h3>Zakres dat: ${startDate} - ${endDate}</h3>
-    </#if>
+    <h2>20 najnowszych użytkowników</h2>
     <table class="table-style">
         <thead>
         <tr>
@@ -56,25 +53,17 @@
         <tbody>
         <#list users as user>
                 <tr>
-                    <#list headers as field>
-                        <#if field == "name">
-                            <td>${user.patient.name} ${user.patient.surname}</td>
-                        <#elseif field == "addedBy">
-                            <td>${user.getDoctorName()?string}</td>
-                        <#elseif field == "tags">
-                            <td>${user.tags}</td>
-                        <#elseif field == "notes">
-                            <td>
-                                <#list user.notes?split(";") as note>
-                                    ${note}<br>
-                                </#list>
-                            </td>
-                        <#elseif field == "addedDate">
-                            <td>${user.addedDate?string("dd.MM.yyyy")}</td>
-                        <#else>
-                            <td>${user[field]?default('')}</td>
-                        </#if>
-                    </#list>
+                    <td>${user.getDisplayName()}</td>
+                    <#if user.getPhone()?has_content>
+                        <td>${user.getPhone()}</td>
+                    <#else>
+                        <td></td>
+                    </#if>
+                    <#if user.getEmail()?has_content>
+                        <td>${user.getEmail()}</td>
+                    <#else>
+                        <td></td>
+                    </#if>
                 </tr>
         </#list>
         </tbody>

@@ -7,23 +7,28 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateModelException;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
+import javafx.scene.image.WritableImage;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DateUtils;
 import pl.edu.ur.pz.clinicapp.utils.ReportObject;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -32,20 +37,26 @@ import java.util.*;
 
 public class ReportDialog extends ChildControllerBase<MainWindowController> implements Initializable {
 
-    @FXML private Button saveButton;
-    @FXML private DatePicker startDatePicker;
-    @FXML private DatePicker endDatePicker;
-    @FXML private ListView<String> availableFieldsListView;
-    @FXML private ListView<String> selectedFieldsListView;
-    private ReportMode mode;
-
-
     public String name;
     List<String> availableFields;
     List<String> selectedFields;
     Configuration configuration;
     ResourceBundle resourceBundle;
     ConverterProperties properties;
+    List<?> data;
+    @FXML
+    private Button saveButton;
+    @FXML
+    private DatePicker startDatePicker;
+    @FXML
+    private DatePicker endDatePicker;
+    @FXML
+    private ListView<String> availableFieldsListView;
+    @FXML
+    private ListView<String> selectedFieldsListView;
+    @FXML
+    private VBox content;
+    private Mode mode;
 
     private static void showAlert(Alert.AlertType type, String title, String header, String text) {
         Alert alert = new Alert(type);
@@ -55,24 +66,42 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
         alert.showAndWait();
     }
 
+    public static ReportObject createConfig() {
+        freemarker.template.Configuration configuration = new freemarker.template.Configuration(freemarker.template.Configuration.VERSION_2_3_32);
+
+
+        Locale locale = new Locale("pl", "PL");
+        configuration.setLocale(locale);
+        configuration.setDefaultEncoding("UTF-8");
+        configuration.setSQLDateAndTimeTimeZone(TimeZone.getDefault());
+
+        ConverterProperties properties = new ConverterProperties();
+        DefaultFontProvider fontProvider = new DefaultFontProvider(true, true, true);
+
+        fontProvider.addFont(String.valueOf(ClinicApplication.class.getResource("fonts/calibri.ttf")));
+
+        properties.setFontProvider(fontProvider);
+        properties.setCharset("UTF-8");
+        URL templatesURL = ClinicApplication.class.getResource("templates");
+        return new ReportObject(configuration, properties, templatesURL);
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         ReportObject reportObject = createConfig();
-        Configuration configuration = reportObject.getConfiguration();
+        configuration = reportObject.getConfiguration();
         ConverterProperties properties = reportObject.getProperties();
         URL templatesURL = reportObject.getTemplatesURL();
 
         selectedFields = new ArrayList<>();
-        resourceBundle = ResourceBundle.getBundle("pl.edu.ur.pz.clinicapp.localization.strings",
-                configuration.getLocale());
+        resourceBundle = ResourceBundle.getBundle("pl.edu.ur.pz.clinicapp.localization.strings", configuration.getLocale());
 
         try {
             configuration.setDirectoryForTemplateLoading(new File(templatesURL.toURI()));
             configuration.setSharedVariable("bundle", resourceBundle);
             configuration.setSharedVariable("DateUtils", new DateUtils());
         } catch (IOException | URISyntaxException | TemplateModelException e) {
-            showAlert(Alert.AlertType.ERROR, "Błąd inicializacji", "Brak potrzebnych plików",
-                    e.getLocalizedMessage());
+            showAlert(Alert.AlertType.ERROR, "Błąd inicializacji", "Brak potrzebnych plików", e.getLocalizedMessage());
             throw new RuntimeException(e);
         }
 
@@ -89,10 +118,22 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
 
     @Override
     public void populate(Object... context) {
-        mode = (ReportMode) context[0];
+
+        var mode = Mode.PRESCRIPTION;
+        if (context.length >= 1) {
+            if (context[0] instanceof Mode m) {
+                mode = m;
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+
+
+        this.mode = mode;
         refresh();
+        Mode finalMode = mode;
         saveButton.setOnAction(event -> {
-            switch (mode) {
+            switch (finalMode) {
                 case PRESCRIPTION -> {
                     try {
                         prescriptionsReport((List<Prescription>) context[1]);
@@ -108,7 +149,11 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
                     }
                 }
                 case USERS_ADMIN -> {
-                    refresh();
+                    try {
+                        patientsReport((List<Patient>) context[1]);
+                    } catch (IOException | URISyntaxException | TemplateModelException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
                 case USERS_DOCTOR -> {
                     refresh();
@@ -150,6 +195,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
                 }
             }
             case USERS_ADMIN -> {
+                name = "user.";
                 availableFields = new ArrayList<>();
                 availableFields.add("address");
                 availableFields.add("pesel");
@@ -159,6 +205,9 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
                 availableFields.add("id");
                 availableFields.add("internalName");
                 availableFields.add("doctorSpecialities");
+                for (String field : availableFields) {
+                    availableFieldsListView.getItems().add(resourceBundle.getString("user." + field));
+                }
             }
             case USERS_DOCTOR -> {
                 availableFields = new ArrayList<>();
@@ -258,7 +307,6 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
         for (String name : selectedFieldsListView.getItems()) {
             selectedFields.add(englishNames.get(name));
         }
-        System.out.println(selectedFields);
     }
 
     /**
@@ -268,23 +316,22 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
      * @throws IOException            when there is a file missing
      * @throws URISyntaxException     when there is a file missing
      * @throws TemplateModelException when there is a missing or broken template e.g. field name doesn't match
-     * translation key from string_pl.properties
+     *                                translation key from string_pl.properties
      */
     private void referralsReport(List<Referral> list) throws IOException, URISyntaxException, TemplateModelException {
-        try {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Zapisywanie raportu");
-            fileChooser.setInitialFileName("referralsReport.pdf");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Pliki PDF", "*.pdf"));
+        LocalDate startDate = startDatePicker.getValue();
+        LocalDate endDate = endDatePicker.getValue();
+        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+            showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Niepoprawny zakres dat", "Data początkowa nie może być późniejsza od daty końcowej.");
+        } else {
+            try {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Zapisywanie raportu");
+                fileChooser.setInitialFileName("referralsReport.pdf");
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Pliki PDF", "*.pdf"));
 
-            File file = fileChooser.showSaveDialog(new Stage());
+                File file = fileChooser.showSaveDialog(new Stage());
 
-            LocalDate startDate = startDatePicker.getValue();
-            LocalDate endDate = endDatePicker.getValue();
-            if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
-                showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Niepoprawny zakres dat",
-                        "Data początkowa nie może być późniejsza od daty końcowej.");
-            } else {
                 Template template = configuration.getTemplate("referralsTemplate.ftl");
 
                 File outputFile = new File("output.html");
@@ -307,7 +354,41 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
                 outputFile.delete();
                 showAlert(Alert.AlertType.INFORMATION, "Generowanie raportu", "Utworzono raport", "");
 
+            } catch (FileNotFoundException | TemplateException e) {
+                showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Wystąpił błąd.", e.getLocalizedMessage());
+                throw new RuntimeException(e);
             }
+        }
+    }
+
+
+    public void patientsReport(List<Patient> list) throws IOException, URISyntaxException, TemplateModelException {
+        try {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Zapisywanie raportu");
+            fileChooser.setInitialFileName("patientsReport.pdf");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Pliki PDF", "*.pdf"));
+
+            File file = fileChooser.showSaveDialog(new Stage());
+
+            Template template = configuration.getTemplate("usersTemplate.ftl");
+
+            File outputFile = new File("output.html");
+            Writer writer = new FileWriter(outputFile);
+
+            Map<String, Object> dataModel = new HashMap<>();
+            dataModel.put("headers", selectedFields);
+            dataModel.put("users", list);
+
+            template.process(dataModel, writer);
+
+            writer.close();
+
+            HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file), properties);
+
+            outputFile.delete();
+            showAlert(Alert.AlertType.INFORMATION, "Generowanie raportu", "Utworzono raport", "");
+
         } catch (FileNotFoundException | TemplateException e) {
             showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Wystąpił błąd.", e.getLocalizedMessage());
             throw new RuntimeException(e);
@@ -324,21 +405,19 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
      */
     private void prescriptionsReport(List<Prescription> list) throws IOException, URISyntaxException,
             TemplateModelException {
-        try {
+        LocalDate startDate = startDatePicker.getValue();
+        LocalDate endDate = endDatePicker.getValue();
+        if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
+            showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Niepoprawny zakres dat",
+                    "Data początkowa nie może być późniejsza od daty końcowej.");
+        } else {
+            try {
+                FileChooser fileChooser = new FileChooser();
+                fileChooser.setTitle("Zapisywanie raportu");
+                fileChooser.setInitialFileName("prescriptionsReport.pdf");
+                fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Pliki PDF", "*.pdf"));
 
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Zapisywanie raportu");
-            fileChooser.setInitialFileName("prescriptionsReport.pdf");
-            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Pliki PDF", "*.pdf"));
-
-            File file = fileChooser.showSaveDialog(new Stage());
-
-            LocalDate startDate = startDatePicker.getValue();
-            LocalDate endDate = endDatePicker.getValue();
-            if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
-                showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Niepoprawny zakres dat",
-                        "Data początkowa nie może być późniejsza od daty końcowej.");
-            } else {
+                File file = fileChooser.showSaveDialog(new Stage());
                 Template template = configuration.getTemplate("prescriptionsTemplate.ftl");
 
                 File outputFile = new File("output.html");
@@ -361,32 +440,70 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
                 outputFile.delete();
                 showAlert(Alert.AlertType.INFORMATION, "Generowanie raportu", "Utworzono raport", "");
 
+            } catch (FileNotFoundException | TemplateException e) {
+                showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Wystąpił błąd.", e.getLocalizedMessage());
+                throw new RuntimeException(e);
             }
+        }
+    }
+
+    private void timetableReport(VBox content) throws IOException {
+        WritableImage snapshot = content.snapshot(new SnapshotParameters(), null);
+        BufferedImage bufferedImage = new BufferedImage(550, 400, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage image = javafx.embed.swing.SwingFXUtils.fromFXImage(snapshot, bufferedImage);
+        String finalImage;
+        try {
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            ImageIO.write(image, "png", os);
+            byte[] bytes = os.toByteArray();
+            byte[] encoded = Base64.getEncoder().encode(bytes);
+            String imageAsBase64 = new String(encoded);
+            finalImage = "data:image/png;base64," + imageAsBase64;
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Zapisywanie raportu");
+            fileChooser.setInitialFileName("timetableReport.pdf");
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Pliki PDF", "*.pdf"));
+
+            File file = fileChooser.showSaveDialog(new Stage());
+
+            Template template = configuration.getTemplate("timetableTemplate.ftl");
+
+            File outputFile = new File("output.html");
+            Writer writer = new FileWriter(outputFile);
+
+            Map<String, Object> dataModel = new HashMap<>();
+            dataModel.put("timetable", finalImage);
+
+            template.process(dataModel, writer);
+
+            writer.close();
+
+            HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file), properties);
+
+            outputFile.delete();
+            showAlert(Alert.AlertType.INFORMATION, "Generowanie raportu", "Utworzono raport", "");
+
+
         } catch (FileNotFoundException | TemplateException e) {
             showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Wystąpił błąd.", e.getLocalizedMessage());
             throw new RuntimeException(e);
         }
     }
 
-    public static ReportObject createConfig(){
-        freemarker.template.Configuration configuration = new freemarker.template.Configuration(freemarker.template.Configuration.VERSION_2_3_32);
-
-        Locale locale = new Locale("pl", "PL");
-        configuration.setLocale(locale);
-        configuration.setDefaultEncoding("UTF-8");
-        configuration.setSQLDateAndTimeTimeZone(TimeZone.getDefault());
-
-        ConverterProperties properties = new ConverterProperties();
-        DefaultFontProvider fontProvider = new DefaultFontProvider(true, true, true);
-
-        fontProvider.addFont(String.valueOf(ClinicApplication.class.getResource("fonts/calibri.ttf")));
-
-        properties.setFontProvider(fontProvider);
-        properties.setCharset("UTF-8");
-        URL templatesURL = ClinicApplication.class.getResource("templates");
-        return new ReportObject(configuration, properties, templatesURL);
+    @FXML
+    public void onBackClick() {
+        this.getParentController().goBack();
     }
 
 
-    public enum ReportMode {PRESCRIPTION, REFERRAL, USERS_ADMIN, USERS_DOCTOR}
+    public enum Mode {PRESCRIPTION, REFERRAL, USERS_ADMIN, USERS_DOCTOR}
 }
+
+

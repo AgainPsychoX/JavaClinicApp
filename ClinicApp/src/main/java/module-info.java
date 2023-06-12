@@ -11,6 +11,7 @@ module pl.edu.ur.pz.clinicapp {
     requires org.jetbrains.annotations;
     requires html2pdf;
     requires freemarker;
+    requires javafx.swing;
 
 
     exports pl.edu.ur.pz.clinicapp;
