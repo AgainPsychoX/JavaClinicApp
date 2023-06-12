@@ -62,33 +62,17 @@ public class WeekPaneFreeSelectionModel<T extends WeekPane.Entry> extends WeekPa
 
         // Select on click; should be not called in case hit on entry (should be consumed by entry click handler)
         grid.setOnMouseClicked(event -> {
-            if (event.getButton() != MouseButton.PRIMARY) {
-                return;
+            if (event.getButton() == MouseButton.PRIMARY) {
+                // TODO: allowing selecting whole day only (no specific minute of day) would be easy
+
+                final var dayOfWeek = weekPane.findDayOfWeekForMouseEvent(event);
+                final var minuteOfDay = weekPane.findVagueMinuteOfDayForMouseEvent(event);
+
+                // TODO: allow aligning to previous/next entry too; btw: the exact value can be specified in a form anyways
+
+                select((T) null); // deselect entry
+                select(dayOfWeek, minuteOfDay);
             }
-
-            // TODO: allowing selecting whole day only (no specific minute of day) would be easy
-
-            final var columnBackground = grid.getChildren().stream()
-                    .filter(n -> n.getStyleClass().contains("column")
-                            && n.getBoundsInParent().contains(event.getX(), event.getY()))
-                    .findFirst();
-            if (columnBackground.isEmpty()) return;
-
-            final var rowBackground = grid.getChildren().stream()
-                    .filter(n -> n.getStyleClass().contains("row")
-                            && n.getBoundsInParent().contains(event.getX(), event.getY()))
-                    .findFirst();
-            if (rowBackground.isEmpty()) return;
-
-            final var dayOfWeek = DayOfWeek.of(GridPane.getColumnIndex(columnBackground.get()));
-            final var rgp = weekPane.getRowGenerationParams();
-            final var minuteOfDay = rgp.startMinuteOfDay() +
-                    rgp.stepInMinutes() * GridPane.getRowIndex(rowBackground.get());
-
-            // TODO: allow aligning to previous/next entry too; btw: the exact value be can specified in form anyways
-
-            select((T) null); // deselect entry
-            select(dayOfWeek, minuteOfDay);
         });
 
         // Move the selector element on select

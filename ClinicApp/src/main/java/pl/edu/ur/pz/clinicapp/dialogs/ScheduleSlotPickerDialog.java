@@ -2,11 +2,14 @@ package pl.edu.ur.pz.clinicapp.dialogs;
 
 import javafx.beans.value.ChangeListener;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.text.Text;
 import javafx.stage.Modality;
@@ -110,10 +113,8 @@ public class ScheduleSlotPickerDialog extends Stage {
                 }
             }
         });
+        weekPane.getGrid().setOnMouseClicked(mouseClickedEventHandler);
 
-        // TODO: allow mouse controls
-        //  + click = expand/cut closest direction if above 4 hours, or move if equal/shorter than 4 hours;
-        //  + SHIFT to always expand/cut, CTRL to always move
         // TODO: add some accessibility (keyboard) controls to move the week pane free selection
         //  + arrows + modifiers: SHIFT expand, ALT cut, CTRL move.
 
@@ -231,14 +232,36 @@ public class ScheduleSlotPickerDialog extends Stage {
         }
     }
 
-    protected void refreshWeekPaneAfterDateChanges() {
-        // Change in dates means there are new week pane entries need to be added, or some need to be removed,
-        // so let's regenerate all of them.
+    /**
+     * Refreshes all week pane entries after date changes by regenerating all of them,
+     * as change in dates means there are new week pane entries need to be added or some need to be removed.
+     */
+    protected void refreshAllWeekPaneEntriesAfterDateChanges() {
         logger.finest("Refreshing week pane after date changes");
         weekPane.getEntries().removeAll(selectionWeekPaneEntries);
         selectionWeekPaneEntries = schedule.generateWeekPaneEntriesForScheduleEntries(
                 getCurrentWeekStart(), List.of(selectionScheduleEntry));
         weekPane.getEntries().addAll(selectionWeekPaneEntries);
+    }
+
+    /**
+     * Refreshes the first week pane entry, to be used if only begin time changes without the dates.
+     */
+    protected void refreshFirstWeekPaneEntry() {
+        logger.finest("Refreshing first entry");
+        weekPane.refreshEntry(selectionScheduleEntry);
+    }
+
+    /**
+     * Refreshes the last week pane entry, to be used if only end time changes without the dates.
+     */
+    protected void refreshLastWeekPaneEntry() {
+        logger.finest("Refreshing last entry");
+        final var last = selectionWeekPaneEntries.get(selectionWeekPaneEntries.size() - 1);
+        if (last instanceof Schedule.ProxyWeekPaneEntry proxy) {
+            proxy.endMinute = endTimeSpinner.getValue().toSecondOfDay() / 60;
+        }
+        weekPane.refreshEntry(last);
     }
 
     /**
@@ -256,7 +279,7 @@ public class ScheduleSlotPickerDialog extends Stage {
             beginDatePicker.setValue(endDateTime.toLocalDate());
             endTimeSpinner.getValueFactory().setValue(beginDateTime.toLocalTime());
             endDatePicker.setValue(beginDateTime.toLocalDate());
-            refreshWeekPaneAfterDateChanges();
+            refreshAllWeekPaneEntriesAfterDateChanges();
             return true;
         } else {
             return false;
@@ -278,29 +301,23 @@ public class ScheduleSlotPickerDialog extends Stage {
 
     private final InteractionGuard interactionGuard = new InteractionGuard();
 
-    final protected ChangeListener<LocalTime> beginTimeListener = (o, oldValue, newValue) -> {
+    protected ChangeListener<LocalTime> beginTimeListener = (o, oldValue, newValue) -> {
         if (interactionGuard.begin()) return;
         logger.finer("Begin time changed: " + newValue);
         // TODO: roll over the date if overflow
         if (!reorderIfNecessary()) {
-            logger.finest("Refreshing first entry");
-            weekPane.refreshEntry(selectionScheduleEntry);
+            refreshFirstWeekPaneEntry();
         }
         updateAcceptButtonDebounced();
         interactionGuard.end();
     };
 
-    final protected ChangeListener<LocalTime> endTimeListener = (o, oldValue, newValue) -> {
+    protected ChangeListener<LocalTime> endTimeListener = (o, oldValue, newValue) -> {
         if (interactionGuard.begin()) return;
         logger.finer("End time changed: " + newValue);
         // TODO: roll back the date if underflow
         if (!reorderIfNecessary()) {
-            logger.finest("Refreshing last entry");
-            final var last = selectionWeekPaneEntries.get(selectionWeekPaneEntries.size() - 1);
-            if (last instanceof Schedule.ProxyWeekPaneEntry proxy) {
-                proxy.endMinute = newValue.toSecondOfDay() / 60;
-            }
-            weekPane.refreshEntry(last);
+            refreshLastWeekPaneEntry();
         }
         updateAcceptButtonDebounced();
         interactionGuard.end();
@@ -312,7 +329,7 @@ public class ScheduleSlotPickerDialog extends Stage {
         final var newDateTime = getBeginDateTime();
         logger.finer("Begin date changed: " + newDateTime);
         if (!reorderIfNecessary()) {
-            refreshWeekPaneAfterDateChanges();
+            refreshAllWeekPaneEntriesAfterDateChanges();
         }
         updateAcceptButtonDebounced();
         interactionGuard.end();
@@ -324,11 +341,86 @@ public class ScheduleSlotPickerDialog extends Stage {
         final var newDateTime = getEndDateTime();
         logger.finer("End date changed: " + newDateTime);
         if (!reorderIfNecessary()) {
-            refreshWeekPaneAfterDateChanges();
+            refreshAllWeekPaneEntriesAfterDateChanges();
         }
         updateAcceptButtonDebounced();
         interactionGuard.end();
     }
+
+    protected EventHandler<MouseEvent> mouseClickedEventHandler = event -> {
+        // TODO: allow mouse controls
+        //  + click = expand/cut closest direction if above 4 hours, or move if equal/shorter than 4 hours;
+        //  + SHIFT to always expand/cut, CTRL to always move
+        if (event.getButton() == MouseButton.PRIMARY) {
+            final var dayOfWeek = weekPane.findDayOfWeekForMouseEvent(event);
+            final var clickedDate = getCurrentWeekStart().plusDays(dayOfWeek.ordinal());
+            final var minuteOfDay = weekPane.findVagueMinuteOfDayForMouseEvent(event);
+            final var clickedTime = LocalTime.ofSecondOfDay(minuteOfDay * 60L);
+
+            if (interactionGuard.begin()) return;
+
+            final var oldBeginDate = beginDatePicker.getValue();
+            final var oldEndDate = endDatePicker.getValue();
+            final var oldDuration = selectionScheduleEntry.getDuration();
+
+            if (!event.isControlDown() && oldDuration.toHours() > 4 || event.isShiftDown()) {
+                final var clickedDateTime = clickedDate.atTime(clickedTime);
+
+                // Select affected edge as closest to clicked minute
+                boolean useBeginEdge;
+                final var beginDateTime = getBeginDateTime();
+                if (clickedDateTime.isBefore(beginDateTime)) {
+                    useBeginEdge = true;
+                } else {
+                    final var endDateTime = getEndDateTime();
+                    if (clickedDateTime.isAfter(endDateTime)) {
+                        useBeginEdge = false;
+                    } else {
+                        final var toBegin = Duration.between(getBeginDateTime(), clickedDateTime).abs().toMinutes();
+                        final var toEnd = Duration.between(getEndDateTime(), clickedDateTime).abs().toMinutes();
+                        useBeginEdge = toBegin < toEnd;
+                    }
+                }
+
+                // Flip affected edge if Alt pressed
+                if (event.isAltDown()) {
+                    useBeginEdge = !useBeginEdge;
+                }
+
+                if (useBeginEdge) {
+                    logger.finer("Mouse clicked, moving begin to: " + clickedDate + " " + clickedTime);
+                    beginDatePicker.setValue(clickedDate);
+                    beginTimeSpinner.getValueFactory().setValue(clickedTime);
+                } else {
+                    logger.finer("Mouse clicked, moving end to: " + clickedDate + " " + clickedTime);
+                    endDatePicker.setValue(clickedDate);
+                    endTimeSpinner.getValueFactory().setValue(clickedTime);
+                }
+            }
+            else {
+                logger.finer("Mouse clicked, moving whole entry to start at: " + clickedDate + " " + clickedTime);
+                // Move the selection, preserve the duration
+                beginDatePicker.setValue(clickedDate);
+                beginTimeSpinner.getValueFactory().setValue(clickedTime);
+                final var newEndDateTime = clickedDate.atTime(clickedTime).plus(oldDuration);
+                endDatePicker.setValue(newEndDateTime.toLocalDate());
+                endTimeSpinner.getValueFactory().setValue(newEndDateTime.toLocalTime());
+            }
+
+            if (!reorderIfNecessary()) {
+                if (!oldBeginDate.equals(beginDatePicker.getValue())
+                        || !oldEndDate.equals(endDatePicker.getValue())) {
+                    refreshAllWeekPaneEntriesAfterDateChanges();
+                } else {
+                    refreshFirstWeekPaneEntry();
+                    refreshLastWeekPaneEntry();
+                }
+            }
+            updateAcceptButtonDebounced();
+
+            interactionGuard.end();
+        }
+    };
 
     final private Debouncer acceptButtonUpdateDebouncer = new Debouncer(this::updateAcceptButton);
 

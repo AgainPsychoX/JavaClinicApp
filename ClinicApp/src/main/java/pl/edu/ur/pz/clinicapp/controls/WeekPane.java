@@ -17,6 +17,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Skin;
 import javafx.scene.control.skin.CellSkinBase;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.util.Callback;
 import org.jetbrains.annotations.NotNull;
@@ -511,5 +512,59 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             showColumn(6);
             showColumn(7);
         }
+    }
+
+    /**
+     * Tries to find day of week on the week pane for mouse event.
+     * @param event event with X/Y cords to test for
+     * @return found day of day or null if not found
+     */
+    public DayOfWeek findDayOfWeekForMouseEvent(MouseEvent event) {
+        final var columnBackground = gridPane.getChildren().stream()
+                .filter(n -> n.getStyleClass().contains("column")
+                        && n.getBoundsInParent().contains(event.getX(), event.getY()))
+                .findFirst();
+        if (columnBackground.isEmpty()) {
+            return null;
+        } else {
+            return DayOfWeek.of(GridPane.getColumnIndex(columnBackground.get()));
+        }
+    }
+
+    /**
+     * Tries to find minute of day on the week pane for mouse event, vaguely (based using only row index).
+     * @param event event with X/Y cords to test for
+     * @return found minute of day or -1 if not found
+     */
+    public int findVagueMinuteOfDayForMouseEvent(MouseEvent event) {
+        final var rowBackground = gridPane.getChildren().stream()
+                .filter(n -> n.getStyleClass().contains("row")
+                        && n.getBoundsInParent().contains(event.getX(), event.getY()))
+                .findFirst();
+        if (rowBackground.isEmpty()) {
+            return -1;
+        }
+
+        final var rgp = getRowGenerationParams();
+        return rgp.startMinuteOfDay() + rgp.stepInMinutes() * GridPane.getRowIndex(rowBackground.get());
+    }
+
+    /**
+     * Tries to find exact minute of day on the week pane for mouse event.
+     * @param event event with X/Y cords to test for
+     * @return found minute of day or -1 if not found
+     */
+    public int findExactMinuteOfDayForMouseEvent(MouseEvent event) {
+        final var rgp = getRowGenerationParams();
+        for (final var node : gridPane.getChildren()) {
+            if (node.getStyleClass().contains("row")) {
+                final var bounds = node.getBoundsInParent();
+                if (bounds.contains(event.getX(), event.getY())) {
+                    final var offset = (int) ((event.getY() - bounds.getMinY()) / rgp.rowHeight * rgp.stepInMinutes);
+                    return rgp.startMinuteOfDay() + rgp.stepInMinutes() * GridPane.getRowIndex(node) + offset;
+                }
+            }
+        }
+        return -1;
     }
 }
