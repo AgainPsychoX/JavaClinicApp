@@ -1,6 +1,7 @@
 package pl.edu.ur.pz.clinicapp.models;
 
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
+import pl.edu.ur.pz.clinicapp.utils.DurationMinutesConverter;
 
 import javax.persistence.*;
 import java.time.Duration;
@@ -40,7 +41,8 @@ import java.time.ZoneId;
 @NamedNativeQueries({
         @NamedNativeQuery(
                 name = "validate_new_appointment",
-                query = "SELECT validate_new_appointment(:patient_id, :doctor_id, :begin, :duration)"
+                query = "SELECT validate_new_appointment(:patient_id, :doctor_id, :begin\\:\\:timestamp, :duration) AS code",
+                resultSetMapping = "validate_new_appointment"
         ),
         // TODO: use Hibernate `persist` (or `merge`) to insert/update and `remove` to delete
         @NamedNativeQuery(
@@ -53,6 +55,11 @@ import java.time.ZoneId;
                 query = "DELETE FROM appointments WHERE id =:id",
                 resultClass = Appointment.class
         )
+})
+@SqlResultSetMappings({
+        @SqlResultSetMapping(name = "validate_new_appointment", columns = {
+                @ColumnResult(name = "code", type = Integer.class),
+        }),
 })
 public class Appointment extends MedicalHistoryEntry implements Schedule.Entry {
     /**
@@ -80,7 +87,7 @@ public class Appointment extends MedicalHistoryEntry implements Schedule.Entry {
      * Validates schedule-sensitive fields for potential new appointment.
      * @param patient related patient (if null, tries to validate patient-independently)
      * @param doctor related doctor
-     * @param beginInstant timestamp of beginning of the potential slot in the schedule
+     * @param begin timestamp of beginning of the potential slot in the schedule
      * @param duration requested (expected) duration
      * @return 0 if good, non-zero error code otherwise.
      */
@@ -91,7 +98,7 @@ public class Appointment extends MedicalHistoryEntry implements Schedule.Entry {
         query.setParameter("patient_id", patient == null ? 0 : patient.getId());
         query.setParameter("doctor_id", doctor.getId());
         query.setParameter("begin", begin);
-        query.setParameter("duration", duration.toMinutes());
+        query.setParameter("duration", (int) duration.toMinutes());
         return NewAppointmentValidationStatus.values()[query.getSingleResult()];
     }
 
@@ -126,6 +133,7 @@ public class Appointment extends MedicalHistoryEntry implements Schedule.Entry {
      * Expected duration of the visit in minutes.
      */
     @Column(nullable = false)
+    @Convert(converter = DurationMinutesConverter.class)
     private Duration duration;
     @Override
     public Duration getDuration() {

@@ -143,6 +143,7 @@ public class ScheduleSlotPickerDialog extends Stage {
         endDatePicker.setValue(endDateTime.toLocalDate());
 
         showWeek(beginDateTime.toLocalDate());
+        updateAcceptButton();
     }
 
     public void setHeaderText(String text) {
@@ -413,6 +414,7 @@ public class ScheduleSlotPickerDialog extends Stage {
     final private Debouncer acceptButtonUpdateDebouncer = new Debouncer(this::updateAcceptButton);
 
     protected void updateAcceptButtonDebounced() {
+        acceptButton.setDisable(true); // avoid being enabled when waiting for debouncer
         acceptButtonUpdateDebouncer.call();
     }
 

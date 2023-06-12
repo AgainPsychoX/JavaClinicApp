@@ -5,7 +5,7 @@ import javax.persistence.Converter;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
-@Converter(autoApply = true)
+@Converter(autoApply = false)
 public class DurationMinutesConverter implements AttributeConverter<Duration, Integer> {
     @Override
     public Integer convertToDatabaseColumn(Duration attribute) {

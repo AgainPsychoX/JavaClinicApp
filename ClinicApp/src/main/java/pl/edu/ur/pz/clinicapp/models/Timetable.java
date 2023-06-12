@@ -183,7 +183,7 @@ public class Timetable implements Comparable<Timetable> {
         @Column(name = "weekday", nullable = false)
         private int weekday;
         public DayOfWeek getDayOfWeek() {
-            return DayOfWeek.of(weekday + 1);
+            return DayOfWeek.of(weekday);
         }
 
         /**
@@ -210,7 +210,7 @@ public class Timetable implements Comparable<Timetable> {
         public Entry() {}
 
         public Entry(DayOfWeek dayOfWeek, int startMinute, int endMinute) {
-            this.weekday = dayOfWeek.getValue() - 1;
+            this.weekday = dayOfWeek.getValue();
             this.startMinute = Math.min(startMinute, endMinute);
             this.endMinute = Math.max(startMinute, endMinute);
         }

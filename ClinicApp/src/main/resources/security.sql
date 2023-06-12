@@ -143,19 +143,22 @@ $$;
 GRANT EXECUTE ON FUNCTION public.get_effective_timetable TO PUBLIC;
 
 -- Function to validate new appointment addition
-CREATE OR REPLACE FUNCTION public.validate_new_appointment(p_patient_id INTEGER, p_doctor_id INTEGER, p_begin TIMESTAMP, p_duration INTEGER)
+CREATE OR REPLACE FUNCTION public.validate_new_appointment(
+    p_patient_id INTEGER, p_doctor_id INTEGER, p_begin TIMESTAMP WITHOUT TIME ZONE, p_duration INTEGER
+)
     RETURNS INTEGER
     LANGUAGE plpgsql
     SECURITY DEFINER
 AS $$
     DECLARE
         v_end TIMESTAMP;
+        v_max_days_in_advance INTEGER;
         v_doctor_timetable RECORD;
         v_start_minute INTEGER;
         v_end_minute INTEGER;
-        v_max_days_in_advance INTEGER;
+        v_weekday INTEGER;
     BEGIN
-        IF p < 5 OR 12 * 60 < p THEN
+        IF p_duration < 5 OR 12 * 60 < p_duration THEN
             RETURN 1; -- Duration must be at least 5 minutes and max 12 hours
         END IF;
 
@@ -170,15 +173,16 @@ AS $$
             RETURN 3; -- Appointment cannot span over multiple timetables
         END IF;
 
-        v_start_minute := minute_of_day(p_from);
-        v_end_minute := minute_of_day(p_to);
+        v_start_minute := minute_of_day(p_begin);
+        v_end_minute := minute_of_day(v_end);
+        v_weekday := EXTRACT(DOW FROM p_begin);
         IF (
             NOT EXISTS (
                 -- We assume timetables_entries are consolidated concatenated if they touch,
                 -- and that appointments cannot span on multiple days (like thought mid-night).
                 SELECT 1 FROM timetable_entries
                 WHERE timetable_id = v_doctor_timetable.id
-                    AND start_minute <= v_start_minute AND v_end_minute <= end_minute
+                    AND v_weekday = weekday AND start_minute <= v_start_minute AND v_end_minute <= end_minute
             )
             AND NOT EXISTS (
                 SELECT 1 FROM schedule_simple_entries

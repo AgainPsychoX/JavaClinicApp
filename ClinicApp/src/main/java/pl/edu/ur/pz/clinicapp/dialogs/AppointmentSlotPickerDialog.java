@@ -70,6 +70,8 @@ public class AppointmentSlotPickerDialog extends ScheduleSlotPickerDialog {
             return false;
         }
 
+        // TODO: early check for timetable open entry overlapping
+
         final var validationStatus = Appointment.validateNewAppointment(null, getDoctor(),
                 selectionScheduleEntry.getBeginInstant(), selectionScheduleEntry.getDuration());
         if (validationStatus != Appointment.NewAppointmentValidationStatus.GOOD) {
