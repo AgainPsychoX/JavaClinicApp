@@ -3,7 +3,9 @@ package pl.edu.ur.pz.clinicapp.views;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.DatePicker;
 import javafx.scene.input.MouseButton;
 import javafx.scene.text.Text;
@@ -15,7 +17,10 @@ import pl.edu.ur.pz.clinicapp.controls.WeekPaneFreeSelectionModel;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneScheduleEntryCell;
 import pl.edu.ur.pz.clinicapp.dialogs.AppointmentSlotPickerDialog;
 import pl.edu.ur.pz.clinicapp.dialogs.ScheduleSimpleEntryEditDialog;
-import pl.edu.ur.pz.clinicapp.models.*;
+import pl.edu.ur.pz.clinicapp.models.Appointment;
+import pl.edu.ur.pz.clinicapp.models.Doctor;
+import pl.edu.ur.pz.clinicapp.models.Schedule;
+import pl.edu.ur.pz.clinicapp.models.UserReference;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.InteractionGuard;
 
@@ -24,8 +29,7 @@ import java.time.*;
 import java.time.temporal.ChronoUnit;
 import java.util.ResourceBundle;
 
-import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.nullCoalesce;
-import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.runDelayed;
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
 import static pl.edu.ur.pz.clinicapp.utils.TemporalUtils.alignDateToWeekStart;
 
 public class ScheduleView extends ChildControllerBase<MainWindowController> implements Initializable {
@@ -248,8 +252,27 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
                         VisitsDetailsView.Mode.DETAILS,
                         appointment
                 );
-            } else if (scheduleEntry instanceof Schedule.SimpleEntry) {
-                showAddOrEditSimpleEntryDialog(proxy);
+            } else if (scheduleEntry instanceof Schedule.SimpleEntry simpleEntry) {
+                switch (simpleEntry.getType()) {
+                    case NONE -> {}
+                    case OPEN -> {
+                        if (requireConfirmation(
+                                Alert.AlertType.CONFIRMATION,
+                                "Potwierdzenie przejścia do harmonogramu", """
+                                Ten wpis pochodzi z ustawień harmonogramu. W celu jego edycji, nastąpi przejście do
+                                widoku harmonogramu. Czy chcesz kontynuować?
+                                """, ButtonType.YES, ButtonType.CANCEL)) {
+                            getParentController().goToView(
+                                    MainWindowController.Views.TIMETABLE,
+                                    getUserReference(),
+                                    TimetableView.Mode.EDIT,
+                                    simpleEntry.getBeginInstant()
+                                    // TODO: select specific timetable entry
+                            );
+                        }
+                    }
+                    default -> showAddOrEditSimpleEntryDialog(proxy);
+                }
             }
         }
     }

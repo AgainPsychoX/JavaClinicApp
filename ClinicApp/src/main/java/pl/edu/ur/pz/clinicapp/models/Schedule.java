@@ -156,7 +156,7 @@ public class Schedule {
         final var weekEnd = weekEndDate.atStartOfDay(zone);
 
         final var results = new ArrayList<WeekPane.Entry>(80);
-        // TODO: disallow timetable week pane entries (the background ones) to be edited
+        // TODO: consider passing timetable week pane entries directly instead making them schedule entries
         results.addAll(generateWeekPaneEntriesForScheduleEntries(weekStartDate, // the background
                 generateScheduleEntriesFromTimetables(weekStart, weekEnd)));
         results.addAll(generateWeekPaneEntriesForScheduleEntries(weekStartDate, // the foreground

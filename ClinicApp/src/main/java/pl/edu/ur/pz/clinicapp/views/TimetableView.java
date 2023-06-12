@@ -93,9 +93,12 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
                         final var entry = getItem();
                         weekPaneSelectionModel.select(entry);
                         if (event.getClickCount() == 2) {
-                            if (getMode() == Mode.EDIT) {
-                                showAddOrEditEntryDialog(entry);
+                            if (interactionGuard.begin()) return;
+                            if (getMode() != Mode.EDIT) {
+                                setMode(Mode.EDIT);
                             }
+                            showAddOrEditEntryDialog(entry);
+                            interactionGuard.end();
                         }
                     }
                 });
@@ -941,8 +944,6 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
 
         // TODO: warning about problems with editing past/already effective timetable,
         //  prefer adding new (only once in edit session)
-        // TODO: add selecting entries (focusable by tab too),
-        //  open edit dialog for selected one, etc.
         // TODO: best thing would be having controls under the week pane instead separate dialog,
         //  allowing for previewing the changes; and allow user to drag to resize/move the entries,
         //  but it's advanced stuff and im not paid nor hyped for the project...
