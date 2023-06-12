@@ -93,9 +93,7 @@ public class Schedule {
                 }
                 if (entryEnd.isAfter(end)) {
                     // 2. End reached in middle of entry, add cutoff entry, then return
-                    list.add(new SimpleEntry(Entry.Type.OPEN,
-                            entryStart.toInstant(),
-                            end.toInstant()));
+                    list.add(new SimpleEntry(Entry.Type.OPEN, entryStart.toInstant(), end.toInstant()));
                     return list;
                 }
 
@@ -109,16 +107,13 @@ public class Schedule {
                         // 4. Add cutoff entry and go next timetable
                         currentTime = null; // reuse the current time variable as flag for next timetable
                         list.add(new SimpleEntry(Entry.Type.OPEN,
-                                entryStart.toInstant(),
-                                nextEffectiveTimetable.getEffectiveDate().toInstant()));
+                                entryStart.toInstant(), nextEffectiveTimetable.getEffectiveDate().toInstant()));
                         break;
                     }
                 }
 
                 // 5. Add full entry and look for more with current timetable
-                list.add(new SimpleEntry(Entry.Type.OPEN,
-                        entryStart.toInstant(),
-                        entryEnd.toInstant()));
+                list.add(new SimpleEntry(Entry.Type.OPEN, entryStart.toInstant(), entryEnd.toInstant()));
             }
 
             if (currentTime == null) /* next timetable */ {
@@ -148,7 +143,7 @@ public class Schedule {
     }
 
     /**
-     * Generate {@link WeekPane.Entry}ies, which might include {@link ProxyWeekPaneEntry}ies for multi-day,
+     * Generate {@link WeekPane.Entry}ies, which might include {@link ScheduleWeekPaneEntry}ies for multi-day,
      * to represent given schedule entries for selected week.
      * @param weekStartDate week start date
      * @return list of week pane entries, ready to be set on display on the week pane
@@ -161,59 +156,66 @@ public class Schedule {
         final var weekEnd = weekEndDate.atStartOfDay(zone);
 
         final var results = new ArrayList<WeekPane.Entry>(80);
-        results.addAll(generateScheduleEntriesFromTimetables(weekStart, weekEnd)); // the background
-        results.addAll(generateWeekPaneEntriesForScheduleEntries(weekStartDate, // the content
+        // TODO: disallow timetable week pane entries (the background ones) to be edited
+        results.addAll(generateWeekPaneEntriesForScheduleEntries(weekStartDate, // the background
+                generateScheduleEntriesFromTimetables(weekStart, weekEnd)));
+        results.addAll(generateWeekPaneEntriesForScheduleEntries(weekStartDate, // the foreground
                 findScheduleEntries(weekStart.toInstant(), weekEnd.toInstant()).toList()));
         return results;
     }
 
     /**
-     * Generate {@link WeekPane.Entry}ies, which might include {@link ProxyWeekPaneEntry}ies for multi-day,
+     * Generate {@link WeekPane.Entry}ies (as {@link ScheduleWeekPaneEntry}ies; multiple for multi-day entries),
      * to represent given {@link Schedule.Entry}ies properly. Order is kept natural if the passed schedule entries list
      * also were kept in natural order.
      * @param weekStartDate week start date
-     * @param entries entries to be represented on the week pane
+     * @param scheduleEntries entries to be represented on the week pane
      * @return list of week pane entries, ready to be set on display on the week pane
      */
-    public List<WeekPane.Entry> generateWeekPaneEntriesForScheduleEntries(LocalDate weekStartDate, List<Schedule.Entry> entries) {
+    public List<WeekPane.Entry> generateWeekPaneEntriesForScheduleEntries(
+            LocalDate weekStartDate, List<Schedule.Entry> scheduleEntries) {
         // TODO: unit testing
         final var zone = ZoneId.systemDefault();
         final var weekEndDate = weekStartDate.plusDays(7);
         final var resultList = new ArrayList<WeekPane.Entry>(80);
 
-        for (final var entry : entries) {
-            // Add original entry if it starts somewhere in the week
-            final var beginDateTime = entry.getBeginTime().atZone(zone);
-            if (!beginDateTime.toLocalDate().isBefore(weekStartDate)) {
-                resultList.add(entry);
-            }
-
-            if (entry.doesCrossDays()) {
+        for (final var scheduleEntry : scheduleEntries) {
+            final var beginDateTime = scheduleEntry.getBeginInstant().atZone(zone);
+            final var endDateTime = scheduleEntry.getEndInstant().atZone(zone);
+            if (scheduleEntry.doesCrossDays(zone)) {
                 var date = beginDateTime.toLocalDate();
                 if (date.isBefore(weekStartDate)) {
+                    // Add first entry if starts inside the week
+                    final var startMinute = beginDateTime.getHour() * 60 + beginDateTime.getMinute();
+                    resultList.add(new ScheduleWeekPaneEntry(scheduleEntry, date.getDayOfWeek(), startMinute, 1440));
+
                     date = weekStartDate;
                 }
 
-                final var endDateTime = entry.getEndTime().atZone(zone);
                 final var dayBeforeEndDate = endDateTime.toLocalDate().minusDays(1);
                 if (dayBeforeEndDate.isAfter(weekEndDate)) /* the original entry lasts outside the week */ {
                     // Add full days entries
                     while (date.isBefore(weekEndDate)) {
+                        resultList.add(new ScheduleWeekPaneEntry(scheduleEntry, date.getDayOfWeek(), 0, 1440));
                         date = date.plusDays(1);
-                        resultList.add(new ProxyWeekPaneEntry(entry, date.getDayOfWeek(), 0, 1440));
                     }
                 } else /* the original entry ends inside the week */ {
                     // Add full days entries
                     while (date.isBefore(dayBeforeEndDate)) {
+                        resultList.add(new ScheduleWeekPaneEntry(scheduleEntry, date.getDayOfWeek(), 0, 1440));
                         date = date.plusDays(1);
-                        resultList.add(new ProxyWeekPaneEntry(entry, date.getDayOfWeek(), 0, 1440));
                     }
 
                     // Add last entry which might be not full day
                     final var endMinute = endDateTime.getHour() * 60 + endDateTime.getMinute();
-                    resultList.add(new ProxyWeekPaneEntry(entry, endDateTime.getDayOfWeek(), 0, endMinute));
+                    resultList.add(new ScheduleWeekPaneEntry(scheduleEntry, endDateTime.getDayOfWeek(), 0, endMinute));
                 }
-
+            }
+            else {
+                // Add the entry as singular one
+                final var start = beginDateTime.getHour() * 60 + beginDateTime.getMinute();
+                final var end = endDateTime.getHour() * 60 + endDateTime.getMinute();
+                resultList.add(new ScheduleWeekPaneEntry(scheduleEntry, beginDateTime.getDayOfWeek(), start, end));
             }
         }
 
@@ -221,15 +223,12 @@ public class Schedule {
     }
 
     /**
-     * Proxy entries to represent schedule entries that doesn't fit in single weekday inside a week pane.
-     *
-     * TODO: maybe refactor? shouldn't be Schedule.Entry? Currently every schedule-like weekPane
-     *  uses WeekPane.Entry and multiple instanceof which looks wierd...
+     * Puppet {@link WeekPane.Entry} implementation, used to represent {@link Schedule.Entry} inside a {@link WeekPane}.
      */
-    public static class ProxyWeekPaneEntry implements WeekPane.Entry {
-        protected Entry original;
-        public Entry getOriginal() {
-            return original;
+    public static class ScheduleWeekPaneEntry implements WeekPane.Entry {
+        protected Schedule.Entry scheduleEntry;
+        public Schedule.Entry getScheduleEntry() {
+            return scheduleEntry;
         }
 
         public DayOfWeek dayOfWeek;
@@ -250,8 +249,19 @@ public class Schedule {
             return endMinute;
         }
 
-        public ProxyWeekPaneEntry(Entry original, DayOfWeek dayOfWeek, int startMinute, int endMinute) {
-            this.original = original;
+        public ScheduleWeekPaneEntry(Entry scheduleEntry) {
+            final var zone = ZoneId.systemDefault();
+            assert !scheduleEntry.doesCrossDays(zone);
+            final var beginDateTime = scheduleEntry.getBeginInstant().atZone(zone);
+            final var endDateTime = scheduleEntry.getEndInstant().atZone(zone);
+            this.scheduleEntry = scheduleEntry;
+            this.dayOfWeek = beginDateTime.getDayOfWeek();
+            this.startMinute = beginDateTime.getHour() * 60 + beginDateTime.getMinute();
+            this.endMinute = endDateTime.getHour() * 60 + endDateTime.getMinute();
+        }
+
+        public ScheduleWeekPaneEntry(Entry scheduleEntry, DayOfWeek dayOfWeek, int startMinute, int endMinute) {
+            this.scheduleEntry = scheduleEntry;
             this.dayOfWeek = dayOfWeek;
             this.startMinute = startMinute;
             this.endMinute = endMinute;
@@ -261,7 +271,7 @@ public class Schedule {
     /**
      * Schedule entries representing allocated time pieces in the schedule.
      */
-    public interface Entry extends WeekPane.Entry {
+    public interface Entry {
         enum Type {
             NONE,
 
@@ -329,40 +339,19 @@ public class Schedule {
         }
 
         Type getType();
-        Instant getBeginTime();
-        Instant getEndTime();
+        Instant getBeginInstant();
+        Instant getEndInstant();
 
         default Duration getDuration() {
-            return Duration.between(getBeginTime(), getEndTime());
-        }
-
-        @Override
-        default DayOfWeek getDayOfWeek() {
-            return getBeginTime().atZone(ZoneId.systemDefault()).getDayOfWeek();
-        }
-        @Override
-        default int getStartMinute() {
-            final var date = getBeginTime().atZone(ZoneId.systemDefault());
-            return date.getHour() * 60 + date.getMinute();
-        }
-
-        /**
-         * Warning: The value might be capped 24 * 60 = 1440 in case the entry crosses over multiple days.
-         * Use of {@link ProxyWeekPaneEntry} might be required to display this entry properly on a {@link WeekPane}.
-         * @return end minute of the entry on given day of week
-         */
-        @Override
-        default int getEndMinute() {
-            final var endMinute = getStartMinute() + (int) getDuration().toMinutes();
-            return Math.min(endMinute, 24 * 60);
+            return Duration.between(getBeginInstant(), getEndInstant());
         }
 
         /**
          * @return true if the entry crosses over multiple days, false otherwise.
          */
-        default boolean doesCrossDays() {
-            final var startDay = getBeginTime().atZone(ZoneId.systemDefault()).getDayOfWeek();
-            final var endDay = getEndTime().atZone(ZoneId.systemDefault()).getDayOfWeek();
+        default boolean doesCrossDays(ZoneId zone) {
+            final var startDay = getBeginInstant().atZone(zone).getDayOfWeek();
+            final var endDay = getEndInstant().atZone(zone).getDayOfWeek();
             return startDay != endDay;
         }
 
@@ -371,8 +360,8 @@ public class Schedule {
          * @return true if time of this and other entry overlaps (end time exclusive), false if no second is common
          */
         default boolean overlaps(Entry other) {
-            return this.getEndTime().isAfter(other.getBeginTime())
-                && this.getBeginTime().isBefore(other.getEndTime());
+            return this.getEndInstant().isAfter(other.getBeginInstant())
+                && this.getBeginInstant().isBefore(other.getEndInstant());
         }
 
         /**
@@ -380,8 +369,8 @@ public class Schedule {
          * @return true if this entry contains the other entry (by time range; types are omitted), false otherwise
          */
         default boolean contains(Entry other) {
-            return !this.getBeginTime().isAfter(other.getBeginTime())
-                && !this.getEndTime().isBefore(other.getEndTime());
+            return !this.getBeginInstant().isAfter(other.getBeginInstant())
+                && !this.getEndInstant().isBefore(other.getEndInstant());
         }
     }
 
@@ -392,8 +381,8 @@ public class Schedule {
     @Table(name = "schedule_simple_entries")
     @NamedQueries({
             @NamedQuery(name = "ScheduleSimpleEntries.forUser.betweenDates", query = """
-                    FROM Schedule$SimpleEntry e WHERE e.user.id = :user_id AND :from < e.endTime AND e.beginTime < :to
-                    ORDER BY e.beginTime
+                    FROM Schedule$SimpleEntry e WHERE e.user.id = :user_id AND :from < e.end AND e.begin < :to
+                    ORDER BY e.begin
                     """),
     })
     @NamedNativeQueries({
@@ -406,8 +395,8 @@ public class Schedule {
             @SqlResultSetMapping(name = "schedule_busy_view", classes = {
                     @ConstructorResult(targetClass = SimpleEntry.class, columns = {
                             @ColumnResult(name = "user_id",    type = Integer.class),
-                            @ColumnResult(name = "begin_time", type = Instant.class),
-                            @ColumnResult(name = "end_time",   type = Instant.class),
+                            @ColumnResult(name = "begin_time", type = ZonedDateTime.class),
+                            @ColumnResult(name = "end_time",   type = ZonedDateTime.class),
                             @ColumnResult(name = "type",       type = String.class), // custom enum
                     })
             }),
@@ -454,24 +443,24 @@ public class Schedule {
         }
 
         @Column(nullable = false)
-        protected Instant beginTime;
+        protected Instant begin;
         @Override
-        public Instant getBeginTime() {
-            return beginTime;
+        public Instant getBeginInstant() {
+            return begin;
         }
-        public void setBeginTime(Instant beginTime) {
-            this.beginTime = beginTime;
+        public void setBegin(Instant begin) {
+            this.begin = begin;
             // TODO: swap dates if ordering is invalid
         }
 
         @Column(nullable = false)
-        protected Instant endTime;
+        protected Instant end;
         @Override
-        public Instant getEndTime() {
-            return endTime;
+        public Instant getEndInstant() {
+            return end;
         }
-        public void setEndTime(Instant endTime) {
-            this.endTime = endTime;
+        public void setEndInstant(Instant end) {
+            this.end = end;
             // TODO: swap dates if ordering is invalid
         }
 
@@ -503,10 +492,10 @@ public class Schedule {
         // Empty constructor is required for JPA standard.
         public SimpleEntry() {}
 
-        public SimpleEntry(Entry.Type type, Instant beginTime, Instant endTime) {
+        public SimpleEntry(Entry.Type type, Instant begin, Instant end) {
             this.type = type;
-            this.beginTime = beginTime;
-            this.endTime = endTime;
+            this.begin = begin;
+            this.end = end;
         }
 
         /**
@@ -516,8 +505,8 @@ public class Schedule {
         @SuppressWarnings("unused")
         private SimpleEntry(Integer user_id, Instant begin_time, Instant end_time, String type) {
             this.type = Entry.Type.valueOf(type);
-            this.beginTime = begin_time;
-            this.endTime = end_time;
+            this.begin = begin_time;
+            this.end = end_time;
             // TODO: how to set use here? anyways, it's not like it's really needed anyways, as it's immutable entry
         }
     }

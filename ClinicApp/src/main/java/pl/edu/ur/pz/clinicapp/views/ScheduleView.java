@@ -7,6 +7,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.input.MouseButton;
 import javafx.scene.text.Text;
+import org.jetbrains.annotations.Nullable;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
@@ -238,39 +239,43 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
         }
     }
 
-    protected void goToEntryDetails(WeekPane.Entry entry) {
-        if (entry instanceof Appointment appointment) {
-            getParentController().goToView(
-                    MainWindowController.Views.VISIT_DETAILS,
-                    VisitsDetailsView.Mode.DETAILS,
-                    appointment
-            );
-        } else if (entry instanceof Schedule.SimpleEntry simpleEntry) {
-            showAddOrEditSimpleEntryDialog(simpleEntry);
-        } else if (entry instanceof Schedule.ProxyWeekPaneEntry proxyEntry) {
-            goToEntryDetails(proxyEntry.getOriginal());
+    protected void goToEntryDetails(WeekPane.Entry weekPaneEntry) {
+        if (weekPaneEntry instanceof Schedule.ScheduleWeekPaneEntry proxy) {
+            final var scheduleEntry = proxy.getScheduleEntry();
+            if (scheduleEntry instanceof Appointment appointment) {
+                getParentController().goToView(
+                        MainWindowController.Views.VISIT_DETAILS,
+                        VisitsDetailsView.Mode.DETAILS,
+                        appointment
+                );
+            } else if (scheduleEntry instanceof Schedule.SimpleEntry) {
+                showAddOrEditSimpleEntryDialog(proxy);
+            }
         }
     }
 
-    protected void showAddOrEditSimpleEntryDialog(Schedule.SimpleEntry simpleEntry) {
+    protected void showAddOrEditSimpleEntryDialog(@Nullable Schedule.ScheduleWeekPaneEntry weekPaneEntry) {
         // TODO: warning about editing past/already expired time?
 
         /* Persisting changes is managed by the dialog itself here.
          */
-        final var dialog = new ScheduleSimpleEntryEditDialog(simpleEntry, schedule);
-        if (simpleEntry == null) {
+        ScheduleSimpleEntryEditDialog dialog;
+        if (weekPaneEntry == null) {
+            dialog = new ScheduleSimpleEntryEditDialog(null, schedule);
             dialog.populate(nullCoalesce(getSelectedDateTime(), LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)));
+        } else {
+            dialog = new ScheduleSimpleEntryEditDialog((Schedule.SimpleEntry) weekPaneEntry.getScheduleEntry(), schedule);
         }
         dialog.showAndWait();
         switch (dialog.getState()) {
             case NEW_COMMITTED -> {
-                weekPane.getEntries().add(dialog.getEntry());
+                weekPane.getEntries().add(new Schedule.ScheduleWeekPaneEntry(dialog.getEntry()));
             }
             case EDIT_COMMITTED -> {
-                weekPane.refreshEntry(simpleEntry);
+                weekPane.refreshEntry(weekPaneEntry);
             }
             case DELETE_COMMITTED -> {
-                weekPane.getEntries().remove(dialog.getEntry());
+                weekPane.getEntries().remove(weekPaneEntry);
             }
         }
     }

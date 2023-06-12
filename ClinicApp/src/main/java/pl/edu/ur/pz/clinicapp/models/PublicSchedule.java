@@ -51,8 +51,8 @@ public class PublicSchedule extends Schedule {
             @Override
             public Entry next() {
                 final var vague = entriesIterator.next();
-                if (vague.getBeginTime().equals(detailed.getBeginTime())
-                        && vague.getEndTime().equals(detailed.getEndTime())
+                if (vague.getBeginInstant().equals(detailed.getBeginInstant())
+                        && vague.getEndInstant().equals(detailed.getEndInstant())
                         && vague.getType().equals(detailed.getType())) {
                     final var ret = detailed;
                     detailed = next();

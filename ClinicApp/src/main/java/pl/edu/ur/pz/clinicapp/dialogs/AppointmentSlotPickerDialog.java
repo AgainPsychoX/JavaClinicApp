@@ -6,6 +6,7 @@ import pl.edu.ur.pz.clinicapp.models.Schedule;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.logging.Logger;
 
@@ -38,24 +39,25 @@ public class AppointmentSlotPickerDialog extends ScheduleSlotPickerDialog {
 
     @Override
     protected boolean validate() {
-        final var minutes = selectionScheduleEntry.getDurationMinutes();
-        if (minutes < 5) {
+        final var durationAsMinutes = selectionScheduleEntry.getDuration().toMinutes();
+        if (durationAsMinutes < 5) {
             setExtraTextBelow("Minimalna długość wizyty to 5 minut.");
             return false;
         }
-        if (12 * 60 < minutes) {
+        if (12 * 60 < durationAsMinutes) {
             setExtraTextBelow("Maksymalna długość wizyty to 12 godzin.");
             return false;
         }
 
-        if (selectionScheduleEntry.doesCrossDays()) {
+        if (selectionScheduleEntry.doesCrossDays(ZoneId.systemDefault())) {
             setExtraTextBelow("Wizyta nie może być rozłożona na wiele dni.");
             return false;
         }
 
         // TODO: allow owner & admin unlimited
         final var maxDaysInAdvance = getDoctor().getMaxDaysInAdvance();
-        if (selectionScheduleEntry.getEndTime().isAfter(ZonedDateTime.now().plusDays(maxDaysInAdvance).toInstant())) {
+        final var lastDateInAdvance = ZonedDateTime.now().plusDays(maxDaysInAdvance);
+        if (selectionScheduleEntry.getEndInstant().isAfter(lastDateInAdvance.toInstant())) {
             setExtraTextBelow("Doktor nie pozwala umawiać wizyty dalej niż %d dni.".formatted(maxDaysInAdvance));
             return false;
         }
@@ -69,7 +71,7 @@ public class AppointmentSlotPickerDialog extends ScheduleSlotPickerDialog {
         }
 
         final var validationStatus = Appointment.validateNewAppointment(null, getDoctor(),
-                selectionScheduleEntry.getBeginTime(), selectionScheduleEntry.getDuration());
+                selectionScheduleEntry.getBeginInstant(), selectionScheduleEntry.getDuration());
         if (validationStatus != Appointment.NewAppointmentValidationStatus.GOOD) {
             logger.finest("Validation failed, error code: " + validationStatus);
             switch (validationStatus) {

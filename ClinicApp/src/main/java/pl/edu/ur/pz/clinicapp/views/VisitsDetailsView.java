@@ -376,7 +376,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
         dialog.showAndWait();
         final var selection = dialog.getResult();
         if (selection.isPresent()) {
-            final var begin = selection.get().getBeginTime().atZone(ZoneId.systemDefault());
+            final var begin = selection.get().getBeginInstant().atZone(ZoneId.systemDefault());
             // TODO: use one picker for both point and duration
             pickedDate.setText(begin.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
             timestamp = Timestamp.valueOf(begin.toLocalDateTime());

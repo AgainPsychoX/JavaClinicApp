@@ -104,22 +104,22 @@ $$;
 
 -- View to provide info about schedule entries of users with schedules (doctors) without leaking details.
 CREATE OR REPLACE VIEW schedule_busy_view AS
-    SELECT user_id, begin_time, end_time, type FROM schedule_simple_entries WHERE type NOT IN ('OPEN', 'EXTRA')
+    SELECT user_id, "begin", "end", type FROM schedule_simple_entries WHERE type NOT IN ('OPEN', 'EXTRA')
     UNION
         SELECT
             patient_id AS user_id,
-            date AS begin_time,
-            (date + duration * INTERVAL '1 minute') AS end_time,
+            date AS "begin",
+            (date + duration * INTERVAL '1 minute') AS "end",
             'APPOINTMENT'::schedule_simple_entry_type AS type
         FROM appointments
     UNION
         SELECT
             doctor_id AS user_id,
-            date AS begin_time,
-            (date + duration * INTERVAL '1 minute') AS end_time,
+            date AS "begin",
+            (date + duration * INTERVAL '1 minute') AS "end",
             'APPOINTMENT'::schedule_simple_entry_type AS type
         FROM appointments
-    ORDER BY user_id, begin_time
+    ORDER BY user_id, "begin"
 ;
 
 GRANT SELECT ON schedule_busy_view TO PUBLIC;
@@ -143,13 +143,13 @@ $$;
 GRANT EXECUTE ON FUNCTION public.get_effective_timetable TO PUBLIC;
 
 -- Function to validate new appointment addition
-CREATE OR REPLACE FUNCTION public.validate_new_appointment(p_patient_id INTEGER, p_doctor_id INTEGER, p_begin_time TIMESTAMP, p_duration INTEGER)
+CREATE OR REPLACE FUNCTION public.validate_new_appointment(p_patient_id INTEGER, p_doctor_id INTEGER, p_begin TIMESTAMP, p_duration INTEGER)
     RETURNS INTEGER
     LANGUAGE plpgsql
     SECURITY DEFINER
 AS $$
     DECLARE
-        v_end_time TIMESTAMP;
+        v_end TIMESTAMP;
         v_doctor_timetable RECORD;
         v_start_minute INTEGER;
         v_end_minute INTEGER;
@@ -159,14 +159,14 @@ AS $$
             RETURN 1; -- Duration must be at least 5 minutes and max 12 hours
         END IF;
 
-        v_end_time := p_begin_time + p_duration * INTERVAL '1 minute';
+        v_end := p_begin + p_duration * INTERVAL '1 minute';
         SELECT max_days_in_advance INTO v_max_days_in_advance FROM doctors WHERE id = p_doctor_id;
-        IF CURRENT_TIMESTAMP + (v_max_days_in_advance * INTERVAL '1 day') < v_end_time THEN
+        IF CURRENT_TIMESTAMP + (v_max_days_in_advance * INTERVAL '1 day') < v_end THEN
             RETURN 2; -- Cannot add appointments beyond max days in advance specified by the doctor
         END IF;
 
-        v_doctor_timetable := public.get_effective_timetable(p_doctor_id, p_begin_time);
-        IF v_doctor_timetable != public.get_effective_timetable(p_doctor_id, p_end_time) THEN
+        v_doctor_timetable := public.get_effective_timetable(p_doctor_id, p_begin);
+        IF v_doctor_timetable != public.get_effective_timetable(p_doctor_id, v_end) THEN
             RETURN 3; -- Appointment cannot span over multiple timetables
         END IF;
 
@@ -183,7 +183,7 @@ AS $$
             AND NOT EXISTS (
                 SELECT 1 FROM schedule_simple_entries
                 WHERE user_id = p_doctor_id
-                    AND begin_time <= p_begin_time AND p_begin_time <= end_time
+                    AND "begin" <= p_begin AND p_begin <= "end"
                     AND type = 'EXTRA'
             )
         ) THEN
@@ -192,7 +192,7 @@ AS $$
 
         IF EXISTS (
             SELECT 1 FROM schedule_busy_view
-            WHERE user_id = p_doctor_id AND (begin_time, end_time) OVERLAPS (p_begin_time, p_end_time)
+            WHERE user_id = p_doctor_id AND ("begin", "end") OVERLAPS (p_begin, v_end)
         ) THEN
             RETURN 5; -- Doctor is busy already
         END IF;

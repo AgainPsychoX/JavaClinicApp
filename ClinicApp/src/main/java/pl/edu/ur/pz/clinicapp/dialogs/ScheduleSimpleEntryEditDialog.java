@@ -63,7 +63,7 @@ public class ScheduleSimpleEntryEditDialog extends BaseEditDialog {
      * @param entry Entry to affect, or null for creating new entry.
      * @param schedule Schedule to affect.
      */
-    public ScheduleSimpleEntryEditDialog(Schedule.SimpleEntry entry, Schedule schedule) {
+    public ScheduleSimpleEntryEditDialog(@Nullable Schedule.SimpleEntry entry, Schedule schedule) {
         super(ClinicApplication.class.getResource("dialogs/ScheduleSimpleEntryEditDialog.fxml"),
                 entry == null ? Mode.NEW : Mode.EDIT);
 
@@ -118,8 +118,8 @@ public class ScheduleSimpleEntryEditDialog extends BaseEditDialog {
 
     public void populate(Schedule.SimpleEntry entry) {
         typeChoiceBox.setValue(entry.getType());
-        beginDateTimePicker.setDateTimeValue(entry.getBeginTime().atZone(ZoneId.systemDefault()).toLocalDateTime());
-        endDateTimePicker.setDateTimeValue(entry.getEndTime().atZone(ZoneId.systemDefault()).toLocalDateTime());
+        beginDateTimePicker.setDateTimeValue(entry.getBeginInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+        endDateTimePicker.setDateTimeValue(entry.getEndInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
     }
 
     public void populate(LocalDateTime time) {
@@ -136,11 +136,23 @@ public class ScheduleSimpleEntryEditDialog extends BaseEditDialog {
 
     protected void openDialogToPickTimeRange() {
         final var dialog = new ScheduleSlotPickerDialog(
-                schedule, beginDateTimePicker.getDateTimeValue(), endDateTimePicker.getDateTimeValue());
+                schedule, beginDateTimePicker.getDateTimeValue(), endDateTimePicker.getDateTimeValue()) {
+            @Override
+            protected boolean validate() {
+                final var durationAsMinutes = selectionScheduleEntry.getDuration().toMinutes();
+                if (durationAsMinutes < 5) {
+                    setExtraTextBelow("Minimalna długość wpisu to 5 minut.");
+                    return false;
+                }
+
+                return super.validate();
+            }
+        };
         dialog.showAndWait();
         dialog.getResult().ifPresent(entry -> {
-            beginDateTimePicker.setDateTimeValue(entry.getBeginTime().atZone(ZoneId.systemDefault()).toLocalDateTime());
-            endDateTimePicker.setDateTimeValue(entry.getEndTime().atZone(ZoneId.systemDefault()).toLocalDateTime());
+            final var zone = ZoneId.systemDefault();
+            beginDateTimePicker.setDateTimeValue(entry.getBeginInstant().atZone(zone).toLocalDateTime());
+            endDateTimePicker.setDateTimeValue(entry.getEndInstant().atZone(zone).toLocalDateTime());
         });
     }
 
@@ -160,9 +172,11 @@ public class ScheduleSimpleEntryEditDialog extends BaseEditDialog {
         }
 
         transaction(em -> {
+            final var zone = ZoneId.systemDefault();
+
             entry.setType(typeChoiceBox.getValue());
-            entry.setBeginTime(beginDateTimePicker.getDateTimeValue().atZone(ZoneId.systemDefault()).toInstant());
-            entry.setEndTime(endDateTimePicker.getDateTimeValue().atZone(ZoneId.systemDefault()).toInstant());
+            entry.setBegin(beginDateTimePicker.getDateTimeValue().atZone(zone).toInstant());
+            entry.setEndInstant(endDateTimePicker.getDateTimeValue().atZone(zone).toInstant());
             entry.setUser(schedule.getUserReference().asUser());
 
             if (entry.getId() == null) {

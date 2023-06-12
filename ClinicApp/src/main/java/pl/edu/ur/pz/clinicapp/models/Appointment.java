@@ -5,6 +5,7 @@ import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import javax.persistence.*;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
 
 /**
  * Model representing patient registered visit to clinic to see selected doctor.
@@ -39,7 +40,7 @@ import java.time.Instant;
 @NamedNativeQueries({
         @NamedNativeQuery(
                 name = "validate_new_appointment",
-                query = "SELECT validate_new_appointment(:patient_id, :doctor_id, :begin_date, :duration)"
+                query = "SELECT validate_new_appointment(:patient_id, :doctor_id, :begin, :duration)"
         ),
         // TODO: use Hibernate `persist` (or `merge`) to insert/update and `remove` to delete
         @NamedNativeQuery(
@@ -79,16 +80,17 @@ public class Appointment extends MedicalHistoryEntry implements Schedule.Entry {
      * Validates schedule-sensitive fields for potential new appointment.
      * @param patient related patient (if null, tries to validate patient-independently)
      * @param doctor related doctor
-     * @param beginTime begin time of the potential slot in the schedule
+     * @param beginInstant timestamp of beginning of the potential slot in the schedule
      * @param duration requested (expected) duration
      * @return 0 if good, non-zero error code otherwise.
      */
-    public static NewAppointmentValidationStatus validateNewAppointment(Patient patient, Doctor doctor, Instant beginTime, Duration duration) {
+    public static NewAppointmentValidationStatus validateNewAppointment(
+            Patient patient, Doctor doctor, Instant begin, Duration duration) {
         final var query = ClinicApplication.getEntityManager()
                 .createNamedQuery("validate_new_appointment", Integer.class);
         query.setParameter("patient_id", patient == null ? 0 : patient.getId());
         query.setParameter("doctor_id", doctor.getId());
-        query.setParameter("begin_date", beginTime);
+        query.setParameter("begin", begin);
         query.setParameter("duration", duration.toMinutes());
         return NewAppointmentValidationStatus.values()[query.getSingleResult()];
     }
@@ -134,11 +136,11 @@ public class Appointment extends MedicalHistoryEntry implements Schedule.Entry {
     }
 
     @Override
-    public Instant getBeginTime() {
+    public Instant getBeginInstant() {
         return getDate();
     }
     @Override
-    public Instant getEndTime() {
+    public Instant getEndInstant() {
         return getDate().plus(getDuration());
     }
 
@@ -148,7 +150,7 @@ public class Appointment extends MedicalHistoryEntry implements Schedule.Entry {
     }
 
     @Override
-    public boolean doesCrossDays() {
+    public boolean doesCrossDays(ZoneId zone) {
         return false;
     }
 }

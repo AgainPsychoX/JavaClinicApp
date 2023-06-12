@@ -61,32 +61,6 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             return LocalTime.of(endMinute / 60, endMinute % 60);
         }
 
-        /**
-         * Calculates potential entry start moment as zoned date time, asserting it's the same the day of week.
-         * @param date Date & zone to be used.
-         * @return Zoned date time for potential entry start.
-         */
-        default ZonedDateTime calculatePotentialStartAtDate(ZonedDateTime date) {
-            assert date.getDayOfWeek() == getDayOfWeek();
-            final var startMinute = getStartMinute();
-            return date.toLocalDate()
-                    .atTime(startMinute / 60, startMinute % 60)
-                    .atZone(date.getZone());
-        }
-
-        /**
-         * Calculates potential entry end moment as zoned date time, asserting it's the same the day of week.
-         * @param date Date & zone to be used.
-         * @return Zoned date time for potential entry end.
-         */
-        default ZonedDateTime calculatePotentialEndAtDate(ZonedDateTime date) {
-            assert date.getDayOfWeek() == getDayOfWeek();
-            final var endMinute = getEndMinute();
-            return date.toLocalDate()
-                    .atTime(endMinute / 60, endMinute % 60)
-                    .atZone(date.getZone());
-        }
-
         default LocalDateTime calculatePotentialStartInWeek(LocalDate mondayDate) {
             return mondayDate.atStartOfDay()
                     .plusDays(getDayOfWeek().ordinal()).plusMinutes(getStartMinute());

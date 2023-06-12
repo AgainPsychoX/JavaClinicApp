@@ -12,6 +12,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
@@ -101,15 +102,13 @@ public class ScheduleSlotPickerDialog extends Stage {
             public void updateItem(WeekPane.Entry item, boolean empty) {
                 super.updateItem(item, empty);
 
-                Schedule.Entry original = null;
-                if (item instanceof Schedule.ProxyWeekPaneEntry proxy) {
-                    original = proxy.getOriginal();
-                } else if (item instanceof Schedule.Entry entry) {
-                    original = entry;
-                }
-                if (original instanceof SelectionEntry) {
-                    getStyleClass().add("selection");
-                    setText("");
+                if (item instanceof Schedule.ScheduleWeekPaneEntry proxy) {
+                    final var scheduleEntry = proxy.getScheduleEntry();
+                    if (scheduleEntry instanceof SelectionEntry) {
+                        setTextAlignment(TextAlignment.CENTER);
+                        getStyleClass().add("selection");
+                        setText("");
+                    }
                 }
             }
         });
@@ -175,28 +174,13 @@ public class ScheduleSlotPickerDialog extends Stage {
         }
 
         @Override
-        public Instant getBeginTime() {
+        public Instant getBeginInstant() {
             return getBeginDateTime().atZone(ZoneId.systemDefault()).toInstant();
         }
 
         @Override
-        public int getStartMinute() {
-            return beginTimeSpinner.getValue().toSecondOfDay() / 60;
-        }
-
-        @Override
-        public Instant getEndTime() {
+        public Instant getEndInstant() {
             return getEndDateTime().atZone(ZoneId.systemDefault()).toInstant();
-        }
-
-        @Override
-        public int getEndMinute() {
-            if (beginDatePicker.getValue().equals(endDatePicker.getValue())) {
-                return endTimeSpinner.getValue().toSecondOfDay() / 60;
-            }
-            else {
-                return 1440;
-            }
         }
     }
 
@@ -210,7 +194,7 @@ public class ScheduleSlotPickerDialog extends Stage {
 
     /**
      * List of {@link WeekPane.Entry}ies currently used to represent the selected range on the week pane.
-     * Might include one original {@link Schedule.Entry} and many {@link Schedule.ProxyWeekPaneEntry}ies.
+     * Might include one original {@link Schedule.Entry} and many {@link Schedule.ScheduleWeekPaneEntry}ies.
      * Should be kept in natural order.
      */
     private List<WeekPane.Entry> selectionWeekPaneEntries;
@@ -249,7 +233,11 @@ public class ScheduleSlotPickerDialog extends Stage {
      */
     protected void refreshFirstWeekPaneEntry() {
         logger.finest("Refreshing first entry");
-        weekPane.refreshEntry(selectionScheduleEntry);
+        final var first = selectionWeekPaneEntries.get(0);
+        if (first instanceof Schedule.ScheduleWeekPaneEntry entry) {
+            entry.startMinute = beginTimeSpinner.getValue().toSecondOfDay() / 60;
+        }
+        weekPane.refreshEntry(first);
     }
 
     /**
@@ -258,8 +246,8 @@ public class ScheduleSlotPickerDialog extends Stage {
     protected void refreshLastWeekPaneEntry() {
         logger.finest("Refreshing last entry");
         final var last = selectionWeekPaneEntries.get(selectionWeekPaneEntries.size() - 1);
-        if (last instanceof Schedule.ProxyWeekPaneEntry proxy) {
-            proxy.endMinute = endTimeSpinner.getValue().toSecondOfDay() / 60;
+        if (last instanceof Schedule.ScheduleWeekPaneEntry entry) {
+            entry.endMinute = endTimeSpinner.getValue().toSecondOfDay() / 60;
         }
         weekPane.refreshEntry(last);
     }
@@ -438,20 +426,17 @@ public class ScheduleSlotPickerDialog extends Stage {
      * @return stream of the overlapping entries from currently selected week
      */
     protected Stream<Schedule.Entry> getEarlyOverlapping() {
-        return weekPane.getEntries().stream().map((Function<WeekPane.Entry, Optional<Schedule.Entry>>) entry -> {
-            Schedule.Entry original;
-            if (entry instanceof Schedule.ProxyWeekPaneEntry proxy) {
-                original = proxy.getOriginal();
-            } else if (entry instanceof Schedule.SimpleEntry simple) {
-                original = simple;
-            } else {
-                assert entry == selectionScheduleEntry;
-                return Optional.empty();
-            }
+        return weekPane.getEntries().stream().map((Function<WeekPane.Entry, Optional<Schedule.Entry>>) weekPaneEntry -> {
+            if (weekPaneEntry instanceof Schedule.ScheduleWeekPaneEntry proxy) {
+                Schedule.Entry scheduleEntry = proxy.getScheduleEntry();
 
-            if (selectionScheduleEntry.overlaps(original)) {
-                return Optional.of(original);
+                if (selectionScheduleEntry != scheduleEntry && selectionScheduleEntry.overlaps(scheduleEntry)) {
+                    return Optional.of(scheduleEntry);
+                } else {
+                    return Optional.empty();
+                }
             } else {
+                assert false;
                 return Optional.empty();
             }
         }).flatMap(Optional::stream);
