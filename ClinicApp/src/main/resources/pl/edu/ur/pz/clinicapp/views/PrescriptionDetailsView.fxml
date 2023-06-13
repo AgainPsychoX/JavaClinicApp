@@ -14,7 +14,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<VBox  maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="4.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.PrescriptionDetailsView">
+<VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="4.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.PrescriptionDetailsView">
     <children>
         <Text fill="#4d89ff" layoutX="18.0" layoutY="35.0" onMouseClicked="#onBackClick" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="back-text" text="&lt;  Powrót do recept" wrappingWidth="164.8984375">
             <font>
@@ -109,7 +109,7 @@
             <children>
             <HBox fx:id="buttonBox" alignment="CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
                <children>
-                  <Button fx:id="editButton" mnemonicParsing="false" onAction="#editSave" prefWidth="200.0" text="Edytuj" HBox.hgrow="ALWAYS">
+                  <Button fx:id="editButton" mnemonicParsing="false" onAction="#editSave" prefWidth="200.0" styleClass="my-primary-button" text="Edytuj" HBox.hgrow="ALWAYS">
                      <padding>
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>
@@ -117,17 +117,17 @@
                         <Insets left="4.0" />
                      </HBox.margin>
                   </Button>
-                  <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#deletePrescription" prefWidth="200.0" text="Anuluj receptę" HBox.hgrow="ALWAYS">
+                  <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#deletePrescription" prefWidth="200.0" styleClass="my-primary-button" text="Anuluj receptę" HBox.hgrow="ALWAYS">
                      <padding>
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>
                   </Button>
-                       <Button mnemonicParsing="false" onAction="#prescriptionReport" prefWidth="200.0" text="Drukuj" HBox.hgrow="ALWAYS">
+                       <Button mnemonicParsing="false" onAction="#prescriptionReport" prefWidth="200.0" styleClass="my-primary-button" text="Drukuj" HBox.hgrow="ALWAYS">
                      <padding>
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>
                   </Button>
-                  <Button mnemonicParsing="false" onAction="#sendToIKP" prefWidth="200.0" text="Przejdż do IKP" HBox.hgrow="ALWAYS">
+                  <Button mnemonicParsing="false" onAction="#sendToIKP" prefWidth="200.0" styleClass="my-primary-button" text="Przejdż do IKP" HBox.hgrow="ALWAYS">
                      <padding>
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>

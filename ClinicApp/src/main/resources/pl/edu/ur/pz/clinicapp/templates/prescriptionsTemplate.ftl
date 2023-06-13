@@ -81,7 +81,7 @@
                                 </#list>
                             </td>
                         <#elseif field == "addedDate">
-                            <td>${formattedAddedDate}</td>
+                            <td>${prescription.getAddedDateFormatted()}</td>
                         <#else>
                             <td>${prescription[field]?default('')}</td>
                         </#if>

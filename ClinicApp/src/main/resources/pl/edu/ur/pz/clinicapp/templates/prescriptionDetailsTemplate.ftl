@@ -73,7 +73,7 @@
         <div class="codeDate">
             <h3>
                 Kod recepty: <b>${prescription.governmentId}</b>
-                <p>Wystawiono: <b>${formattedAddedDate}</b></p>
+                <p>Wystawiono: <b>${prescription.getAddedDateFormatted()}</b></p>
             </h3>
         </div>
         <div class="person">

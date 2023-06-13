@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -39,7 +40,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     @FXML protected VBox vBox;
     @FXML protected TableView<Prescription> table;
     @FXML protected TableColumn<Prescription, String> patientCol;
-    @FXML protected TableColumn<Prescription, String> dateCol;
+    @FXML protected TableColumn<Prescription, LocalDate> dateCol;
     @FXML protected TableColumn<Prescription, String> doctorCol;
     @FXML protected TableColumn<Prescription, String> codeCol;
     @FXML protected TableColumn<Prescription, String> tagsCol;
@@ -112,7 +113,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
         patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatientName()));
         codeCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getGovernmentId()));
         tagsCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getTags()));
-        dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddedDate().toString()));
+        dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddedDateFormatted()));
 
         table.getSelectionModel().selectedItemProperty().addListener(observable ->
                 detailsButton.setDisable(table.getSelectionModel().getSelectedItem() == null));
