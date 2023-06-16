@@ -106,7 +106,6 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
     Query editQuery = session.getNamedQuery("editReferral");
     Query deleteQuery = session.getNamedQuery("deleteReferral");
     private Referral ref;
-    private boolean isTarget;
 
     private static BooleanProperty editState = new SimpleBooleanProperty(false);
     private Patient targetPatient;
@@ -140,12 +139,12 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
         if (editState.getValue()) {
             if (exitConfirm()) {
                 editState.setValue(!editState.getValue());
-                if (isTarget) {
+                if (targetPatient!=null) {
                     this.getParentController().goToView(MainWindowController.Views.REFERRALS, targetPatient);
                 } else this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
             }
         } else {
-            if (isTarget) {
+            if (targetPatient!=null) {
                 this.getParentController().goToView(MainWindowController.Views.REFERRALS, targetPatient);
             } else this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
         }
@@ -166,7 +165,6 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
      */
     @Override
     public void populate(Object... context) {
-        isTarget = context.length > 2;
         if(context.length > 2) targetPatient = ((Patient) context[2]);
         editState.addListener(new ChangeListener<Boolean>() {
             @Override
@@ -464,7 +462,7 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
             exit.setContentText("Usunięto wybrane skierowanie.");
             exit.showAndWait();
 
-            if (isTarget) {
+            if (targetPatient!=null) {
                 this.getParentController().goToView(MainWindowController.Views.REFERRALS, targetPatient);
             } else this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
         } else {

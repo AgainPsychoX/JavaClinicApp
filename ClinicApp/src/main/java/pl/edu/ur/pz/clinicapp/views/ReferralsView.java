@@ -25,6 +25,7 @@ import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.List;
 
@@ -33,6 +34,8 @@ import java.util.List;
  */
 public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
+    @FXML
+    protected HBox backBox;
     @FXML
     protected Text backText;
     @FXML
@@ -52,7 +55,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
     @FXML
     protected TableView<Referral> table;
     @FXML
-    protected TableColumn<Referral, Timestamp> fulDateCol;
+    protected TableColumn<Referral, LocalDate> fulDateCol;
     @FXML
     protected TableColumn<Referral, String> interestCol;
     @FXML
@@ -64,7 +67,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
     @FXML
     protected TableColumn<Referral, String> codeCol;
     @FXML
-    protected TableColumn<Referral, Timestamp> dateCol;
+    protected TableColumn<Referral, LocalDate> dateCol;
     @FXML
     protected TableColumn<Referral, String> doctorCol;
     @FXML
@@ -147,11 +150,11 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         if (targetPatient != null) {
             buttonBox.getChildren().add(detailsButton);
             if (!(currUserRole == User.Role.RECEPTION)) buttonBox.getChildren().add(addButton);
-            if (!vBox.getChildren().contains(backText)) vBox.getChildren().add(1, backText);
+            if (!vBox.getChildren().contains(backBox)) vBox.getChildren().add(0, backBox);
             backText.setText("< Powrót do pacjenta " + targetPatient.getDisplayName());
         } else {
             buttonBox.getChildren().add(detailsButton);
-            vBox.getChildren().remove(backText);
+            vBox.getChildren().remove(backBox);
         }
 
         session = ClinicApplication.getEntityManager().unwrap(Session.class);
@@ -166,8 +169,8 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
 
         table.getSelectionModel().clearSelection();
 
-        dateCol.setCellValueFactory(new PropertyValueFactory<>("addedDate"));
-        fulDateCol.setCellValueFactory(new PropertyValueFactory<>("fulfilmentDate"));
+        dateCol.setCellValueFactory(new PropertyValueFactory<>("addedDateFormatted"));
+        fulDateCol.setCellValueFactory(new PropertyValueFactory<>("fulfilmentDateFormatted"));
         interestCol.setCellValueFactory(new PropertyValueFactory<>("pointOfInterest"));
         patientCol.setCellValueFactory(new PropertyValueFactory<>("patientName"));
         doctorCol.setCellValueFactory(new PropertyValueFactory<>("doctorName"));

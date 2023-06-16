@@ -31,6 +31,7 @@ public class WeekPaneSelectionModel<T extends WeekPane.Entry> extends SingleSele
 
     @Override
     protected T getModelItem(int index) {
+        if (index == -1) return null;
         return weekPane.getEntries().get(index);
     }
 
@@ -39,7 +40,7 @@ public class WeekPaneSelectionModel<T extends WeekPane.Entry> extends SingleSele
         return weekPane.getEntries().size();
     }
 
-    public void select(WeekPane.EntryCell<T> cell) {
+    public void selectCell(WeekPane.EntryCell<T> cell) {
         select(cell.getItem());
     }
 }

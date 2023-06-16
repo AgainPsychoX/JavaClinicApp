@@ -15,8 +15,10 @@ import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneSelectionModel;
 import pl.edu.ur.pz.clinicapp.dialogs.TimetableEntryEditDialog;
+import pl.edu.ur.pz.clinicapp.models.Doctor;
 import pl.edu.ur.pz.clinicapp.models.Timetable;
 import pl.edu.ur.pz.clinicapp.models.User;
+import pl.edu.ur.pz.clinicapp.models.UserReference;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DirtyFixes;
 import pl.edu.ur.pz.clinicapp.utils.DurationUtils;
@@ -25,33 +27,20 @@ import pl.edu.ur.pz.clinicapp.utils.InteractionGuard;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.*;
 import java.util.logging.Logger;
 
 import static pl.edu.ur.pz.clinicapp.utils.JPAUtils.transaction;
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
 
-/* TODO:
- *  steps:
- *      0. map FXML elements as fields -- DONE
- *      1. base modes switching -- DONE
- *      2. navigate timetables --- DONE
- *      3. dialog to add/edit/remove entries (reuse pattern from old project) --- DONE
- *      4. warning for unsaved changes (add fresh/dirty tracking)
- *      5. double click (or enter on focused) entry to edit --- DONE
- *      6. properly make use of populate interface -- DONE?
- *      7. finishing touches (like jumping to schedule)
- *  long term steps:
- *      + new timetable should base of the current selected one?
- *      + reuse view as schedule
- *      + early merge
- *      + fix user-patient-doctor dilemmas and permission issues
- *      + SQL side implementation of schedule checks
- *      + unit testing for timetable/schedules
- *      + enforce UI/UX consistency and code quality again (maybe tweak auto-formatting tool?)
+/* TODO (some also applies to ScheduleView, might require abstracting away):
+ *  + warning for unsaved changes (add fresh/dirty tracking)
+ *  + abstract away WeekPane.SelectableEntryCell, move weekPaneSelectionModel field into WeekPane?
+ *  + tab traversable entries & other keyboard accessibility
+ *  + new timetable should base of the current selected one?
+ *  + make date pickers week start on monday: https://stackoverflow.com/questions/70083214/how-to-make-monday-start-day-in-datepicker-calendar-java-javafx
+ *  * unlock week pane start hour
  */
 
 /**
@@ -104,9 +93,12 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
                         final var entry = getItem();
                         weekPaneSelectionModel.select(entry);
                         if (event.getClickCount() == 2) {
-                            if (getMode() == Mode.EDIT) {
-                                showAddOrEditEntryDialog(entry);
+                            if (interactionGuard.begin()) return;
+                            if (getMode() != Mode.EDIT) {
+                                setMode(Mode.EDIT);
                             }
+                            showAddOrEditEntryDialog(entry);
+                            interactionGuard.end();
                         }
                     }
                 });
@@ -125,17 +117,17 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
                 super.updateItem(item, empty);
 
                 setTextAlignment(TextAlignment.CENTER);
-                boolean isLong = this.getPrefHeight() > 32;
 
                 if (empty || item == null) {
                     setText("?");
                 }
                 else {
+                    boolean isTall = this.getPrefHeight() > 32;
                     setText("%s - %s%s(%s)".formatted(
-                            item.startAsLocalTime().toString().replaceFirst("^0+(?!$)", ""),
-                            item.endAsLocalTime(),
-                            (isLong ? "\n" : " "),
-                            (isLong ? longDurationConverter : shortDurationConverter)
+                            item.getStartAsLocalTime().toString().replaceFirst("^0+(?!$)", ""),
+                            item.getEndAsLocalTime(),
+                            (isTall ? "\n" : " "),
+                            (isTall ? longDurationConverter : shortDurationConverter)
                                     .toString(item.getDurationMinutes() * 60 * 1000)
                     ));
                 }
@@ -189,7 +181,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
     }
 
     /**
-     * Currently selected timetable.
+     * Currently active mode.
      */
     public ReadOnlyObjectProperty<Mode> modeProperty() {
         return mode;
@@ -265,8 +257,20 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
         return timetables.get(currentTimetableIndex);
     }
 
+    protected UserReference userReference;
+
     /**
-     * Returns owner of the timetable(s). We assume every timetable in the view is related to the same user.
+     * Returns reference to owner of the timetable(s).
+     * We assume every timetable in the view is related to the same user.
+     * @return Reference to user that is owns the timetable(s).
+     */
+    public UserReference getUserReference() {
+        return userReference;
+    }
+
+    /**
+     * Returns owner of the timetable(s). Might result in privileges problems when accessing fields
+     * if currently logged-in has no permissions to access the user data.
      * @return User that is owns the timetable(s).
      */
     public User getUser() {
@@ -394,7 +398,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
      *
      * If no argument is provided, the latest timetable for current user will be shown for view. Context arguments:
      * <ol>
-     * <li>First argument can specify {@link User} (doctor) or {@link Timetable}.
+     * <li>First argument can specify {@link UserReference} (doctor) or {@link Timetable}.
      * <li>Second argument can specify {@link Mode}.
      * <li>Third argument can specify {@link ZonedDateTime}, to select effective timetable for given date.
      * </ol>
@@ -403,25 +407,25 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
      */
     @Override
     public void populate(Object... context) {
-        var user = ClinicApplication.requireUser();
+        userReference = ClinicApplication.getUser();
         var mode = Mode.VIEW;
         timetables = null;
         var preselectedIndex = -1;
         ZonedDateTime preselectedDate = null;
 
-        if (context.length >= 1) {
-            if (context[0] instanceof User x) {
-                user = x;
+        if (context.length > 0) {
+            if (context[0] instanceof UserReference x) {
+                userReference = x;
             } else if (context[0] instanceof Timetable x) {
-                user = x.getUser();
-                timetables = new ArrayList<>(user.getTimetables());
+                userReference = x.getUser();
+                timetables = new ArrayList<>(Timetable.forUser(userReference));
                 timetables.sort(Comparator.comparing(Timetable::getEffectiveDate));
                 preselectedIndex = timetables.indexOf(x);
             } else {
                 throw new IllegalArgumentException();
             }
 
-            if (context.length >= 2) {
+            if (context.length > 1) {
                 if (context[1] instanceof Mode x) {
                     mode = x;
                 } else if (context[1] instanceof Boolean x) {
@@ -431,9 +435,15 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
                     throw new IllegalArgumentException();
                 }
 
-                if (context.length >= 3) {
-                    if (context[2] instanceof ZonedDateTime x) {
-                        preselectedDate = x;
+                if (context.length > 2) {
+                    if (context[2] instanceof ZonedDateTime y) {
+                        preselectedDate = y;
+                    } else if (context[2] instanceof Instant y) {
+                        preselectedDate = y.atZone(ZoneId.systemDefault());
+                    } else if (context[2] instanceof LocalDate y) {
+                        preselectedDate = y.atStartOfDay(ZoneId.systemDefault());
+                    } else if (context[2] instanceof LocalDateTime y) {
+                        preselectedDate = y.atZone(ZoneId.systemDefault());
                     } else {
                         throw new IllegalArgumentException();
                     }
@@ -441,8 +451,12 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
             }
         }
 
+        if (userReference == null) {
+            throw new IllegalStateException();
+        }
+
         if (timetables == null) {
-            timetables = new ArrayList<>(user.getTimetables());
+            timetables = new ArrayList<>(Timetable.forUser(userReference));
             timetables.sort(Comparator.comparing(Timetable::getEffectiveDate));
         }
         if (timetables.size() == 0) {
@@ -458,12 +472,16 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
 
         setMode(mode);
 
-        if (user == ClinicApplication.getUser()) {
+        if (userReference.equals(ClinicApplication.getUser())) {
             headerText.setText("Twój harmonogram");
         } else {
-            // TODO: doctor speciality in braces
-            headerText.setText("Harmonogram dla %s".formatted(
-                    nullCoalesce(user.getDisplayName(), user.getDatabaseUsername())));
+            if (userReference instanceof Doctor doctor && doctor.getSpeciality() != null) {
+                headerText.setText("Harmonogram dla %s (%s)".formatted(
+                        doctor.getDisplayName(), doctor.getSpeciality()));
+            } else {
+                headerText.setText("Harmonogram dla %s".formatted(
+                        nullCoalesce(userReference.getDisplayName(), userReference.toString())));
+            }
         }
 
         if (preselectedDate != null) {
@@ -489,36 +507,12 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
 
     protected void repopulate() {
         logger.fine("Repopulating...");
-        final var entityManager = ClinicApplication.getEntityManager();
-        final var currentDate = getTimetable().getEffectiveDate();
-        final var user = getUser();
-
-        /* If cascading on User towards Timetable(s) collection were to be enabled one could expect everything
-         * to be refreshed nicely, however N+1 (or more) queries happen, so cascading is disabled. In such case,
-         * refreshing user recreates the related collection (timetables), and next time it is initialized it's done
-         * with custom prefetch (again, to avoid N+1, see User::getTimetables).
-         *
-         * So far my experience Hibernate feels like communism - good idea, but fails once you want to use it
-         * in it fullest. Fetches never joining tables on its own (despite EAGER fetching or JOIN fetch mode);
-         * objective approach seems to be a lie - properties and collection proxies magic crafted with reflection,
-         * yet still requiring boilerplate. Some people online suggest to compose raw entities classes into smarter
-         * objects that iron out Hibernate being unintuitive or straight up stupid, allowing for access to the data
-         * and operations related to the entity (active record pattern). Other pattern recommended is to use separate
-         * classes to handle all actions while using the entity object only as raw data (DAO pattern).
-         *
-         * So far neither was chosen to avoid complexity, but I think about active pattern, as hacking stuff to work
-         * (like User::getTimetables or here) is just as intuitive itself as Hibernate in the long run...
-         * TODO: consider using Active Record Object or DAO pattern to deal with Hibernate being annoying
-         */
-        entityManager.refresh(user);
-
-        populate(user, getMode(), currentDate);
+        populate(getUserReference(), getMode(), getTimetable().getEffectiveDate());
     }
 
     @Override
     public void refresh() {
         logger.fine("Refreshing...");
-        final var date = getTimetable().getEffectiveDate();
 
         if (getMode() == Mode.EDIT) {
             // TODO: ask only when dirty
@@ -534,7 +528,6 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
         }
 
         repopulate();
-        select(date); // just try to hit the same timetable, no promises
     }
 
     protected void cancelForce() {
@@ -894,12 +887,13 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
             dialog.setHeaderText(null);
             dialog.setContentText("Musisz najpierw anulować lub zapisać zmiany.");
             dialog.showAndWait();
+            interactionGuard.end();
             return;
         }
 
         getParentController().goToView(
                 MainWindowController.Views.SCHEDULE,
-                getUser(),
+                getUserReference(),
                 getTimetable().getEffectiveDate()
         );
 
@@ -938,6 +932,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
         // TODO: warning about problems with editing past/already effective timetable,
         //  prefer adding new (only once in edit session)
 
+        // TODO: allow free selection and pass start datetime somehow
         showAddOrEditEntryDialog(null);
 
         interactionGuard.end();
@@ -949,8 +944,6 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
 
         // TODO: warning about problems with editing past/already effective timetable,
         //  prefer adding new (only once in edit session)
-        // TODO: add selecting entries (focusable by tab too),
-        //  open edit dialog for selected one, etc.
         // TODO: best thing would be having controls under the week pane instead separate dialog,
         //  allowing for previewing the changes; and allow user to drag to resize/move the entries,
         //  but it's advanced stuff and im not paid nor hyped for the project...
@@ -1062,7 +1055,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
 
         final var user = getUser();
         transaction(entityManager -> {
-            final var toBeRemoved = new ArrayList<>(getUser().getTimetables());
+            final var toBeRemoved = new ArrayList<>(Timetable.forUser(user));
             for (final var timetable : timetables) {
                 if (timetable.getId() == null) {
                     logger.finer("Persisting (new) timetable: " + timetable);
@@ -1081,6 +1074,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
                 entityManager.remove(timetable);
             }
         });
+        // TODO: check if user.getTimetables collection updated automatically
         logger.fine("Saved");
 
         // TODO: toast?

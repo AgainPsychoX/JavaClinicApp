@@ -15,7 +15,7 @@ public class HibernateCustomPhysicalNamingStrategy extends PhysicalNamingStrateg
     }
 
     protected Identifier snakeCase(final Identifier identifier) {
-        return new Identifier(snakeCase(identifier.getText()), identifier.isQuoted());
+        return new Identifier(snakeCase(identifier.getText()), true);
     }
 
     protected static String snakeCase(String name) {

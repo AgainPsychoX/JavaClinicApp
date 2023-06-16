@@ -8,7 +8,7 @@
 <?import javafx.scene.text.Text?>
 <?import pl.edu.ur.pz.clinicapp.controls.WeekPane?>
 
-<VBox fx:id="content" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="400.0" minWidth="600.0" prefHeight="540.0" prefWidth="720.0" spacing="8.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.TimetableView">
+<VBox fx:id="content" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="400.0" minWidth="600.0" prefHeight="540.0" prefWidth="720.0" spacing="8.0" styleClass="timetable-view" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.TimetableView">
    <padding>
       <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
    </padding>

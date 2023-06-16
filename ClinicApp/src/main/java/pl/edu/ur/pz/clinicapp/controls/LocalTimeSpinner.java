@@ -20,10 +20,10 @@ import java.time.format.DateTimeParseException;
  *
  * Adapted from Spinner and SpinnerValueFactory.LocalTimeSpinnerValueFactory
  * source code (which is package-private, yet not used anywhere in the package
- * for some fucking reason) and https://stackoverflow.com/a/32617768/4880243.
+ * for some fucking reason) and <a href="https://stackoverflow.com/a/32617768/4880243">...</a>.
  */
 public class LocalTimeSpinner extends Spinner<LocalTime> {
-    enum SelectedUnit {
+    public enum SelectedUnit {
         HOURS {
             @Override
             LocalTime increment(LocalTime time, int steps) {

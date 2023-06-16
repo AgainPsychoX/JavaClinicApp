@@ -9,17 +9,12 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
 import javax.security.auth.login.LoginException;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrBlank;
-import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.runDelayed;
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
 
 /**
  * Dialog responsible for logging in user.
@@ -55,12 +50,8 @@ public class LoginDialog extends Stage {
 
         try {
             pane = fxmlLoader.load();
-        } catch (IOException exception) {
-            Logger.getGlobal().log(
-                    Level.SEVERE,
-                    "Error creating login dialog!" +
-                            "\n\tFXML: " + fxml
-            );
+        }
+        catch (Exception exception) {
             throw new RuntimeException(exception);
         }
 
@@ -82,10 +73,7 @@ public class LoginDialog extends Stage {
         }
 
 //        initModality(Modality.APPLICATION_MODAL);
-        minWidthProperty().bind(pane.minWidthProperty());
-        maxWidthProperty().bind(pane.maxWidthProperty());
-        minHeightProperty().bind(pane.minHeightProperty());
-        maxHeightProperty().bind(pane.maxHeightProperty());
+        linkStageSizeToPane(this, pane);
 //        setWidth(pane.getMinWidth());
 //        setHeight(pane.getMinHeight());
         loginScene = new Scene(pane);

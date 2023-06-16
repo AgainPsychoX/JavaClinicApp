@@ -78,11 +78,8 @@ public class TimetableEntryEditDialog extends BaseEditDialog {
         dayChoiceBox.setItems(FXCollections.observableArrayList(DayOfWeek.values()));
         dayChoiceBox.setValue(entry.getDayOfWeek());
 
-        startSpinner.setPattern("HH:mm");
-        startSpinner.getValueFactory().setValue(entry.startAsLocalTime());
-
-        endSpinner.setPattern("HH:mm");
-        endSpinner.getValueFactory().setValue(entry.endAsLocalTime());
+        startSpinner.getValueFactory().setValue(entry.getStartAsLocalTime());
+        endSpinner.getValueFactory().setValue(entry.getEndAsLocalTime());
     }
 
     @Override

@@ -4,19 +4,24 @@ import pl.edu.ur.pz.clinicapp.utils.DurationMinutesConverter;
 
 import javax.persistence.*;
 import java.time.Duration;
+import java.util.List;
 
 @Entity
 @Table(name = "doctors")
 @NamedQueries({
         @NamedQuery(name = "doctors",  query = "FROM Doctor d LEFT JOIN FETCH d.user")
 })
-public class Doctor {
+public class Doctor implements UserReference {
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Doctors are users
      */
 
     @Id
     private Integer id;
+    @Override
+    public Integer getId() {
+        return id;
+    }
 
     @OneToOne(optional = false, orphanRemoval = true,
             cascade = {CascadeType.REFRESH, CascadeType.MERGE}, fetch = FetchType.LAZY)
@@ -25,6 +30,32 @@ public class Doctor {
     private User user;
     public User asUser() {
         return user;
+    }
+
+
+
+    /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+     * General object operators
+     */
+
+    @Override
+    public String toString() {
+        return String.format("Doctor{id=%d,name=%s,surname=%s,speciality=%s}",
+                id, getName(), getSurname(), getSpeciality());
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (this == other) return true;
+        if (other instanceof Doctor that) {
+            return getId() != null && getId().equals(that.getId());
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return getId() != null ? getId().hashCode() : super.hashCode();
     }
 
 
@@ -61,6 +92,7 @@ public class Doctor {
         this.surname = name;
     }
 
+    @Override
     public String getDisplayName() {
         if (name != null) {
             if (surname != null)
@@ -102,6 +134,10 @@ public class Doctor {
     public void setMaxDaysInAdvance(int maxDaysInAdvance) {
         this.maxDaysInAdvance = maxDaysInAdvance;
     }
-    
-    // TODO: get doctor schedule
+
+
+
+    public List<Timetable> getTimetables() {
+        return Timetable.forUser(this);
+    }
 }
