@@ -112,7 +112,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
         doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getDoctorName()));
         patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatientName()));
         codeCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getGovernmentId()));
-        tagsCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getTags()));
+        tagsCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getStringTags()));
         dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddedDateFormatted()));
 
         table.getSelectionModel().selectedItemProperty().addListener(observable ->
@@ -221,7 +221,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
             if (referral.getAddedDate().toString().contains(text.trim())) return true;
             if (referral.getDoctorName().toLowerCase().contains(text.trim())) return true;
             if (referral.getNotes().toLowerCase().contains(text.trim())) return true;
-            if (referral.getTags().toLowerCase().contains(text.trim())) return true;
+            if (referral.getStringTags().toLowerCase().contains(text.trim())) return true;
             return referral.getGovernmentId() != null && referral.getGovernmentId().contains(text.trim());
         });
 

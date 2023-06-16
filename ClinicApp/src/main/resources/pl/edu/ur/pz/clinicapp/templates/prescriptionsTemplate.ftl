@@ -73,7 +73,7 @@
                         <#elseif field == "addedBy">
                             <td>${prescription.getDoctorName()?string}</td>
                         <#elseif field == "tags">
-                            <td>${prescription.tags}</td>
+                            <td>${prescription.getStringTags()?string}</td>
                         <#elseif field == "notes">
                             <td>
                                 <#list prescription.notes?split(";") as note>

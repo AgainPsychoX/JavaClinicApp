@@ -70,6 +70,7 @@ public class MainWindowController implements Initializable {
         put(Views.TIMETABLE,            getViewResource("views/TimetableView.fxml"));
         put(Views.SCHEDULE,             getViewResource("views/ScheduleView.fxml"));
         put(Views.REGISTER,             getViewResource("dialogs/RegisterDialog.fxml"));
+        put(Views.REPORTS,             getViewResource("dialogs/ReportDialog.fxml"));
     }};
 
     static class ViewDefinition {

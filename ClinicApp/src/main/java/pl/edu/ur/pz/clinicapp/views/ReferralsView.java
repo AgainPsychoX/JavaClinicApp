@@ -273,7 +273,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
             if (referral.getFeedback() != null && referral.getFeedback().toLowerCase().contains(text.trim()))
                 return true;
 //            if (referral.getStringTags().toLowerCase().contains(text.trim())) return true;
-            if (referral.getTags().toLowerCase().contains(text.trim())) return true;
+            if (referral.getStringTags().toLowerCase().contains(text.trim())) return true;
             return referral.getGovernmentId() != null && referral.getGovernmentId().contains(text.trim());
         });
 

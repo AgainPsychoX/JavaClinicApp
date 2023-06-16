@@ -364,7 +364,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
         if (getMode() == Mode.DETAILS) {
             doctorTextField.setText(prescription.getDoctorName());
             notesTextField.setText(prescription.getNotes());
-            tagsTextField.setText(prescription.getTags());
+            tagsTextField.setText(prescription.getStringTags());
             govIdTextField.setText(prescription.getGovernmentId());
             patientTextField.setText(prescription.getPatientName());
             Instant instant = prescription.getAddedDate();

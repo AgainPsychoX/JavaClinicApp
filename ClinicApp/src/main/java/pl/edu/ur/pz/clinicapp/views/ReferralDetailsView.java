@@ -36,7 +36,7 @@ import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DateUtils;
 
 import java.awt.*;
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -296,7 +296,7 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
         notesArea.setText(ref.getNotes());
         feedbackArea.setText(ref.getFeedback());
         codeField.setText(ref.getGovernmentId());
-        tagsField.setText(ref.getTags());
+        tagsField.setText(ref.getStringTags());
 //        tagsField.setText(ref.getStringTags());
     }
 

@@ -71,7 +71,7 @@
                         <#elseif field == "addedBy">
                             <td>${referral.getDoctorName()?string}</td>
                         <#elseif field == "tags">
-                            <td>${referral.tags}</td>
+                            <td>${referral.getStringTags()?string}</td>
                         <#elseif field == "notes">
                             <td>
                                 <#list referral.notes?split(";") as note>
