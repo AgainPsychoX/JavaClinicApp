@@ -22,6 +22,7 @@ import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
@@ -133,7 +134,13 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
     }
 
 
-    public void report(ActionEvent event) throws TemplateModelException, IOException, URISyntaxException {
+    /**
+     *
+     * @throws TemplateModelException when unwrapping template fails or data can't be retrieved
+     * @throws IOException when there is a file missing
+     * @throws URISyntaxException when string couldn't be passed as {@link URI} reference
+     */
+    public void report() throws TemplateModelException, IOException, URISyntaxException {
         ReportDialog rd = new ReportDialog();
         ReportDialog.createConfig();
         rd.initialize(null, null);

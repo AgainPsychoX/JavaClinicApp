@@ -93,7 +93,7 @@
         </div>
         <#if referral.feedback?has_content>
             <div class="information">
-                <div style="width:200px"> Diagnoza:</div>
+                <div style="width:200px"> Opinia:</div>
                 <div class="referral">
                     ${referral.feedback}
                 </div>

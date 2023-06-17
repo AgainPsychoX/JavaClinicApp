@@ -493,6 +493,11 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
         }
     }
 
+    /**
+     * Generates PDF report containing selected {@link Referral}.
+     * @throws IOException when there is a file missing
+     * @throws URISyntaxException when string couldn't be passed as {@link URI} reference
+     */
     @FXML
     protected void referralReport() throws IOException, URISyntaxException {
         Configuration configuration = new Configuration(Configuration.VERSION_2_3_32);
@@ -535,12 +540,21 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
             HtmlConverter.convertToPdf(new FileInputStream("output.html"),
                     new FileOutputStream(file), properties);
 
-            outputFile.delete();
-//            showAlert(Alert.AlertType.INFORMATION, "Generowanie recepty", "Utworzono receptę", "");
 
+            if (!outputFile.delete()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Błąd usuwania pliku");
+                alert.setHeaderText("Nie można usunąć pliku");
+            }
+
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("Generowanie skierowania");
+            alert.setHeaderText("Utworzono skierowanie");
         } catch (FileNotFoundException | TemplateException e) {
-//            showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Wystąpił błąd.",
-//                    e.getLocalizedMessage());
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Błąd generowania");
+            alert.setHeaderText("Wystąpił błąd");
+            alert.setContentText(e.getLocalizedMessage());
             throw new RuntimeException(e);
         }
     }

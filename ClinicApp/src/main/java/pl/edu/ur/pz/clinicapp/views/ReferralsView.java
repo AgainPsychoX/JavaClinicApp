@@ -9,7 +9,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -20,11 +19,11 @@ import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
+import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.EnumMap;
 import java.util.List;
@@ -49,6 +48,8 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
     @FXML
     protected Button detailsButton;
     @FXML
+    protected Button printButton;
+    @FXML
     protected TextField searchTextField;
     @FXML
     protected VBox vBox;
@@ -72,6 +73,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
     protected TableColumn<Referral, String> doctorCol;
     @FXML
     protected TableColumn<Referral, String> patientCol;
+
 
     protected ObservableList<Referral> referrals = FXCollections.observableArrayList();
     protected FilteredList<Referral> filteredReferrals = new FilteredList<>(referrals, b -> true);
@@ -149,11 +151,13 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         buttonBox.getChildren().clear();
         if (targetPatient != null) {
             buttonBox.getChildren().add(detailsButton);
+            buttonBox.getChildren().add(printButton);
             if (!(currUserRole == User.Role.RECEPTION)) buttonBox.getChildren().add(addButton);
             if (!vBox.getChildren().contains(backBox)) vBox.getChildren().add(0, backBox);
             backText.setText("< Powrót do pacjenta " + targetPatient.getDisplayName());
         } else {
             buttonBox.getChildren().add(detailsButton);
+            buttonBox.getChildren().add(printButton);
             vBox.getChildren().remove(backBox);
         }
 
@@ -303,9 +307,12 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
                 PatientDetailsView.RefMode.DETAILS, targetPatient);
     }
 
+    /**
+     * Opens {@link ReportDialog}, passing current {@link Referral} list
+     */
     @FXML
     public void printReferrals(){
-        this.getParentController().goToView(MainWindowController.Views.REPORTS, ReportDialog.Mode.REFERRAL, referrals);
+        this.getParentController().goToView(MainWindowController.Views.REPORTS, ReportDialog.Mode.REFERRALS, referrals);
     }
 
 

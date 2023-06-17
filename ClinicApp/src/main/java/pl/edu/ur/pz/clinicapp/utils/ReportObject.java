@@ -5,6 +5,9 @@ import freemarker.template.Configuration;
 
 import java.net.URL;
 
+/**
+ * Class containing fields necessary for creating proper {@link freemarker.template.Template} configuration
+ */
 public class ReportObject {
     private Configuration configuration;
     private ConverterProperties properties;

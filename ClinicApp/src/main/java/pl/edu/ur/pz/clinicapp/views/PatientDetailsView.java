@@ -15,7 +15,9 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
+import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
@@ -277,8 +279,12 @@ public class PatientDetailsView extends ChildControllerBase<MainWindowController
     public void addVisit() {
     }
 
+    /**
+     * Opens {@link PrescriptionsView}, passing current {@link Patient}
+     */
     public void addPrescription() {this.getParentController().goToView(MainWindowController.Views.PRESCRIPTIONS, pat);
     }
+
 
     public void addReferral() {
         this.getParentController().goToView(MainWindowController.Views.REFERRALS, pat);

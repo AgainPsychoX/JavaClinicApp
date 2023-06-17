@@ -108,6 +108,14 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                 "Wszystkie niezapisane zmiany zostaną utracone.");
     }
 
+    /**
+     * Shows alert.
+     * @param type {@link javafx.scene.control.Alert.AlertType}
+     * @param title Alert title
+     * @param header Alert header
+     * @param text Alert text
+     * @return true when OK button was pressed, false otherwise
+     */
     private static boolean showAlert(Alert.AlertType type, String title, String header, String text) {
         Alert alert = new Alert(type);
         alert.setTitle(title);
@@ -154,6 +162,10 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
         return mode;
     }
 
+    /**
+     * Gets current mode
+     * @return {@link Mode}
+     */
     public Mode getMode() {
         return mode.get();
     }
@@ -162,7 +174,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
      * Sets whether fields are visible or editable depending on user role.
      * Sets editState to true if mode is set to CREATE.
      *
-     * @param mode Mode used to specify which settings are set (view/create).
+     * @param mode {@link Mode} used to specify which settings are set (view/create).
      */
     public void setMode(Mode mode) {
         this.mode.set(mode);
@@ -220,6 +232,11 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
         }
     }
 
+    /**
+     * Sets whether node should be visible
+     * @param node node to set
+     * @param show true or false depending if node should be shown
+     */
     private void setNodeEnabledVisibleManaged(Node node, boolean show) {
         node.setDisable(!show);
         node.setVisible(show);
@@ -273,61 +290,12 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
         setMode(mode);
 
         refresh();
-
-//        Leaving for now if something breaks up
-
-//        if(context[0] == null){
-//            currMode = Mode.CREATE;
-//        }
-//        else {
-//            mode = (Mode) context[0];
-//        }
-//        if (mode == Mode.VIEW) {
-//            prescription = (Prescription) context[1];
-
-        // in case the referral was edited while app is running
-//        ClinicApplication.getEntityManager().refresh(prescription);
-
-//            if (role != User.Role.ADMIN && prescription.getAddedBy() != ClinicApplication.getUser()) {
-//                buttonBox.getChildren().remove(editButton);
-//                buttonBox.getChildren().remove(deleteButton);
-//            } else {
-//                buttonBox.getChildren().remove(ikpButton);
-//                if (!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
-//                if (!buttonBox.getChildren().contains(deleteButton)) buttonBox.getChildren().add(deleteButton);
-//                buttonBox.getChildren().add(ikpButton);
-//            }
-//            refresh();
-//        } else {
-//            buttonBox.getChildren().remove(deleteButton);
-//            buttonBox.getChildren().remove(ikpButton);
-//            if (!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
-//            buttonBox.getChildren().add(ikpButton);
-//
-//            doctorTextField.setText(ClinicApplication.getUser().getDisplayName());
-//            notesTextField.setText(null);
-//            govIdTextField.setText(null);
-//            tagsTextField.setText(null);
-//            targetPatient = ((User) context[1]).asPatient();
-//            editState.setValue(true);
-//
-//            patientTextField.setText(targetPatient.getDisplayName());
-//        }
     }
 
     /**
      * Checks if window is in edit state and accordingly displays alert and/or changes view to previous one.
      */
     public void onBackClick() {
-//        if (editState.getValue()) {
-//            if (showAlert(Alert.AlertType.CONFIRMATION, "Niezapisane zmiany", "Widok w trybie edycji",
-//                    "Wszystkie niezapisane zmiany zostaną utracone.")) {
-//                editState.setValue(!editState.getValue());
-//                this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
-//            }
-//        } else {
-//            this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
-//        }
         if (editState.getValue()) {
             if (exitConfirm()) {
                 editState.setValue(!editState.getValue());
@@ -343,7 +311,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
     }
 
     /**
-     * Default dispose method. Clears TextField list and removes buttons from box.
+     * Clears TextField list and removes buttons from box.
      */
     @Override
     public void dispose() {
@@ -377,10 +345,12 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
         }
     }
 
+    /**
+     *
+     */
     @FXML
     public void editSave() {
         Transaction transaction;
-
         try {
             if (getMode() == Mode.DETAILS) {
                 if (editState.getValue()) {
@@ -435,7 +405,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                     transaction.commit();
                     editState.setValue(!editState.getValue());
 
-                    if(!showAlert(Alert.AlertType.CONFIRMATION, "Dodawanie recepty",
+                    if(showAlert(Alert.AlertType.CONFIRMATION, "Dodawanie recepty",
                             "Pomyślnie dodano receptę", "Kod recepty: " + newPr.getGovernmentId())){
                         this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
                     }
@@ -483,6 +453,11 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
         }
     }
 
+    /**
+     * Generates PDF report containing selected {@link Prescription}.
+     * @throws IOException when there is a file missing
+     * @throws URISyntaxException when string couldn't be passed as {@link URI} reference
+     */
     @FXML
     protected void prescriptionReport() throws IOException, URISyntaxException {
         ReportObject reportObject = ReportDialog.createConfig();
@@ -532,9 +507,6 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
     /**
      * Available window modes (details of existing prescription or creation of a new one).
      */
-    public enum Mode {
-        DETAILS,
-        CREATE,
-    }
+    public enum Mode {DETAILS, CREATE}
 
 }

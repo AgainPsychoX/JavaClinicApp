@@ -70,6 +70,10 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     private enum filterMode{OWN, CREATED, ALL}
     private static final EnumMap<filterMode, String> filteredModeToString = new EnumMap<>(filterMode.class);
 
+    /**
+     * Sets current query depending on user {@link pl.edu.ur.pz.clinicapp.models.User.Role}
+     * @param role Logged {@link User} {@link pl.edu.ur.pz.clinicapp.models.User.Role}
+     */
     public void setCurrQuery(User.Role role){
         if(currQuery == null){
             if(role == User.Role.PATIENT){
@@ -102,6 +106,18 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
         }
     }
 
+    /**
+     * Sets buttons visibility depending on logged {@link User} {@link pl.edu.ur.pz.clinicapp.models.User.Role}
+     * Sets cell values according to {@link Prescription} fields
+     * Adds listener that allows to select a {@link Prescription}
+     * @param url
+     * The location used to resolve relative paths for the root object, or
+     * {@code null} if the location is not known.
+     *
+     * @param resourceBundle
+     * The resources used to localize the root object, or {@code null} if
+     * the root object was not localized.
+     */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         if (ClinicApplication.requireUser().getRole() == User.Role.PATIENT) {
@@ -129,7 +145,12 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     }
 
     /**
-     * Initializes table cells and adds listener which enables or disables the edit/save button.
+     * Popluates view with data depending on context.
+     * Gets {@link Patient from context if present}
+     * Clears buttonBox and adds button depending on context.
+     * Maps filter modes to corresponding display strings.
+     * Sets the current query based on the target patient or user role.
+     * @param context Optional context arguments.
      */
     @Override
     public void populate(Object... context) {
@@ -183,6 +204,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
 
     /**
      * Sets values of table cells.
+     * If search field is not empty, perform search again - for user's convenience (no need to hit enter/type again)
      */
     @Override
     public void refresh() {
@@ -194,12 +216,15 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
         prescriptions.setAll(currQuery.getResultList());
         table.setItems(prescriptions);
 
-        // if search field is not empty, perform search again - for user's convenience (no need to hit enter/type again)
+
         if (searchTextField.getText() != null && !searchTextField.getText().trim().equals("")) {
             searchAction(new ActionEvent());
         }
     }
 
+    /**
+     * Changes items in table according to selected filter mode.
+     */
     @FXML
     public void changeFilter(){
         if (filter.getSelectionModel().getSelectedItem() == null || targetPatient != null) return;
@@ -211,6 +236,11 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
 
     }
 
+    /**
+     * Filters table rows according to text typed in the search field.
+     *
+     * @param event Performed action.
+     */
     @FXML
     public void searchAction(ActionEvent event) {
         searchDebounce.stop();
@@ -261,15 +291,21 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
         }
     }
 
+    /**
+     * Goes back to {@link PatientDetailsView}
+     */
     @FXML
     public void onBackClick(){
         this.getParentController().goToView(MainWindowController.Views.PATIENT_DETAILS,
         PatientDetailsView.RefMode.DETAILS, targetPatient);
     }
 
+    /**
+     * Opens {@link ReportDialog}, passing current {@link Prescription} list
+     */
     @FXML
     protected void printPrescriptions() {
-        this.getParentController().goToView(MainWindowController.Views.REPORTS, ReportDialog.Mode.PRESCRIPTION, prescriptions);
+        this.getParentController().goToView(MainWindowController.Views.REPORTS, ReportDialog.Mode.PRESCRIPTIONS, prescriptions);
 
     }
 }
