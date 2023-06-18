@@ -16,11 +16,13 @@ import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
 import javafx.scene.image.WritableImage;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.Referral;
@@ -515,21 +517,35 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
     /**
      * Generates {@link pl.edu.ur.pz.clinicapp.models.Timetable} report.
      *
-     * @param content {@link VBox} containing {@link pl.edu.ur.pz.clinicapp.models.Timetable}
+     * @param content {@link WeekPane<WeekPane.Entry>} containing {@link pl.edu.ur.pz.clinicapp.models.Timetable}
      * @throws IOException when there is a file missing
      */
-    private void timetableReport(VBox content) throws IOException {
-        WritableImage snapshot = content.snapshot(new SnapshotParameters(), null);
+    public void timetableReport(WeekPane<WeekPane.Entry> content) throws IOException {
+        WritableImage snapshot = content.getGrid().snapshot(new SnapshotParameters(), null);
         BufferedImage bufferedImage = new BufferedImage(550, 400, BufferedImage.TYPE_INT_ARGB);
-        BufferedImage image = javafx.embed.swing.SwingFXUtils.fromFXImage(snapshot, bufferedImage);
+        BufferedImage imageTable = javafx.embed.swing.SwingFXUtils.fromFXImage(snapshot, bufferedImage);
+
+        WritableImage snapshotHeader = content.getHeader().snapshot(new SnapshotParameters(), null);
+        BufferedImage bufferedHeader = new BufferedImage(550, 400, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage imageHeader = javafx.embed.swing.SwingFXUtils.fromFXImage(snapshotHeader, bufferedHeader);
+
+
         String finalImage;
+        String headerImage;
         try {
-            ByteArrayOutputStream os = new ByteArrayOutputStream();
-            ImageIO.write(image, "png", os);
-            byte[] bytes = os.toByteArray();
-            byte[] encoded = Base64.getEncoder().encode(bytes);
-            String imageAsBase64 = new String(encoded);
-            finalImage = "data:image/png;base64," + imageAsBase64;
+            ByteArrayOutputStream ostt = new ByteArrayOutputStream();
+            ImageIO.write(imageTable, "png", ostt);
+            byte[] bytesTable = ostt.toByteArray();
+            byte[] encodedTable = Base64.getEncoder().encode(bytesTable);
+            String imageTableAsBase64 = new String(encodedTable);
+            finalImage = "data:image/png;base64," + imageTableAsBase64;
+
+            ByteArrayOutputStream osh = new ByteArrayOutputStream();
+            ImageIO.write(imageHeader, "png", osh);
+            byte[] bytesHeader = osh.toByteArray();
+            byte[] encodedHeader = Base64.getEncoder().encode(bytesHeader);
+            String imageHeaderAsBase64 = new String(encodedHeader);
+            headerImage = "data:image/png;base64," + imageHeaderAsBase64;
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -551,6 +567,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
             Writer writer = new FileWriter(outputFile);
 
             Map<String, Object> dataModel = new HashMap<>();
+            dataModel.put("header", headerImage);
             dataModel.put("timetable", finalImage);
 
             template.process(dataModel, writer);

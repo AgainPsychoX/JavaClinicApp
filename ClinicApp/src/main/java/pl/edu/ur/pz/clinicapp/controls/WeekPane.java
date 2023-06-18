@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class WeekPane<T extends WeekPane.Entry> extends VBox {
+
     /**
      * Interface for entries to be placed on WeekPane.
      *
@@ -409,6 +410,8 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
     public GridPane getGrid() {
         return gridPane;
     }
+    public GridPane getHeader() { return headerGridPane; }
+
 
     /**
      * @return Unmodifiable list of entries cells on the grid, ordering not guaranteed.

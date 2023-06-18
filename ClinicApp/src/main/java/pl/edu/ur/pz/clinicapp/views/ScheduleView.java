@@ -16,6 +16,7 @@ import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneFreeSelectionModel;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneScheduleEntryCell;
 import pl.edu.ur.pz.clinicapp.dialogs.AppointmentSlotPickerDialog;
+import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.dialogs.ScheduleSimpleEntryEditDialog;
 import pl.edu.ur.pz.clinicapp.models.Appointment;
 import pl.edu.ur.pz.clinicapp.models.Doctor;
@@ -24,6 +25,7 @@ import pl.edu.ur.pz.clinicapp.models.UserReference;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.InteractionGuard;
 
+import java.io.IOException;
 import java.net.URL;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
@@ -301,5 +303,18 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
                 weekPane.getEntries().remove(weekPaneEntry);
             }
         }
+    }
+
+    /**
+     * Method for printing timetable report
+     * @param actionEvent Action event
+     * @throws IOException When report file is not found
+     */
+    @FXML
+    public void printTimetableAction(ActionEvent actionEvent) throws IOException {
+        ReportDialog rd = new ReportDialog();
+        ReportDialog.createConfig();
+        rd.initialize(null, null);
+        rd.timetableReport(weekPane);
     }
 }

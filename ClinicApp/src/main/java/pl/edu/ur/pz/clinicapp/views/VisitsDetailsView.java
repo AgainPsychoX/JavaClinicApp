@@ -12,6 +12,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.dialogs.AppointmentSlotPickerDialog;
 import pl.edu.ur.pz.clinicapp.dialogs.ScheduleSlotPickerDialog;
 import pl.edu.ur.pz.clinicapp.models.*;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
@@ -118,7 +119,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
     /**
      * Checks current window mode and user's identity and accordingly removes forbidden activities (edit and deletion
      * for non-creators of the referral or deletion if mode is set to CREATE).
-     * @param context contains current mode of window and appointment which is currently displaying/editing
+     * @param context contains current mode of window and {@link pl.edu.ur.pz.clinicapp.models.Appointment} which is currently displaying/editing
      *                or User which is creating new appointment.
      */
     @Override
@@ -138,7 +139,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
 
     /**
      * Part of populate which only executes when current mode is set to Details.
-     * @param appointment Appointment which is currently displaying/editing.
+     * @param appointment {@link pl.edu.ur.pz.clinicapp.models.Appointment} which is currently displaying/editing.
      * @param role Role of current user.
      */
 
@@ -231,7 +232,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
         }
     }
 
-    /** Function executes query for editing appointment **/
+    /** Function executes query for editing {@link pl.edu.ur.pz.clinicapp.models.Appointment}. **/
     private void editSaveDetails() {
         if (editState.getValue()) {
             if (pickedDate.getText() == null) {
@@ -253,7 +254,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
         }
     }
 
-    /** Function executes query for creating appointment **/
+    /** Function executes query for creating {@link pl.edu.ur.pz.clinicapp.models.Appointment}. **/
     private void editSaveCreate() {
         if (notesTextField.getText() == null || patientCombo.getValue() == null ||
                 doctorCombo.getValue() == null || pickedDate.getText() == null) {
@@ -287,7 +288,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
         }
     }
     /**
-     * Deletes selected visit.
+     * Deletes selected {@link pl.edu.ur.pz.clinicapp.models.Appointment}.
      */
     @FXML
     public void deleteAppointment() {
@@ -371,7 +372,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
     /** Function for picking date and time of appointment **/
     public void pickDate() {
         Schedule schedule = Schedule.of(doctorCombo.getValue());
-        final var dialog = new ScheduleSlotPickerDialog(
+        final var dialog = new AppointmentSlotPickerDialog(
                 schedule, nullCoalesce(LocalDateTime.now()));
         dialog.showAndWait();
         final var selection = dialog.getResult();

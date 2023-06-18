@@ -7,31 +7,10 @@
             font-family: Calibri, sans-serif;
         }
 
-        .table-style {
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-       .table-style td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        .table-style th {
-            border: 1px solid #ddd;
-            padding: 8px;
-            background-color: #f2f2f2;
-            font-weight: bold;
-            text-align: center;
-        }
-
-        .table-style tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-
-        .table-style tr:hover {
-            background-color: #ddd;
+        img {
+            width: 80%;
+            margin: auto;
+            display: block;
         }
     </style>
 </head>
@@ -41,6 +20,7 @@
 <div>
 
     <h2>Terminarz</h2>
+        <img src="${header}" alt="Kolumny">
         <img src="${timetable}" alt="Terminarz">
     <br>
 

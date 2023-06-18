@@ -49,6 +49,7 @@
             </HBox>
             <HBox alignment="CENTER_RIGHT" spacing="8.0" HBox.hgrow="SOMETIMES">
                <children>
+                   <Button text="Drukuj" mnemonicParsing="false" alignment="CENTER_RIGHT" onAction="#printTimetableAction"/>
                   <Button fx:id="detailsButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#detailsAction" text="Szczegóły" />
                </children>
             </HBox>
