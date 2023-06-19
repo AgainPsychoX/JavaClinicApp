@@ -315,6 +315,6 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
         ReportDialog rd = new ReportDialog();
         ReportDialog.createConfig();
         rd.initialize(null, null);
-        rd.timetableReport(weekPane);
+        rd.timetableReport(weekPane, datePicker.getValue());
     }
 }

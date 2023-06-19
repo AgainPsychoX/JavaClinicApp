@@ -19,7 +19,7 @@
 
 <div>
 
-    <h2>Terminarz</h2>
+    <h2>Terminarz na ${startDate} - ${endDate}</h2>
         <img src="${header}" alt="Kolumny">
         <img src="${timetable}" alt="Terminarz">
     <br>

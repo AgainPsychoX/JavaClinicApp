@@ -520,7 +520,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
      * @param content {@link WeekPane<WeekPane.Entry>} containing {@link pl.edu.ur.pz.clinicapp.models.Timetable}
      * @throws IOException when there is a file missing
      */
-    public void timetableReport(WeekPane<WeekPane.Entry> content) throws IOException {
+    public void timetableReport(WeekPane<WeekPane.Entry> content, LocalDate startWeek) throws IOException {
         WritableImage snapshot = content.getGrid().snapshot(new SnapshotParameters(), null);
         BufferedImage bufferedImage = new BufferedImage(550, 400, BufferedImage.TYPE_INT_ARGB);
         BufferedImage imageTable = javafx.embed.swing.SwingFXUtils.fromFXImage(snapshot, bufferedImage);
@@ -567,6 +567,8 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
             Writer writer = new FileWriter(outputFile);
 
             Map<String, Object> dataModel = new HashMap<>();
+            dataModel.put("startDate", startWeek);
+            dataModel.put("endDate", startWeek.plusDays(4));
             dataModel.put("header", headerImage);
             dataModel.put("timetable", finalImage);
 
