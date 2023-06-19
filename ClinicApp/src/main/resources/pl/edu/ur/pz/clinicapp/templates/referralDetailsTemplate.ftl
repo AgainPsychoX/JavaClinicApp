@@ -79,7 +79,7 @@
         <h2>Badanie</h2>
         <div class="info">
             <h3>
-                <p>Badanie wykonano: <b>${formattedAddedDate}</b></p>
+                <p>Badanie wykonano: <b>${referral.getAddedDateFormatted()}</b></p>
                 <p>Lekarz: <b>${referral.getDoctorName()?string}</b></p>
             </h3>
         </div>
@@ -100,7 +100,7 @@
             </div>
         </#if>
         <#if referral.fulfilmentDate?has_content>
-            <p>Data realizacji badania: ${referral.fulfilmentDate}</p>
+            <p>Data realizacji badania: ${referral.getFulfilmentDateFormatted()}</p>
         </#if>
     </div>
 </div>

@@ -6,7 +6,6 @@
         body {
             font-family: Calibri, sans-serif;
         }
-
         .table-style {
             border-collapse: collapse;
             width: 100%;
@@ -36,11 +35,8 @@
     </style>
 </head>
 <body>
-
-
-
 <div>
-    <h2>Lista badań</h2>
+    <h2>Badania</h2>
     <#if startDate?has_content && endDate?has_content>
         <h3>Zakres dat: ${startDate} - ${endDate}</h3>
     </#if>
@@ -79,7 +75,9 @@
                                 </#list>
                             </td>
                         <#elseif field == "addedDate">
-                            <td>${formattedAddedDate}</td>
+                            <td>${referral.getAddedDateFormatted()}</td>
+                        <#elseif field == "fulfilmentDate">
+                            <td>${referral.getFulfilmentDateFormated()}</td>
                         <#else>
                             <td>${referral[field]?default('')}</td>
                         </#if>
