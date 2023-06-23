@@ -11,24 +11,24 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import pl.edu.ur.pz.clinicapp.controls.LocalTimeSpinner?>
 
-<fx:root maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="160.0" minWidth="320.0" stylesheets="@../common.css" type="BorderPane" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane maxHeight="160.0" maxWidth="288.0" minHeight="160.0" minWidth="288.0" prefHeight="160.0" prefWidth="288.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
    <bottom>
-      <ButtonBar prefHeight="40.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+      <ButtonBar BorderPane.alignment="CENTER">
         <buttons>
           <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#deleteAction" text="Usuń" />
             <Button fx:id="saveButton" defaultButton="true" mnemonicParsing="false" onAction="#saveAction" styleClass="reset-default-button-color" text="Zapisz" />
             <Button fx:id="cancelButton" cancelButton="true" mnemonicParsing="false" onAction="#cancelAction" text="Anuluj" />
         </buttons>
          <padding>
-            <Insets left="8.0" right="8.0" />
+            <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
          </padding>
       </ButtonBar>
    </bottom>
    <center>
        <GridPane fx:id="grid" alignment="CENTER" hgap="8.0" vgap="8.0" BorderPane.alignment="CENTER">
            <columnConstraints>
-               <ColumnConstraints halignment="RIGHT" minWidth="10.0" />
-               <ColumnConstraints hgrow="SOMETIMES" maxWidth="-Infinity" />
+               <ColumnConstraints halignment="RIGHT" />
+               <ColumnConstraints hgrow="SOMETIMES" />
            </columnConstraints>
            <rowConstraints>
                <RowConstraints minHeight="10.0" prefHeight="30.0" />
@@ -42,13 +42,13 @@
                <Insets />
            </BorderPane.margin>
          <children>
-            <ChoiceBox fx:id="dayChoiceBox" maxWidth="1.7976931348623157E308" prefWidth="150.0" GridPane.columnIndex="1" />
+            <ChoiceBox fx:id="dayChoiceBox" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" prefWidth="144.0" GridPane.columnIndex="1" />
             <Label text="Dzień tygodnia:" />
             <Label text="Godzina rozpoczęcia:" GridPane.rowIndex="1" />
             <Label text="Godzina zakończenia:" GridPane.rowIndex="2" />
-            <LocalTimeSpinner fx:id="startSpinner" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <LocalTimeSpinner fx:id="endSpinner" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <LocalTimeSpinner fx:id="startSpinner" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" pattern="HH:mm" prefWidth="72.0" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <LocalTimeSpinner fx:id="endSpinner" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" pattern="HH:mm" prefWidth="72.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
          </children>
        </GridPane>
    </center>
-</fx:root>
+</BorderPane>

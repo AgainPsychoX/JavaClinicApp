@@ -1,11 +1,34 @@
 package pl.edu.ur.pz.clinicapp.utils;
 
+import org.hibernate.Hibernate;
+import org.hibernate.proxy.HibernateProxy;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
 import javax.persistence.EntityManager;
 import java.util.function.Consumer;
 
 public class JPAUtils {
+    /**
+     * Prepares explanatory string for given object ({@link Object#toString} and canonical class name),
+     * avoiding initializing persistence proxies. Useful for logging and debugging.
+     * @param object object to work with
+     * @return string trying to represent what object might be
+     */
+    static public String getExplanatoryStringWithoutInitializing(Object object) {
+        if (object == null) {
+            return "null";
+        } else if (Hibernate.isInitialized(object)) {
+            return "%s (%s)".formatted(object.toString(), Hibernate.getClass(object).getCanonicalName());
+        } else if (object instanceof HibernateProxy proxy) {
+            return "%s ID:%s (proxy not yet initialized by Hibernate)".formatted(
+                    proxy.getHibernateLazyInitializer().getEntityName(),
+                    proxy.getHibernateLazyInitializer().getEntityName()
+            );
+        } else {
+            return "? (%s)".formatted(object.getClass().getCanonicalName());
+        }
+    }
+
     /**
      * Provides access to the app entity manager already encapsulated inside read-only transaction.
      * @param action Function (or lambda) to execute with the encapsulated entity manager.

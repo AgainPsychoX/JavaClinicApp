@@ -54,6 +54,8 @@ $$;
 
 REVOKE EXECUTE ON FUNCTION public.create_database_user FROM gp_receptionists, gp_doctors, gp_admins;
 
+
+
 --------------------------------------------------------------------------------
 -- Roles
 --------------------------------------------------------------------------------
@@ -80,6 +82,132 @@ GRANT EXECUTE ON FUNCTION public.create_database_user TO gp_receptionists, gp_do
 -- >
 -- > &mdash; <cite>https://www.postgresql.org/docs/current/role-membership.html</cite>
 -- so those need to be explicitly added.
+
+
+
+--------------------------------------------------------------------------------
+-- Utils functions
+--------------------------------------------------------------------------------
+
+CREATE OR REPLACE FUNCTION minute_of_day(p_timestamp TIMESTAMP WITH TIME ZONE)
+    RETURNS INTEGER
+    LANGUAGE sql
+AS $$
+    SELECT (EXTRACT(MINUTE FROM p_timestamp) + EXTRACT(HOUR FROM p_timestamp) * 60)::int;
+$$;
+
+
+
+--------------------------------------------------------------------------------
+-- Schedule logic
+--------------------------------------------------------------------------------
+
+-- View to provide info about schedule entries of users with schedules (doctors) without leaking details.
+CREATE OR REPLACE VIEW schedule_busy_view AS
+    SELECT user_id, "begin", "end", type FROM schedule_simple_entries WHERE type NOT IN ('OPEN', 'EXTRA')
+    UNION
+        SELECT
+            patient_id AS user_id,
+            date AS "begin",
+            (date + duration * INTERVAL '1 minute') AS "end",
+            'APPOINTMENT'::schedule_simple_entry_type AS type
+        FROM appointments
+    UNION
+        SELECT
+            doctor_id AS user_id,
+            date AS "begin",
+            (date + duration * INTERVAL '1 minute') AS "end",
+            'APPOINTMENT'::schedule_simple_entry_type AS type
+        FROM appointments
+    ORDER BY user_id, "begin"
+;
+
+GRANT SELECT ON schedule_busy_view TO PUBLIC;
+
+-- Function to get effective timetable for given user for give timestamp
+CREATE OR REPLACE FUNCTION public.get_effective_timetable(p_user_id INTEGER, p_date TIMESTAMP WITH TIME ZONE)
+    RETURNS RECORD
+    LANGUAGE plpgsql
+AS $$
+	DECLARE
+		v_result RECORD;
+    BEGIN
+		SELECT * FROM timetables INTO v_result
+			WHERE user_id = p_user_id AND effective_date <= p_date
+			ORDER BY effective_date DESC
+			LIMIT 1;
+		RETURN v_result;
+    END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_effective_timetable TO PUBLIC;
+
+-- Function to validate new appointment addition
+CREATE OR REPLACE FUNCTION public.validate_new_appointment(
+    p_patient_id INTEGER, p_doctor_id INTEGER, p_begin TIMESTAMP WITHOUT TIME ZONE, p_duration INTEGER
+)
+    RETURNS INTEGER
+    LANGUAGE plpgsql
+    SECURITY DEFINER
+AS $$
+    DECLARE
+        v_end TIMESTAMP;
+        v_max_days_in_advance INTEGER;
+        v_doctor_timetable RECORD;
+        v_start_minute INTEGER;
+        v_end_minute INTEGER;
+        v_weekday INTEGER;
+    BEGIN
+        IF p_duration < 5 OR 12 * 60 < p_duration THEN
+            RETURN 1; -- Duration must be at least 5 minutes and max 12 hours
+        END IF;
+
+        v_end := p_begin + p_duration * INTERVAL '1 minute';
+        SELECT max_days_in_advance INTO v_max_days_in_advance FROM doctors WHERE id = p_doctor_id;
+        IF CURRENT_TIMESTAMP + (v_max_days_in_advance * INTERVAL '1 day') < v_end THEN
+            RETURN 2; -- Cannot add appointments beyond max days in advance specified by the doctor
+        END IF;
+
+        v_doctor_timetable := public.get_effective_timetable(p_doctor_id, p_begin);
+        IF v_doctor_timetable != public.get_effective_timetable(p_doctor_id, v_end) THEN
+            RETURN 3; -- Appointment cannot span over multiple timetables
+        END IF;
+
+        v_start_minute := minute_of_day(p_begin);
+        v_end_minute := minute_of_day(v_end);
+        v_weekday := EXTRACT(DOW FROM p_begin);
+        IF (
+            NOT EXISTS (
+                -- We assume timetables_entries are consolidated concatenated if they touch,
+                -- and that appointments cannot span on multiple days (like thought mid-night).
+                SELECT 1 FROM timetable_entries
+                WHERE timetable_id = v_doctor_timetable.id
+                    AND v_weekday = weekday AND start_minute <= v_start_minute AND v_end_minute <= end_minute
+            )
+            AND NOT EXISTS (
+                SELECT 1 FROM schedule_simple_entries
+                WHERE user_id = p_doctor_id
+                    AND "begin" <= p_begin AND p_begin <= "end"
+                    AND type = 'EXTRA'
+            )
+        ) THEN
+            RETURN 4; -- Doctor doesn't work in specified range (or at least, not fully)
+        END IF;
+
+        IF EXISTS (
+            SELECT 1 FROM schedule_busy_view
+            WHERE user_id = p_doctor_id AND ("begin", "end") OVERLAPS (p_begin, v_end)
+        ) THEN
+            RETURN 5; -- Doctor is busy already
+        END IF;
+
+        RETURN 0;
+    END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.validate_new_appointment TO PUBLIC;
+
+
 
 --------------------------------------------------------------------------------
 -- Row Level Security
@@ -374,14 +502,14 @@ CREATE POLICY insert_own_as_doctor ON public.referrals FOR INSERT TO gp_doctors
 ----------------------------------------
 -- SELECT
 
-GRANT SELECT ON TABLE public.referrals TO gp_patients, gp_nurses, gp_doctors;
+GRANT SELECT ON TABLE public.referrals TO gp_patients, gp_nurses, gp_doctors, gp_receptionists;
 
 DROP POLICY IF EXISTS select_own_as_patient ON public.referrals;
 CREATE POLICY select_own_as_patient ON public.referrals FOR SELECT TO gp_patients
     USING (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
 DROP POLICY IF EXISTS select_as_personel ON public.referrals;
-CREATE POLICY select_as_personel ON public.referrals FOR SELECT TO gp_doctors, gp_nurses
+CREATE POLICY select_as_personel ON public.referrals FOR SELECT TO gp_doctors, gp_nurses, gp_receptionists
     USING (TRUE);
 
 ----------------------------------------

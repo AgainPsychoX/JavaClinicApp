@@ -1,6 +1,7 @@
 package pl.edu.ur.pz.clinicapp.models;
 
 import org.jetbrains.annotations.NotNull;
+import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 
 import javax.persistence.*;
@@ -13,13 +14,27 @@ import java.util.stream.Collectors;
 @Entity
 @Table(name = "timetables")
 @NamedQueries({
-        @NamedQuery(name = "Timetables.forUser", query = """
+        @NamedQuery(name = "Timetables.forUserId", query = """
                 FROM Timetable t LEFT JOIN FETCH t.entries
-                WHERE t.user = :user
+                WHERE t.user.id = :user_id
                 ORDER BY t.effectiveDate
                 """)
 })
 public class Timetable implements Comparable<Timetable> {
+    /**
+     * Queries and returns all timetables for the user (in natural ordering by effective date).
+     * @param user Reference to user (user, patient or doctor).
+     * @return List of the timetables.
+     */
+    public static List<Timetable> forUser(UserReference user) {
+        final var query = ClinicApplication.getEntityManager()
+                .createNamedQuery("Timetables.forUserId", Timetable.class);
+        query.setParameter("user_id", user.getId());
+        return query.getResultStream().distinct().toList();
+    }
+
+
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -47,6 +62,17 @@ public class Timetable implements Comparable<Timetable> {
     }
     public void setEffectiveDate(ZonedDateTime effectiveDate) {
         this.effectiveDate = effectiveDate;
+    }
+
+    // TODO: use isPossiblyEffective where possible instead getEffectiveDate
+    /**
+     * Checks if timetable is possibly effective at given date. The "possibly" means it would be effective
+     * if there is no other timetable after it that shadows it.
+     * @param date date to check against
+     * @return true if it's possibly effective, false otherwise.
+     */
+    public boolean isPossiblyEffective(ZonedDateTime date) {
+        return !date.isBefore(this.effectiveDate);
     }
 
     @ElementCollection
@@ -145,6 +171,8 @@ public class Timetable implements Comparable<Timetable> {
         return this.effectiveDate.compareTo(o.effectiveDate);
     }
 
+
+
     @Embeddable
     public static class Entry implements WeekPane.Entry {
         /**
@@ -155,64 +183,34 @@ public class Timetable implements Comparable<Timetable> {
         @Column(name = "weekday", nullable = false)
         private int weekday;
         public DayOfWeek getDayOfWeek() {
-            return DayOfWeek.of(weekday + 1);
+            return DayOfWeek.of(weekday);
         }
 
         /**
-         * Minute mark when the timetable entry starts in the weekday. Example: 13:49 = 13*60+49 = 829.
+         * Minute mark when the timetable entry starts on the weekday. Example: 13:49 = 13*60+49 = 829.
          */
         @Column(nullable = false)
         private int startMinute;
+        @Override
         public int getStartMinute() {
             return startMinute;
         }
 
-        public LocalTime startAsLocalTime() {
-            return LocalTime.of(startMinute / 60, startMinute % 60);
-        }
-
         /**
-         * Calculates potential entry start moment as zoned date time.
-         * @param date Date & zone to be used.
-         * @return Zoned date time for potential entry start.
-         */
-        public ZonedDateTime startAsZonedDateTime(ZonedDateTime date) {
-            assert date.getDayOfWeek() == getDayOfWeek();
-            return date.toLocalDate()
-                    .atTime(startMinute / 60, startMinute % 60)
-                    .atZone(date.getZone());
-        }
-
-        /**
-         * Minute mark when the timetable entry ends in the weekday. Example: 13:49 = 13*60+49 = 829.
+         * Minute mark when the timetable entry ends on the weekday. Example: 13:49 = 13*60+49 = 829.
          */
         @Column(nullable = false)
         private int endMinute;
+        @Override
         public int getEndMinute() {
             return endMinute;
-        }
-
-        public LocalTime endAsLocalTime() {
-            return LocalTime.of(endMinute / 60, endMinute % 60);
-        }
-
-        /**
-         * Calculates potential entry end moment as zoned date time.
-         * @param date Date & zone to be used.
-         * @return Zoned date time for potential entry end.
-         */
-        public ZonedDateTime endAsZonedDateTime(ZonedDateTime date) {
-            assert date.getDayOfWeek() == getDayOfWeek();
-            return date.toLocalDate()
-                    .atTime(endMinute / 60, endMinute % 60)
-                    .atZone(date.getZone());
         }
 
         // Empty constructor is required for JPA standard.
         public Entry() {}
 
         public Entry(DayOfWeek dayOfWeek, int startMinute, int endMinute) {
-            this.weekday = dayOfWeek.getValue() - 1;
+            this.weekday = dayOfWeek.getValue();
             this.startMinute = Math.min(startMinute, endMinute);
             this.endMinute = Math.max(startMinute, endMinute);
         }

@@ -30,7 +30,7 @@
 			<property name="javax.persistence.schema-generation.create-script-source" value="before_create.sql"/>
 			<property name="hibernate.hbm2ddl.import_files" value="security.sql,import.sql"/>
 			<property name="hibernate.hbm2ddl.import_files_sql_extractor" value="pl.edu.ur.pz.clinicapp.utils.CustomImportSqlCommandExtractor"/>
-			<property name="hibernate.show_sql" value="true"/>
+<!--			<property name="hibernate.show_sql" value="true"/> &lt;!&ndash; use logging.properties instead &ndash;&gt;-->
 <!--			<property name="hibernate.hbm2ddl.auto" value="update"/>-->
 <!--			<property name="hibernate.hbm2ddl.auto" value="create"/>-->
 		</properties>

@@ -2,7 +2,9 @@ package pl.edu.ur.pz.clinicapp.models;
 
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 
 @MappedSuperclass
@@ -47,7 +49,7 @@ public abstract class MedicalHistoryEntry {
     /**
      * Patient the entry belongs to.
      */
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "patient_id", referencedColumnName = "id", nullable = false)
     private Patient patient;
     public Patient getPatient() {
@@ -67,7 +69,7 @@ public abstract class MedicalHistoryEntry {
     /**
      * User who added the entry.
      */
-    @ManyToOne(fetch = FetchType.EAGER, optional = false, targetEntity = User.class)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = User.class)
     @JoinColumn(name = "added_by_user_id", referencedColumnName = "id", nullable = false)
     private User addedBy;
     public User getAddedBy() {
@@ -84,6 +86,10 @@ public abstract class MedicalHistoryEntry {
     private Instant addedDate;
     public Instant getAddedDate() {
         return addedDate;
+    }
+
+    public LocalDate getAddedDateFormatted() {
+        return Timestamp.from(this.getAddedDate()).toLocalDateTime().toLocalDate();
     }
     public void setAddedDate(Instant addedDate) {
         this.addedDate = addedDate;

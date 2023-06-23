@@ -190,21 +190,22 @@
             <children>
                 <HBox fx:id="buttonBox" alignment="CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
                     <children>
-                        <Button fx:id="editButton" mnemonicParsing="false" onAction="#editSave" prefWidth="200.0" text="Edytuj" styleClass="my-primary-button" >
+                        <Button fx:id="editButton" mnemonicParsing="false" onAction="#editSave" prefWidth="200.0" styleClass="my-primary-button" text="Edytuj">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
-                  <Button fx:id="deleteButton" layoutX="106.0" layoutY="44.0" mnemonicParsing="false" onAction="#delete" prefWidth="200.0" text="Usuń" styleClass="my-primary-button" >
+                  <Button fx:id="deleteButton" layoutX="106.0" layoutY="44.0" mnemonicParsing="false" onAction="#delete" prefWidth="200.0" styleClass="my-primary-button" text="Usuń">
                      <padding>
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>
                   </Button>
-                        <Button fx:id="IKPButton" mnemonicParsing="false" onAction="#sendToIKP" prefWidth="200.0" text="Przejdź do e-skierowania (IKP)" styleClass="my-primary-button" >
+                        <Button fx:id="IKPButton" mnemonicParsing="false" onAction="#sendToIKP" prefWidth="200.0" styleClass="my-primary-button" text="Przejdź do e-skierowania (IKP)">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
+                        <Button fx:id="printButton" mnemonicParsing="false" onAction="#referralReport" prefHeight="33.0" prefWidth="121.0" styleClass="my-primary-button" text="Drukuj" />
                     </children>
                <HBox.margin>
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />

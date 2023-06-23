@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
+<?import pl.edu.ur.pz.clinicapp.controls.WeekPane?>
+
+<VBox fx:id="content" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" minHeight="400.0" minWidth="600.0" prefHeight="540.0" prefWidth="720.0" spacing="8.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.ScheduleView">
+   <padding>
+      <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+   </padding>
+   <children>
+      <GridPane>
+        <columnConstraints>
+          <ColumnConstraints halignment="LEFT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+          <ColumnConstraints halignment="CENTER" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+            <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+        </columnConstraints>
+        <rowConstraints>
+          <RowConstraints vgrow="SOMETIMES" />
+        </rowConstraints>
+         <children>
+            <HBox alignment="CENTER" spacing="8.0" GridPane.columnIndex="1">
+               <children>
+                  <Button fx:id="previousWeekButton" mnemonicParsing="false" onAction="#goPreviousWeekAction" text="&lt;" />
+                  <DatePicker fx:id="datePicker" onAction="#datePickerAction" prefWidth="108.0" promptText="zawsze" styleClass="prompt-text-as-regular" stylesheets="@timetableEffectiveDatePicker.css" />
+                  <Button fx:id="nextWeekButton" mnemonicParsing="false" onAction="#goNextWeekAction" text="&gt;" />
+               </children>
+            </HBox>
+            <Text fx:id="headerText" strokeType="OUTSIDE" strokeWidth="0.0" text="Terminarz: Maciej Dąbrowski" />
+            <Text fx:id="extraText" strokeType="OUTSIDE" strokeWidth="0.0" text="Wypełnienie: 42%" GridPane.columnIndex="2" />
+         </children>
+      </GridPane>
+      <WeekPane fx:id="weekPane" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" />
+      <HBox alignment="CENTER_LEFT" spacing="8.0">
+         <children>
+            <Button fx:id="goTimetableButton" mnemonicParsing="false" onAction="#goTimetableAction" text="Przejdź do harmonogramu" />
+            <HBox alignment="CENTER" maxWidth="1.7976931348623157E308" spacing="8.0" HBox.hgrow="ALWAYS">
+               <children>
+                  <Button fx:id="newVisitButton" mnemonicParsing="false" onAction="#newVisitAction" text="Nowa wizyta" />
+                  <Button fx:id="newEntryButton" mnemonicParsing="false" onAction="#newEntryAction" text="Nowy inny wpis" />
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_RIGHT" spacing="8.0" HBox.hgrow="SOMETIMES">
+               <children>
+                   <Button text="Drukuj" mnemonicParsing="false" alignment="CENTER_RIGHT" onAction="#printTimetableAction"/>
+                  <Button fx:id="detailsButton" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" onAction="#detailsAction" text="Szczegóły" />
+               </children>
+            </HBox>
+         </children>
+      </HBox>
+   </children>
+</VBox>

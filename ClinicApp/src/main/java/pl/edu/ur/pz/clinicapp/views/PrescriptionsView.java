@@ -10,16 +10,18 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.*;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.util.Duration;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
+import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
@@ -29,39 +31,110 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.LocalDate;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
 public class PrescriptionsView extends ChildControllerBase<MainWindowController> implements Initializable {
-    @FXML
-    protected VBox vBox;
-    @FXML
-    protected TableView<Prescription> table;
-    @FXML
-    protected TableColumn<Prescription, String> patientCol;
-    @FXML
-    protected TableColumn<Prescription, String> dateCol;
-    @FXML
-    protected TableColumn<Prescription, String> doctorCol;
-    @FXML
-    protected TableColumn<Prescription, String> codeCol;
-    @FXML
-    protected TableColumn<Prescription, String> tagsCol;
-    @FXML
-    protected Button addButton;
-    @FXML
-    protected Button moveButton;
-    @FXML
-    protected Button detailsButton;
-    @FXML
-    protected TextField searchTextField;
+    @FXML protected VBox vBox;
+    @FXML protected TableView<Prescription> table;
+    @FXML protected TableColumn<Prescription, String> patientCol;
+    @FXML protected TableColumn<Prescription, LocalDate> dateCol;
+    @FXML protected TableColumn<Prescription, String> doctorCol;
+    @FXML protected TableColumn<Prescription, String> codeCol;
+    @FXML protected TableColumn<Prescription, String> tagsCol;
+    @FXML protected Button addButton;
+    @FXML protected Button moveButton;
+    @FXML protected Button detailsButton;
+    @FXML protected TextField searchTextField;
+    @FXML protected ComboBox filter;
+    @FXML protected HBox buttonBox;
+    @FXML protected Text backText;
+    @FXML protected Button reportButton;
 
     protected ObservableList<Prescription> prescriptions = FXCollections.observableArrayList();
     protected FilteredList<Prescription> filteredPrescriptions = new FilteredList<>(prescriptions, b -> true);
+    Session session;
     protected PauseTransition searchDebounce;
-    Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
-    Query query = session.getNamedQuery("findUserPrescriptions").setParameter("uname",
-            ClinicApplication.getUser().getDatabaseUsername());
+
+    Query currQuery;
+    Query findUsersPrescriptions;
+    Query allPrescriptions;
+    Query createdPrescriptions;
+    Query findTargetUsersPrescriptions;
+
+    User.Role currUserRole;
+    private Patient targetPatient;
+
+    private enum filterMode{OWN, CREATED, ALL}
+    private static final EnumMap<filterMode, String> filteredModeToString = new EnumMap<>(filterMode.class);
+
+    /**
+     * Sets current query depending on user {@link pl.edu.ur.pz.clinicapp.models.User.Role}
+     * @param role Logged {@link User} {@link pl.edu.ur.pz.clinicapp.models.User.Role}
+     */
+    public void setCurrQuery(User.Role role){
+        if(currQuery == null){
+            if(role == User.Role.PATIENT){
+                currQuery = findUsersPrescriptions;
+            }else if(role == User.Role.DOCTOR){
+                currQuery = createdPrescriptions;
+            }else{
+                currQuery = allPrescriptions;
+            }
+        }
+    }
+
+
+    /**
+     * Sets available combobox options for filtering {@link Prescription}s according to given
+     * {@link pl.edu.ur.pz.clinicapp.models.User.Role}.
+     *
+     * @param role {@link  pl.edu.ur.pz.clinicapp.models.User.Role} of current user.
+     */
+    public void setFilterVals(User.Role role){
+        if(role == User.Role.PATIENT || targetPatient != null)
+            filter.setVisible(false);
+        else{
+            filter.setItems(FXCollections.observableArrayList(
+                    filteredModeToString.get(filterMode.ALL),
+                    filteredModeToString.get(filterMode.CREATED),
+                    filteredModeToString.get(filterMode.OWN)
+            ));
+            filter.setVisible(true);
+        }
+    }
+
+    /**
+     * Sets buttons visibility depending on logged {@link User} {@link pl.edu.ur.pz.clinicapp.models.User.Role}
+     * Sets cell values according to {@link Prescription} fields
+     * Adds listener that allows to select a {@link Prescription}
+     * @param url
+     * The location used to resolve relative paths for the root object, or
+     * {@code null} if the location is not known.
+     *
+     * @param resourceBundle
+     * The resources used to localize the root object, or {@code null} if
+     * the root object was not localized.
+     */
+    @Override
+    public void initialize(URL url, ResourceBundle resourceBundle) {
+        if (ClinicApplication.requireUser().getRole() == User.Role.PATIENT) {
+            patientCol.setVisible(false);
+            addButton.setVisible(false);
+        }
+
+        doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getDoctorName()));
+        patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatientName()));
+        codeCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getGovernmentId()));
+        tagsCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getStringTags()));
+        dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddedDateFormatted()));
+
+        table.getSelectionModel().selectedItemProperty().addListener(observable ->
+                detailsButton.setDisable(table.getSelectionModel().getSelectedItem() == null));
+
+    }
 
     /**
      * Default dispose method.
@@ -72,86 +145,102 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     }
 
     /**
-     * Initializes table cells and adds listener which enables or disables the edit/save button.
+     * Popluates view with data depending on context.
+     * Gets {@link Patient from context if present}
+     * Clears buttonBox and adds button depending on context.
+     * Maps filter modes to corresponding display strings.
+     * Sets the current query based on the target patient or user role.
+     * @param context Optional context arguments.
      */
     @Override
     public void populate(Object... context) {
+        if (currQuery == findTargetUsersPrescriptions) currQuery = null;
+        targetPatient = ((context.length > 0) ? ((Patient) context[0]) : null);
+        buttonBox.getChildren().clear();
+        if (targetPatient != null){
+            buttonBox.getChildren().add(detailsButton);
+            buttonBox.getChildren().add(reportButton);
+            if (!(currUserRole == User.Role.RECEPTION)) buttonBox.getChildren().add(addButton);
+            if (!vBox.getChildren().contains(backText)) vBox.getChildren().add(1, backText);
+            backText.setText("< Powrót do pacjenta " + targetPatient.getDisplayName());
+        }else {
+            buttonBox.getChildren().add(detailsButton);
+            buttonBox.getChildren().add(reportButton);
+            vBox.getChildren().remove(backText);
+        }
+
+        session = ClinicApplication.getEntityManager().unwrap(Session.class);
+        findUsersPrescriptions = session.getNamedQuery("findUsersPrescriptions").setParameter("patient",
+            ClinicApplication.requireUser().asPatient());
+        findTargetUsersPrescriptions = session.getNamedQuery("findUsersPrescriptions").setParameter("patient",
+                targetPatient);
+        allPrescriptions = session.getNamedQuery("allPrescriptions");
+        createdPrescriptions = session.getNamedQuery("createdPrescriptions").setParameter("user",
+                ClinicApplication.requireUser());
+
         table.getSelectionModel().clearSelection();
-
-        doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getDoctorName()));
-        patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatientName()));
-        codeCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getGovernmentId()));
-        tagsCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getStringTags()));
-        dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddedDate().toString()));
-
-        table.getSelectionModel().selectedItemProperty().addListener(observable ->
-                detailsButton.setDisable(table.getSelectionModel().getSelectedItem() == null));
 
         searchDebounce = new PauseTransition(Duration.millis(250));
         searchDebounce.setOnFinished(this::searchAction);
         searchTextField.textProperty().addListener((observable, oldValue, newValue) -> searchDebounce.playFromStart());
 
+        filteredModeToString.put(filterMode.OWN, "Moje recepty");
+        filteredModeToString.put(filterMode.CREATED, "Utworzone przeze mnie");
+        filteredModeToString.put(filterMode.ALL, "Wszystkie");
+
+        User.Role currUserRole = ClinicApplication.requireUser().getRole();
+        if(targetPatient != null){
+            currQuery = findTargetUsersPrescriptions;
+        }else setCurrQuery(currUserRole);
+        setFilterVals(currUserRole);
+
+
+        if(currQuery == allPrescriptions) filter.setValue(filteredModeToString.get(filterMode.ALL));
+        else if(currQuery == createdPrescriptions) filter.setValue(filteredModeToString.get(filterMode.CREATED));
+        else if(currQuery == findUsersPrescriptions) filter.setValue(filteredModeToString.get(filterMode.OWN));
+
         refresh();
-
-        // if search field is not empty, perform search again - for user's convenience (no need to hit enter/type again)
-        if (searchTextField.getText() != null && !searchTextField.getText().trim().equals("")) {
-            searchAction(new ActionEvent());
-        }
-
-//        doctorCol.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getDoctorName()));
-//        doctorCol.setCellFactory(column -> new TableCell<>() {
-//            @Override
-//            protected void updateItem(String item, boolean empty) {
-//                super.updateItem(item, empty);
-//                if (empty || item == null)
-//                    setText(null);
-//                else
-//                    setText(item);
-//            }
-
-        //Testing
-//        idColumn.setCellValueFactory(new PropertyValueFactory<>("id"));
-//        prescriptions2.addAll(query.getResultList());
-//        table2.setItems(prescriptions2);
-        //
-    }
-
-    @Override
-    public void refresh() {
-        table.getSelectionModel().clearSelection();
-        List results = query.getResultList();
-        for (Object presElem : results) {
-            ClinicApplication.getEntityManager().refresh(presElem);
-        }
-        prescriptions.setAll(query.getResultList());
-        table.setItems(prescriptions);
     }
 
     /**
-     * Initialize responsive table view
+     * Sets values of table cells.
+     * If search field is not empty, perform search again - for user's convenience (no need to hit enter/type again)
      */
     @Override
-    public void initialize(URL url, ResourceBundle resourceBundle) {
-        if (ClinicApplication.getUser().getRole() == User.Role.PATIENT) {
-            patientCol.setVisible(false);
-            addButton.setVisible(false);
-            vBox.widthProperty().addListener((obs, oldVal, newVal) -> {
-                double tableWidth = newVal.doubleValue() - 50;
-                dateCol.setPrefWidth(tableWidth * 0.2);
-                doctorCol.setPrefWidth(tableWidth * 0.2);
-                codeCol.setPrefWidth(tableWidth * 0.2);
-            });
-        } else {
-            vBox.widthProperty().addListener((obs, oldVal, newVal) -> {
-                double tableWidth = newVal.doubleValue() - 50;
-                patientCol.setPrefWidth(tableWidth * 0.2);
-                dateCol.setPrefWidth(tableWidth * 0.2);
-                doctorCol.setPrefWidth(tableWidth * 0.2);
-                codeCol.setPrefWidth(tableWidth * 0.2);
-            });
+    public void refresh() {
+        table.getSelectionModel().clearSelection();
+        List results = currQuery.getResultList();
+        for (Object presElem : results) {
+            ClinicApplication.getEntityManager().refresh(presElem);
+        }
+        prescriptions.setAll(currQuery.getResultList());
+        table.setItems(prescriptions);
+
+
+        if (searchTextField.getText() != null && !searchTextField.getText().trim().equals("")) {
+            searchAction(new ActionEvent());
         }
     }
 
+    /**
+     * Changes items in table according to selected filter mode.
+     */
+    @FXML
+    public void changeFilter(){
+        if (filter.getSelectionModel().getSelectedItem() == null || targetPatient != null) return;
+        if (filter.getSelectionModel().getSelectedItem() == filteredModeToString.get(filterMode.ALL))
+            currQuery = allPrescriptions;
+        else if (filter.getSelectionModel().getSelectedItem() == filteredModeToString.get(filterMode.CREATED))
+            currQuery = createdPrescriptions;
+        else currQuery = findUsersPrescriptions;
+
+    }
+
+    /**
+     * Filters table rows according to text typed in the search field.
+     *
+     * @param event Performed action.
+     */
     @FXML
     public void searchAction(ActionEvent event) {
         searchDebounce.stop();
@@ -177,14 +266,17 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     @FXML
     public void displayDetails() {
         this.getParentController().goToView(MainWindowController.Views.PRESCRIPTION_DETAILS,
-                PrescriptionDetailsView.PrMode.DETAILS, table.getSelectionModel().getSelectedItem());
+                PrescriptionDetailsView.Mode.DETAILS, table.getSelectionModel().getSelectedItem(), targetPatient);
+
     }
 
-    //Insert for testing purposes - adds a prescription for current user instead of patient
+    /**
+     * Opens details view in CREATE mode.
+     */
     @FXML
     protected void addPrescription() {
         this.getParentController().goToView(MainWindowController.Views.PRESCRIPTION_DETAILS,
-                PrescriptionDetailsView.PrMode.CREATE, ClinicApplication.getUser());
+                PrescriptionDetailsView.Mode.CREATE, targetPatient);
     }
 
     /**
@@ -197,5 +289,23 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
         } catch (IOException | URISyntaxException e) {
             e.printStackTrace();
         }
+    }
+
+    /**
+     * Goes back to {@link PatientDetailsView}
+     */
+    @FXML
+    public void onBackClick(){
+        this.getParentController().goToView(MainWindowController.Views.PATIENT_DETAILS,
+        PatientDetailsView.RefMode.DETAILS, targetPatient);
+    }
+
+    /**
+     * Opens {@link ReportDialog}, passing current {@link Prescription} list
+     */
+    @FXML
+    protected void printPrescriptions() {
+        this.getParentController().goToView(MainWindowController.Views.REPORTS, ReportDialog.Mode.PRESCRIPTIONS, prescriptions);
+
     }
 }

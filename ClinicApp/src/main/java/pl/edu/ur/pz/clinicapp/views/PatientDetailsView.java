@@ -4,6 +4,7 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -14,7 +15,9 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
+import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
@@ -23,7 +26,11 @@ import java.util.Optional;
 
 public class PatientDetailsView extends ChildControllerBase<MainWindowController> {
 
-    @FXML public HBox buttonBox;
+    public HBox CRUDBox;
+    @FXML protected HBox medEntryBox;
+    @FXML protected Button addVisitButton;
+    @FXML protected Button addPrescriptionButton;
+    @FXML protected Button addReferralButton;
     @FXML protected TextField nameField;
     @FXML protected TextField surnameField;
     @FXML protected TextField emailField;
@@ -96,10 +103,10 @@ public class PatientDetailsView extends ChildControllerBase<MainWindowController
         if (editState.getValue()) {
             if (exitConfirm()) {
                 editState.setValue(!editState.getValue());
-                this.getParentController().goBack();
+                this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS);
             }
         } else {
-            this.getParentController().goBack();
+            this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS);
         }
     }
 
@@ -161,17 +168,17 @@ public class PatientDetailsView extends ChildControllerBase<MainWindowController
             ClinicApplication.getEntityManager().refresh(pat);
 
             if (role != User.Role.ADMIN && pat.getId() != ClinicApplication.getUser().getId()) {
-                buttonBox.getChildren().remove(saveButton);
-                buttonBox.getChildren().remove(deleteButton);
+                CRUDBox.getChildren().remove(saveButton);
+                CRUDBox.getChildren().remove(deleteButton);
             } else {
-                if (!buttonBox.getChildren().contains(saveButton)) buttonBox.getChildren().add(saveButton);
-                if (!buttonBox.getChildren().contains(deleteButton)) buttonBox.getChildren().add(deleteButton);
+                if (!CRUDBox.getChildren().contains(saveButton)) CRUDBox.getChildren().add(saveButton);
+                if (!CRUDBox.getChildren().contains(deleteButton)) CRUDBox.getChildren().add(deleteButton);
             }
             refresh();
         } else {
 
-            buttonBox.getChildren().remove(deleteButton);
-            if (!buttonBox.getChildren().contains(saveButton)) buttonBox.getChildren().add(saveButton);
+            CRUDBox.getChildren().remove(deleteButton);
+            if (!CRUDBox.getChildren().contains(saveButton)) CRUDBox.getChildren().add(saveButton);
 
             nameField.setText(null);
             surnameField.setText(null);
@@ -267,6 +274,20 @@ public class PatientDetailsView extends ChildControllerBase<MainWindowController
         } else {
             alert.close();
         }
+    }
+
+    public void addVisit() {
+    }
+
+    /**
+     * Opens {@link PrescriptionsView}, passing current {@link Patient}
+     */
+    public void addPrescription() {this.getParentController().goToView(MainWindowController.Views.PRESCRIPTIONS, pat);
+    }
+
+
+    public void addReferral() {
+        this.getParentController().goToView(MainWindowController.Views.REFERRALS, pat);
     }
 
 }

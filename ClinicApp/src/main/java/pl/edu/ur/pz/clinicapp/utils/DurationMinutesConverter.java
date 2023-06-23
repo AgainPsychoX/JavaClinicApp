@@ -5,15 +5,15 @@ import javax.persistence.Converter;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 
-@Converter(autoApply = true)
-public class DurationMinutesConverter implements AttributeConverter<Duration, Long> {
+@Converter(autoApply = false)
+public class DurationMinutesConverter implements AttributeConverter<Duration, Integer> {
     @Override
-    public Long convertToDatabaseColumn(Duration attribute) {
-        return attribute.toMinutes();
+    public Integer convertToDatabaseColumn(Duration attribute) {
+        return (int) attribute.toMinutes();
     }
 
     @Override
-    public Duration convertToEntityAttribute(Long duration) {
+    public Duration convertToEntityAttribute(Integer duration) {
         return Duration.of(duration, ChronoUnit.MINUTES);
     }
 }

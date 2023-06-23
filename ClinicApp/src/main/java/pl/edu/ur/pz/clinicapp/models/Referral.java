@@ -1,16 +1,19 @@
 package pl.edu.ur.pz.clinicapp.models;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Date;
 
 @NamedNativeQueries(
         {
-                @NamedNativeQuery(
-                        name = "findUsersReferrals",
-                        query = "SELECT * FROM referrals R INNER JOIN patients P ON R.patient_id=P.id "
-                                + "INNER JOIN users U on U.id = P.id WHERE U.internal_name = :uname",
-                        resultClass = Referral.class
-                ),
+//                @NamedNativeQuery(
+//                        name = "findUsersReferrals",
+//                        query = "SELECT * FROM referrals R INNER JOIN patients P ON R.patient_id=P.id "
+//                                + "INNER JOIN users U on U.id = P.id WHERE U.internal_name = :uname",
+//                        resultClass = Referral.class
+//                ),
                 @NamedNativeQuery(
                         name = "editReferral",
                         query = "UPDATE referrals "
@@ -33,6 +36,10 @@ import java.time.Instant;
 )
 
 @NamedQueries({
+        @NamedQuery(
+                name = "findUsersReferrals",
+                query = "FROM Referral R WHERE R.patient = :patient"
+        ),
         @NamedQuery(
                 name = "allReferrals",
                 query = "FROM Referral"
@@ -98,6 +105,11 @@ public class Referral extends MedicalHistoryEntry {
 
     public Instant getFulfilmentDate() {
         return fulfilmentDate;
+    }
+    public LocalDate getFulfilmentDateFormatted() {
+        if(this.getFulfilmentDate()!=null) {
+            return Timestamp.from(this.getFulfilmentDate()).toLocalDateTime().toLocalDate();
+        }else return null;
     }
 
     public void setFulfilmentDate(Instant fulfilmentDate) {

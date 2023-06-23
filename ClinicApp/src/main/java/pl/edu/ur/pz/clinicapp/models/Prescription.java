@@ -5,15 +5,19 @@ import javax.persistence.*;
 @Entity
 @Table(name = "prescriptions")
 @NamedNativeQueries({
-        @NamedNativeQuery(
-                name = "findUserPrescriptions",
-                query = "SELECT * FROM prescriptions Pr INNER JOIN patients Pat ON Pr.patient_id = Pat.id " +
-                        "INNER JOIN users U on U.id = Pat.id WHERE U.internal_name = :uname",
-                resultClass = Prescription.class
-        ),
+//        @NamedNativeQuery(
+//                name = "findUserPrescriptions",
+//                query = "SELECT * FROM prescriptions Pr INNER JOIN patients Pat ON Pr.patient_id = Pat.id " +
+//                        "INNER JOIN users U on U.id = Pat.id WHERE U.internal_name = :uname",
+//                resultClass = Prescription.class
+//        ),
         @NamedNativeQuery(
                 name = "editPrescription",
-                query = "UPDATE prescriptions SET notes = :notes, tags = :tags, government_id = :governmentID WHERE id = :prId",
+                query = "UPDATE prescriptions " +
+                        "SET notes = :notes, " +
+                        "tags = :tags, " +
+                        "government_id = :governmentID " +
+                        "WHERE id = :prId",
                 resultClass = Prescription.class
         ),
 
@@ -23,6 +27,21 @@ import javax.persistence.*;
                 resultClass = Prescription.class
         )
 })
+
+@NamedQueries({
+            @NamedQuery(
+                    name = "findUsersPrescriptions",
+                    query = "FROM Prescription P WHERE P.patient = :patient"
+            ),
+            @NamedQuery(
+                    name = "allPrescriptions",
+                    query = "FROM Prescription"
+            ),
+            @NamedQuery(
+                    name = "createdPrescriptions",
+                    query = "FROM Prescription  WHERE addedBy = :user"
+            ),
+        })
 
 public class Prescription extends MedicalHistoryEntry {
     @Id
@@ -50,10 +69,6 @@ public class Prescription extends MedicalHistoryEntry {
      */
     public String getDoctorName() {
         return this.getAddedBy().getDisplayName();
-    }
-
-    public String getPatientName(){
-        return this.getPatient().getDisplayName();
     }
 
     public Integer getId(){

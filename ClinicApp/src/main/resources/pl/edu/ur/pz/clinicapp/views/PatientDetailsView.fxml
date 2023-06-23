@@ -148,14 +148,14 @@
                 </GridPane>
                 <HBox alignment="BOTTOM_CENTER" maxHeight="100.0" maxWidth="1000.0">
                     <children>
-                        <HBox fx:id="buttonBox" alignment="CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
+                        <HBox fx:id="CRUDBox" alignment="CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
                             <children>
-                                <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveAction" prefHeight="34.0" prefWidth="196.0" text="Zapisz" textAlignment="CENTER">
+                                <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveAction" prefHeight="34.0" prefWidth="196.0" styleClass="my-primary-button" text="Zapisz" textAlignment="CENTER">
                                     <padding>
                                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                                     </padding>
                                 </Button>
-                                <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#deleteAction" prefWidth="200.0" text="Usuń">
+                                <Button fx:id="deleteButton" mnemonicParsing="false" onAction="#deleteAction" prefWidth="200.0" styleClass="my-primary-button" text="Usuń">
                                     <padding>
                                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                                     </padding>
@@ -167,6 +167,32 @@
                         </HBox>
                     </children>
                 </HBox>
+            <HBox alignment="BOTTOM_CENTER" layoutX="10.0" layoutY="384.0" maxHeight="100.0" maxWidth="1000.0">
+               <children>
+                  <HBox fx:id="medEntryBox" alignment="CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Button fx:id="addVisitButton" mnemonicParsing="false" onAction="#addVisit" prefHeight="34.0" prefWidth="196.0" styleClass="my-primary-button" text="Wizyty" textAlignment="CENTER">
+                           <padding>
+                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                           </padding>
+                        </Button>
+                        <Button fx:id="addPrescriptionButton" mnemonicParsing="false" onAction="#addPrescription" prefWidth="200.0" styleClass="my-primary-button" text="Recepty">
+                           <padding>
+                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                           </padding>
+                        </Button>
+                        <Button fx:id="addReferralButton" mnemonicParsing="false" onAction="#addReferral" prefWidth="200.0" styleClass="my-primary-button" text="Skierowania">
+                           <padding>
+                              <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                           </padding>
+                        </Button>
+                     </children>
+                     <HBox.margin>
+                        <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
+                     </HBox.margin>
+                  </HBox>
+               </children>
+            </HBox>
             </children>
             <opaqueInsets>
                 <Insets />
