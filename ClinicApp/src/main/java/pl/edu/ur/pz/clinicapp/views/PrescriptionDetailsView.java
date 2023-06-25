@@ -477,7 +477,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
                     "*.pdf"));
             File file = fileChooser.showSaveDialog(new Stage());
 
-            Template template = configuration.getTemplate("prescriptionDetailsTemplate.ftl");
+            Template template = configuration.getTemplate("prescriptionDetailsTemplate.ftl", "UTF-8");
             File outputFile = new File("output.html");
             Writer writer = new FileWriter(outputFile);
 

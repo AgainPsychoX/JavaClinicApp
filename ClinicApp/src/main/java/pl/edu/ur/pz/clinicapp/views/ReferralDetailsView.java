@@ -525,7 +525,7 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
                     "*.pdf"));
             File file = fileChooser.showSaveDialog(new Stage());
 
-            Template template = configuration.getTemplate("referralDetailsTemplate.ftl");
+            Template template = configuration.getTemplate("referralDetailsTemplate.ftl", "UTF-8");
             File outputFile = new File("output.html");
             Writer writer = new FileWriter(outputFile);
 
@@ -550,11 +550,13 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
             Alert alert = new Alert(Alert.AlertType.INFORMATION);
             alert.setTitle("Generowanie skierowania");
             alert.setHeaderText("Utworzono skierowanie");
+            alert.showAndWait();
         } catch (FileNotFoundException | TemplateException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Błąd generowania");
             alert.setHeaderText("Wystąpił błąd");
             alert.setContentText(e.getLocalizedMessage());
+            alert.showAndWait();
             throw new RuntimeException(e);
         }
     }
