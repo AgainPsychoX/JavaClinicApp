@@ -12,6 +12,7 @@ module pl.edu.ur.pz.clinicapp {
     requires html2pdf;
     requires freemarker;
     requires javafx.swing;
+    requires itextpdf;
 
     exports pl.edu.ur.pz.clinicapp;
     exports pl.edu.ur.pz.clinicapp.controls;

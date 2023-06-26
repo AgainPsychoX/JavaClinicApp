@@ -19,9 +19,11 @@ import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.net.URL;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -54,6 +56,8 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
     Query deleteQuery = session.getNamedQuery("deleteAppointment");
 
     private Timestamp timestamp;
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                                                    .withZone(ZoneId.systemDefault());
 
     /**
      * Get current edit state (fields editable or non-editable).
@@ -250,6 +254,8 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
                 transaction.commit();
                 ClinicApplication.getEntityManager().refresh(appointment);
                 datePicker.setDisable(true);
+                createNotif(doctorCombo.getValue().asUser(), patientCombo.getValue().asUser(),
+                        "Zmieniono datę wizyty na: " + formatter.format(timestamp.toInstant()) + ".");
             }
         }
     }
@@ -284,6 +290,8 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             alert.setTitle("Dodawanie wizyty");
             alert.setHeaderText("Pomyślnie dodano wizytę.");
             alert.showAndWait();
+            createNotif(doctorCombo.getValue().asUser(), patientCombo.getValue().asUser(),
+                    "Stworzono wizytę wizytę na dzień: " + formatter.format(timestamp.toInstant()) +'.');
             this.getParentController().goBack();
         }
     }
@@ -292,6 +300,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
      */
     @FXML
     public void deleteAppointment() {
+        Instant tempDate;
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Odwoływanie wizyty");
         alert.setHeaderText("Czy na pewno chcesz odwołać wizytę?");
@@ -300,9 +309,12 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
         Optional<ButtonType> result = alert.showAndWait();
         if (result.get() == ButtonType.OK) {
             deleteQuery.setParameter("id", appointment.getId());
+            tempDate = appointment.getDate();
             Transaction transaction = session.beginTransaction();
             deleteQuery.executeUpdate();
             transaction.commit();
+            createNotif(doctorCombo.getValue().asUser(), patientCombo.getValue().asUser(),
+                    "Odwołano wizytę z dnia: " + formatter.format(tempDate) +"." );
             this.getParentController().goBack();
         } else {
             alert.close();
@@ -383,5 +395,24 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             timestamp = Timestamp.valueOf(begin.toLocalDateTime());
             // TODO: ditch the Timestamp class for Instant or ZonedDateTime
         }
+    }
+
+    /**
+     * Function for creating notifications
+     * @param destinationUser user that notification is sent to
+     * @param text content of notification
+     * @param sourceUser user that sends notification
+     **/
+    public void createNotif(User destinationUser, User sourceUser, String text) {
+        Notification notif = new Notification();
+        notif.setSourceUser(sourceUser);
+        notif.setDestinationUser(destinationUser);
+        notif.setSentDate(Instant.now().truncatedTo(ChronoUnit.SECONDS));
+        notif.setContent(text);
+        Transaction transaction = session.beginTransaction();
+        session.persist(notif);
+        transaction.commit();
+        System.out.println("Utworzone");
+
     }
 }
