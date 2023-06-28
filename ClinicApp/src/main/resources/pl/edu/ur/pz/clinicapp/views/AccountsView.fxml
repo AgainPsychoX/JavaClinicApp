@@ -46,11 +46,13 @@
                      </padding>
                   </Button>
                   <Button fx:id="markUnreadButton1" disable="true" mnemonicParsing="false" prefWidth="200.0" styleClass="my-primary-button" text="Edytuj">
+                  <Button fx:id="addButton" mnemonicParsing="false" onAction="#addUser" prefWidth="200.0" text="Dodaj użytkownika">
                      <padding>
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>
                   </Button>
                   <Button fx:id="markUnreadButton" disable="true" mnemonicParsing="false" prefWidth="200.0" styleClass="my-primary-button" text="Usuń">
+                  <Button fx:id="detailsButton" disable="true" mnemonicParsing="false" onAction="#displayDetails" prefWidth="200.0" text="Przejdź do szczegółów">
                      <padding>
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>

@@ -290,5 +290,79 @@ public class AccountDetailsView extends ChildControllerBase<MainWindowController
         // TODO: toast?
 
         setMode(Mode.VIEW);
+    @FXML
+    protected void editSave(){
+        try{
+            Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
+            session.beginTransaction();
+
+            if(currMode == AccMode.DETAILS){
+                //TODO update
+            }
+
+            //CREATE
+            // TODO proper role name for insertion, create Doctor account
+            else{
+                if(nameTextField.getText() == null || surnameTextField.getText() == null ||
+                        peselTextField.getText() == null ||  addressTextField.getText() == null ||
+                        postTextField.getText() == null || phoneTextField.getText() == null ||
+                        emailTextField.getText() == null){
+                    Alert alert = new Alert(Alert.AlertType.ERROR);
+                    alert.setTitle("Błąd zapisu");
+                    alert.setHeaderText("Nie wypełniono wymaganych pól");
+                    alert.setContentText("Wszystkie pola są wymagane");
+                    alert.showAndWait();
+                    editState.setValue(!editState.getValue());
+                }
+                else {
+
+                    String dbUName;
+                    while (true) {
+                        int random = ThreadLocalRandom.current().nextInt(1000, 10000);
+                        dbUName = "u" + Character.toLowerCase(nameTextField.getText().charAt(0))
+                                + Character.toLowerCase(surnameTextField.getText().charAt(0)) + random;
+                        findDatabaseUserQuery.setParameter("rolname", dbUName);
+                        if (findDatabaseUserQuery.getResultList().size() == 0) break;
+                    }
+                    String temp = roleComboBox.getSelectionModel().getSelectedItem().toString();
+                    User newUser = new User();
+                    newUser.setDatabaseUsername(dbUName);
+                    newUser.setEmail((emailTextField.getText() == null || emailTextField.getText().isBlank()) ? null :
+                            emailTextField.getText().trim());
+                    newUser.setName(nameTextField.getText().trim());
+                    newUser.setPhone((phoneTextField.getText() == null || phoneTextField.getText().isBlank()) ? null :
+                            phoneTextField.getText().trim());
+                    newUser.setRole(User.Role.PATIENT); //I don't work properly
+                    newUser.setSurname(surnameTextField.getText().trim());
+                    session.persist(newUser);
+
+                    Patient newPatient = new Patient("12", "Rzeszów", peselTextField.getText(),
+                            "Rzeszów", "35-301", "Rejtana");
+                    session.persist(newPatient);
+
+                    //If creating doctor - add new doctor
+//                    if (roleComboBox.getSelectionModel().getSelectedItem().equals("Lekarz")) {
+//                        Doctor newDoctor = new Doctor();
+//                        session.persist(newDoctor);
+//                    }
+
+                    session.getTransaction().commit();
+
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                    alert.setTitle("Dodawanie użytkownika");
+                    alert.setHeaderText("Pomyślnie dodano użytkownika");
+                    alert.setContentText("ID" + newUser.getDatabaseUsername());
+                    this.getParentController().goBack();
+                    return;
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Błąd zapisu");
+            alert.setContentText(e.getLocalizedMessage());
+            alert.showAndWait();
+        }
     }
+
+    public enum AccMode{DETAILS, CREATE}
 }
