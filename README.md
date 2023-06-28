@@ -78,7 +78,7 @@ System pozwala na łatwe zarządzanie przychodnią, od rejestracji wizyt przez t
 - Zakładka raportów 
 	- Generowanie raportów
 - Zakładka ustawień 
-...
+# To Do
 
 ## Design 
 
@@ -87,9 +87,11 @@ https://www.figma.com/team_invite/redeem/x6u8JQFmyBvkORG4VOMaAp
 ## Typy wymaganych dokumentów w projekcie oraz dostęp do nich 
 
 - Raporty PDF 
-	- rodzaje raportów
-- Inne dokumenty:
-	- ...
+	- raport recept
+	- raport skierowań
+	- raport terminarza
+	- raport zawierajacy 20 najnowszych użytkowników systemu
+
 
 ## Przepływ informacji w środowisku systemu 
 
@@ -161,11 +163,11 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 	![Screenshot](/Diagramy/Tworzeniekontaseq.png)
 	![Screenshot](/Diagramy/Ustalenietermianrzesek.png)
 - ###### [Diagram klas]
-	Wstawić rys. diagramu UML
+	![Screenshot](/Diagramy/ClassDiagram.png)
 
 ## Baza danych
 ###### Diagram ERD
-![Screenshot](/Diagramy/ERD.jpg)
+![Screenshot](/Diagramy/ERD.png)
 
 ###### Opis bazy danych
 + Użytkownicy
@@ -202,9 +204,7 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 	+ informacja zwrotna (po skierowaniu)
 	+ ID z systemu rządowego e-skierowań
 + Terminarz
-	+ zbiór ciągłych zajętych przedziałów czasowych
-		+ od, do
-		+ powiązana wizyta LUB specjalna wartość dla urlopu/niedostępności
+	+ zbiór ciągłych zajętych przedziałów czasowych dla każdego dnia tygodnia
   	+ system tworzy wstępne przedziały wg. harmonogramu lekarza (dni i godziny przyjęć w ciągu tygodnia).
   	+ lekarz może uzupełnić na przyszłość terminarz (urlopy, sytuacje losowe itd)
 + Powiadomonienia
@@ -214,14 +214,11 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 	+ data przeczytania 
 	+ treść
 
-###### Skrypt do utworzenia struktury bazy danych
-
 
 ## Wykorzystane technologie 
 - Język Java 17
 	- JavaFX
 	- Hibernate
 - Baza danych PostgreSQL
-- Inne z opisem
 
 ## Pliki instalacyjne wraz z opisem instalacji i konfiguracji wraz pierwszego uruchomienia
