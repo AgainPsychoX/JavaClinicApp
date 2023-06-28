@@ -202,12 +202,12 @@
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
-                        <Button fx:id="editButton" mnemonicParsing="false" onAction="#editSave" prefWidth="200.0" text="Edytuj" styleClass="my-primary-button">
+                        <Button fx:id="editButton" mnemonicParsing="false" onAction="#editAction" prefWidth="200.0" text="Edytuj" styleClass="my-primary-button">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
-                  <Button fx:id="saveButton" mnemonicParsing="false" onAction="#editSave" prefWidth="200.0" text="Zapisz" styleClass="my-primary-button">
+                  <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveButton" prefWidth="200.0" text="Zapisz" styleClass="my-primary-button">
                      <padding>
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>

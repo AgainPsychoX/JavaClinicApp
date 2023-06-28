@@ -20,7 +20,9 @@ import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.net.URL;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class AccountsView extends ChildControllerBase<MainWindowController> implements Initializable {
@@ -31,25 +33,40 @@ public class AccountsView extends ChildControllerBase<MainWindowController> impl
     @FXML protected TableColumn<User, String> surnameCol;
     @FXML protected TableColumn<User, String> emailCol;
     @FXML protected TableColumn<User, String> phoneCol;
-    @FXML protected ComboBox<String> accountTypeComboBox;
+    @FXML protected ComboBox filter;
     @FXML protected Button detailsButton;
     @FXML protected TextField searchTextField;
 
     protected ObservableList<User> users = FXCollections.observableArrayList();
     protected FilteredList<User> filteredUsers = new FilteredList<>(users, b -> true);
     protected PauseTransition searchDebounce;
-    Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
-    Query query = session.getNamedQuery("users");
-    @Override
-    public void dispose() {
-        super.dispose();
+    Session session;
+    Query currQuery;
+    Query allUsers;
+    Query allDoctors;
+    Query allWorkers;
+    Query allPatients;
+
+    User.Role currUserRole;
+    private enum filterMode{ALL, DOCTORS, WORKERS, PATIENTS}
+    private static final EnumMap<AccountsView.filterMode, String> filteredModeToString = new EnumMap<>(AccountsView.filterMode.class);
+
+    /**
+     * Sets available combobox options for filtering {@link User}s
+     */
+    public void setFilterVals(){
+            filter.setItems(FXCollections.observableArrayList(
+                    filteredModeToString.get(filterMode.ALL),
+                    filteredModeToString.get(filterMode.DOCTORS),
+                    filteredModeToString.get(filterMode.WORKERS),
+                    filteredModeToString.get(filterMode.PATIENTS)
+            ));
+            filter.setVisible(true);
     }
 
     @Override
-    public void populate(Object... context) {
-        table.getSelectionModel().clearSelection();
-
-        idCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getId()));
+    public void initialize(URL location, ResourceBundle resources) {
+//        idCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getId()));
         nameCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getName()));
         surnameCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSurname()));
         emailCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getEmail()));
@@ -57,9 +74,34 @@ public class AccountsView extends ChildControllerBase<MainWindowController> impl
         table.getSelectionModel().selectedItemProperty().addListener(observable ->
                 detailsButton.setDisable(table.getSelectionModel().getSelectedItem() == null));
 
+    }
+
+
+    @Override
+    public void populate(Object... context) {
+        session = ClinicApplication.getEntityManager().unwrap(Session.class);
+        allUsers = session.getNamedQuery("allUsers");
+        allDoctors = session.getNamedQuery("allDoctors");
+        allWorkers = session.getNamedQuery("allWorkers");
+        allPatients = session.getNamedQuery("allPatients");
+
+        table.getSelectionModel().clearSelection();
+
         searchDebounce = new PauseTransition(Duration.millis(250));
         searchDebounce.setOnFinished(this::searchAction);
         searchTextField.textProperty().addListener((observable, oldValue, newValue) -> searchDebounce.playFromStart());
+
+        filteredModeToString.put(filterMode.ALL, "Wszyscy użytkownicy");
+        filteredModeToString.put(filterMode.DOCTORS, "Lekarze");
+        filteredModeToString.put(filterMode.PATIENTS, "Pacjenci");
+        filteredModeToString.put(filterMode.WORKERS, "Pozostali praocownicy");
+
+        currQuery = allUsers;
+        setFilterVals();
+
+        if(currQuery == allDoctors) filter.setValue(filteredModeToString.get(filterMode.ALL));
+        else if(currQuery == allPatients) filter.setValue(filteredModeToString.get(filterMode.PATIENTS));
+        else if(currQuery == allWorkers) filter.setValue(filteredModeToString.get(filterMode.WORKERS));
 
         refresh();
     }
@@ -67,46 +109,51 @@ public class AccountsView extends ChildControllerBase<MainWindowController> impl
     @Override
     public void refresh() {
         table.getSelectionModel().clearSelection();
-        List results = query.getResultList();
+        List results = currQuery.getResultList();
         for (Object presElem : results){
             ClinicApplication.getEntityManager().refresh(presElem);
         }
-        users.setAll(query.getResultList());
+        users.setAll(currQuery.getResultList());
         table.setItems(users);
-    }
 
-    @FXML
-    protected void filterTable(){
-        String selectedItem = accountTypeComboBox.getSelectionModel().getSelectedItem();
-        switch (selectedItem) {
-            case "Wszyscy" -> query = session.getNamedQuery("findAllUsers");
-            case "Lekarze" -> query = session.getNamedQuery("findFilteredUsers")
-                    .setParameter("role", "DOCTOR");
-            case "Pacjenci" -> query = session.getNamedQuery("findFilteredUsers")
-                    .setParameter("role", "PATIENT");
-            case "Pielęgniarki" -> query = session.getNamedQuery("findFilteredUsers")
-                    .setParameter("role", "NURSE");
-            case "Recepcja" -> query = session.getNamedQuery("findFilteredUsers")
-                    .setParameter("role", "RECEPTION");
+        if (searchTextField.getText() != null && !searchTextField.getText().trim().equals("")) {
+            searchAction(new ActionEvent());
         }
-        refresh();
-        }
+
+    }
 
     @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        accountTypeComboBox.getItems().addAll("Wszyscy", "Lekarze", "Pacjenci", "Pielęgniarki", "Recepcja");
+    public void dispose() {
+        super.dispose();
     }
+
+
+    @FXML
+    protected void changeFilter(){
+        if(filter.getSelectionModel().getSelectedItem() == null) return;
+        if(filter.getSelectionModel().getSelectedItem() == filteredModeToString.get(filterMode.ALL))
+            currQuery = allUsers;
+        else if (filter.getSelectionModel().getSelectedItem() == filteredModeToString.get(filterMode.DOCTORS))
+            currQuery = allDoctors;
+        else if(filter.getSelectionModel().getSelectedItem() == filteredModeToString.get(filterMode.PATIENTS))
+            currQuery = allPatients;
+        else
+            currQuery = allWorkers;
+
+        refresh();
+    }
+
 
     @FXML
     public void displayDetails(){
         this.getParentController().goToView(MainWindowController.Views.ACCOUNT_DETAILS,
-                AccountDetailsView.AccMode.DETAILS, table.getSelectionModel().getSelectedItem());
+                table.getSelectionModel().getSelectedItem(), AccountDetailsView.Mode.VIEW);
     }
 
     @FXML
     public void addUser(){
         this.getParentController().goToView(MainWindowController.Views.ACCOUNT_DETAILS,
-                AccountDetailsView.AccMode.CREATE, ClinicApplication.getUser());
+             ClinicApplication.getUser(), AccountDetailsView.Mode.CREATE);
     }
 
     @FXML
