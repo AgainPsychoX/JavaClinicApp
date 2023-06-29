@@ -17,6 +17,17 @@ import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Notification;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.ReportObject;
+
+import java.net.URL;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.ResourceBundle;
 
 import java.net.URL;
 import java.sql.Timestamp;
@@ -34,7 +45,7 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
     @FXML protected TableColumn<Notification, ZonedDateTime> dateCol;
     @FXML protected TableColumn<Notification, String> fromCol;
     @FXML protected TableColumn<Notification, String> contentCol;
-    @FXML protected TableColumn<Notification, Boolean> readCol;
+    @FXML protected TableColumn<Notification, String> readCol;
     @FXML protected Button markReadButton;
     @FXML protected Button markUnreadButton;
     @FXML protected Button deleteButton;
@@ -51,7 +62,7 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
         dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSentDate().atZone(ZoneId.systemDefault())));
         fromCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSourceUser().getDisplayName()));
         contentCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getContent()));
-        readCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().wasRead()));
+        readCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(wasReadPL(features.getValue().wasRead())));
 
         table.getSelectionModel().selectedItemProperty().addListener(observable -> {
             if (table.getSelectionModel().getSelectedItem() == null){
@@ -157,6 +168,16 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
             alert.close();
         }
 
+    }
+
+    /**
+     * Localization to polish.
+     * @return "Tak" if already read, "Nie" if pending.
+     */
+    public String wasReadPL(boolean b){
+        if (b) {
+            return "Tak";
+        }else return "Nie";
     }
 
 }
