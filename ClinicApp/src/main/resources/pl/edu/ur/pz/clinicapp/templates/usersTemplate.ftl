@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
 
     <style>
-        body {
+        body{
             font-family: Calibri, sans-serif;
         }
-
         .table-style {
             border-collapse: collapse;
             width: 100%;

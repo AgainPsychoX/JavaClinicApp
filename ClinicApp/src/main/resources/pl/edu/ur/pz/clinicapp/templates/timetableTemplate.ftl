@@ -3,10 +3,9 @@
     <meta charset="UTF-8">
 
     <style>
-        body {
+        body{
             font-family: Calibri, sans-serif;
         }
-
         img {
             width: 80%;
             margin: auto;

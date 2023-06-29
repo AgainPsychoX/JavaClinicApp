@@ -4,6 +4,9 @@ package pl.edu.ur.pz.clinicapp.dialogs;
 import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.html2pdf.resolver.font.DefaultFontProvider;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.pdf.BaseFont;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -29,6 +32,8 @@ import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DateUtils;
 import pl.edu.ur.pz.clinicapp.utils.ReportObject;
+import com.itextpdf.text.Font;
+
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -91,13 +96,14 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
         configuration.setSQLDateAndTimeTimeZone(TimeZone.getDefault());
 
         ConverterProperties properties = new ConverterProperties();
-        DefaultFontProvider fontProvider = new DefaultFontProvider(true, true,
-                true);
-
-        fontProvider.addFont(String.valueOf(ClinicApplication.class.getResource("fonts/calibri.ttf")));
-
-        properties.setFontProvider(fontProvider);
-        properties.setCharset("UTF-8");
+        properties.setFontProvider(new DefaultFontProvider(true, true, true));
+//        DefaultFontProvider fontProvider = new DefaultFontProvider(true, true,
+//                true);
+//
+//        fontProvider.addFont(String.valueOf(ClinicApplication.class.getResource("fonts/calibri.ttf")));
+//
+//        properties.setFontProvider(fontProvider);
+//        properties.setCharset("UTF-8");
         URL templatesURL = ClinicApplication.class.getResource("templates");
         return new ReportObject(configuration, properties, templatesURL);
     }
@@ -115,7 +121,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
     public void initialize(URL location, ResourceBundle resources) {
         ReportObject reportObject = createConfig();
         configuration = reportObject.getConfiguration();
-        ConverterProperties properties = reportObject.getProperties();
+        properties = reportObject.getProperties();
         URL templatesURL = reportObject.getTemplatesURL();
 
         selectedFields = new ArrayList<>();
@@ -380,7 +386,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
 
                 File file = fileChooser.showSaveDialog(new Stage());
 
-                Template template = configuration.getTemplate("referralsTemplate.ftl");
+                Template template = configuration.getTemplate("referralsTemplate.ftl", "UTF-8");
 
                 File outputFile = new File("output.html");
                 Writer writer = new FileWriter(outputFile);
@@ -432,7 +438,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
 
             File file = fileChooser.showSaveDialog(new Stage());
 
-            Template template = configuration.getTemplate("usersTemplate.ftl");
+            Template template = configuration.getTemplate("usersTemplate.ftl", "UTF-8");
 
             File outputFile = new File("output.html");
             Writer writer = new FileWriter(outputFile);
@@ -496,9 +502,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
                 }
 
                 template.process(dataModel, writer);
-
                 writer.close();
-
                 HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file),
                         properties);
 
@@ -596,6 +600,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
      */
     @FXML
     public void onBackClick() {
+        dispose();
         this.getParentController().goBack();
     }
 

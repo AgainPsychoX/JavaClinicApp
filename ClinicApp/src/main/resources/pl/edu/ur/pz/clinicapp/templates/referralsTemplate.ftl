@@ -3,8 +3,8 @@
     <meta charset="UTF-8">
 
     <style>
-        body {
-            font-family: Calibri, sans-serif;
+        body{
+            font-family: Calibri;
         }
         .table-style {
             border-collapse: collapse;
@@ -77,7 +77,7 @@
                         <#elseif field == "addedDate">
                             <td>${referral.getAddedDateFormatted()}</td>
                         <#elseif field == "fulfilmentDate">
-                            <td>${referral.getFulfilmentDateFormated()}</td>
+                            <td>${referral.getFulfilmentDateFormatted()?default('')}</td>
                         <#else>
                             <td>${referral[field]?default('')}</td>
                         </#if>

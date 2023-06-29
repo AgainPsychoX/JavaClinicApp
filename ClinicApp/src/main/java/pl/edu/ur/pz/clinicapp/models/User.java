@@ -12,7 +12,11 @@ import java.util.List;
 @NamedQueries({
         @NamedQuery(name = "User.getCurrent", query = "FROM User u WHERE u.databaseUsername = FUNCTION('CURRENT_USER')"),
         @NamedQuery(name = "User.getByLogin", query = "FROM User u WHERE u.databaseUsername = FUNCTION('get_user_internal_name', :input)"),
-        @NamedQuery(name = "User.clearTimetables", query = "DELETE FROM Timetable t WHERE t.user.id = :id")
+        @NamedQuery(name = "User.clearTimetables", query = "DELETE FROM Timetable t WHERE t.user.id = :id"),
+        @NamedQuery(name = "allUsers", query = "FROM User"),
+        @NamedQuery(name = "allDoctors", query = "FROM User WHERE role = 'DOCTOR'"),
+        @NamedQuery(name = "allPatients", query = "FROM User WHERE role = 'PATIENT'"),
+        @NamedQuery(name = "allWorkers", query = "FROM User WHERE role = 'RECEPTION' OR role ='NURSE' or role = 'ADMIN'")
 })
 @NamedNativeQueries({
         @NamedNativeQuery(name = "login", query = "SELECT get_user_internal_name(:input) AS internal_name"),
@@ -27,6 +31,7 @@ import java.util.List;
         @NamedNativeQuery(name = "createDatabaseUser", query = "SELECT 1 FROM create_database_user(:userName, :password)"),
         @NamedNativeQuery(name = "findDatabaseUser", query = "SELECT FROM pg_catalog.pg_roles WHERE rolname = :rolname",
                 resultClass = User.class),
+
 })
 public final class User implements UserReference {
     @Override

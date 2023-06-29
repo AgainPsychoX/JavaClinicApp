@@ -234,6 +234,8 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
             currQuery = createdPrescriptions;
         else currQuery = findUsersPrescriptions;
 
+        refresh();
+
     }
 
     /**
@@ -267,7 +269,6 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     public void displayDetails() {
         this.getParentController().goToView(MainWindowController.Views.PRESCRIPTION_DETAILS,
                 PrescriptionDetailsView.Mode.DETAILS, table.getSelectionModel().getSelectedItem(), targetPatient);
-
     }
 
     /**
