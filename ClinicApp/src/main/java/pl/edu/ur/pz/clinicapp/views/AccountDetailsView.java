@@ -238,17 +238,17 @@ public class AccountDetailsView extends ChildControllerBase<MainWindowController
 
     public void goToVisitsAction(ActionEvent actionEvent) {
         if (mightPreventNavigation()) return;
-        getParentController().goToView(MainWindowController.Views.VISITS, user);
+        getParentController().goToView(MainWindowController.Views.VISITS, user.asPatient());
     }
 
     public void goToPrescriptionsAction(ActionEvent actionEvent) {
         if (mightPreventNavigation()) return;
-        getParentController().goToView(MainWindowController.Views.PRESCRIPTIONS, user);
+        getParentController().goToView(MainWindowController.Views.PRESCRIPTIONS, user.asPatient());
     }
 
     public void goToReferralsAction(ActionEvent actionEvent) {
         if (mightPreventNavigation()) return;
-        getParentController().goToView(MainWindowController.Views.REFERRALS, user);
+        getParentController().goToView(MainWindowController.Views.REFERRALS, user.asPatient());
     }
 
     public void editAction(ActionEvent actionEvent) {

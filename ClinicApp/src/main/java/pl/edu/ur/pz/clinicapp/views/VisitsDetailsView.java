@@ -199,7 +199,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
 
         if (ClinicApplication.requireUser().getRole() == User.Role.PATIENT) {
             patients.add(ClinicApplication.requireUser().asPatient());
-        } if(patient != null) {
+        } else if(patient != null) {
             patients.add(patient);
         } else {
             patients = entityManger.createNamedQuery("patients", Patient.class).getResultList();

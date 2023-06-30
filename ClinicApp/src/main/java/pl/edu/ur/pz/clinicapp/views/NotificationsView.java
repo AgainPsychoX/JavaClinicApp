@@ -84,6 +84,9 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
 
     }
 
+    /**
+     * @return all notifications fot current user
+     */
     private List<Notification> getAllNotifications(){
         return ClinicApplication.getUser().getAllReceivedNotifications();
 
@@ -126,6 +129,11 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
         table.refresh();
     }
 
+
+    /**
+     * If notification not read, sets read date, if read date set, deletes read date.
+     * @param event
+     */
     @FXML
     protected void readAction(ActionEvent event){
 
@@ -145,6 +153,11 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
         transaction.commit();
         refresh();
     }
+
+    /**
+     * Deletes selected notification.
+     * @param event
+     */
 
     @FXML
     protected void deleteAction(ActionEvent event){
