@@ -20,6 +20,7 @@ import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.dialogs.RegisterDialog;
 import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
@@ -145,7 +146,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     }
 
     /**
-     * Popluates view with data depending on context.
+     * Populates view with data depending on context.
      * Gets {@link Patient from context if present}
      * Clears buttonBox and adds button depending on context.
      * Maps filter modes to corresponding display strings.

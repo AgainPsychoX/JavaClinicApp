@@ -1,12 +1,8 @@
-
 package pl.edu.ur.pz.clinicapp.dialogs;
 
 import com.itextpdf.html2pdf.ConverterProperties;
 import com.itextpdf.html2pdf.HtmlConverter;
 import com.itextpdf.html2pdf.resolver.font.DefaultFontProvider;
-import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.pdf.BaseFont;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -19,7 +15,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.ListView;
 import javafx.scene.image.WritableImage;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
@@ -32,8 +27,7 @@ import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DateUtils;
 import pl.edu.ur.pz.clinicapp.utils.ReportObject;
-import com.itextpdf.text.Font;
-
+import pl.edu.ur.pz.clinicapp.views.PrescriptionDetailsView;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -43,10 +37,9 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
 
-
-
 /**
  * Class for generating PDF reports using .ftl templates based on HTML files using {@link Template} library.
+ * PDF reports are created from .ftl templates using {@link HtmlConverter}.
  */
 public class ReportDialog extends ChildControllerBase<MainWindowController> implements Initializable {
 
@@ -83,7 +76,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
 
     /**
      * Creates new {@link ReportObject} containing necessary data to create new reports.
-     *
+     * Report is configured for Polish language, using unicode encoding.
      * @return new {@link ReportObject}
      */
     public static ReportObject createConfig() {
@@ -97,19 +90,12 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
 
         ConverterProperties properties = new ConverterProperties();
         properties.setFontProvider(new DefaultFontProvider(true, true, true));
-//        DefaultFontProvider fontProvider = new DefaultFontProvider(true, true,
-//                true);
-//
-//        fontProvider.addFont(String.valueOf(ClinicApplication.class.getResource("fonts/calibri.ttf")));
-//
-//        properties.setFontProvider(fontProvider);
-//        properties.setCharset("UTF-8");
         URL templatesURL = ClinicApplication.class.getResource("templates");
         return new ReportObject(configuration, properties, templatesURL);
     }
 
     /**
-     * Creates new {@link ReportObject} containing reoprt configuration, creates new {@link ArrayList} for
+     * Creates new {@link ReportObject} containing report configuration, creates new {@link ArrayList} for
      * selected columns.
      *
      * @param location  The location used to resolve relative paths for the root object, or
@@ -152,6 +138,13 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
         super.dispose();
     }
 
+    /**
+     * Populates the view from given context.
+     * If no arguments are given, the view will default to {@link Prescription}s report.
+     * First context argument specifies {@link ReportDialog.Mode}.
+     *
+     * @param context Optional context arguments.
+     */
     @Override
     public void populate(Object... context) {
 
@@ -164,7 +157,6 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
             }
         }
 
-
         this.mode = mode;
         refresh();
         Mode finalMode = mode;
@@ -172,7 +164,6 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
             switch (finalMode) {
                 case PRESCRIPTIONS -> {
                     try {
-
                         prescriptionsReport((List<Prescription>) context[1]);
                     } catch (IOException | URISyntaxException | TemplateModelException e) {
                         throw new RuntimeException(e);
@@ -218,9 +209,8 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
                 availableFields.add("notes");
                 availableFields.add("tags");
                 availableFields.add("patient");
-                for (String field : availableFields) {
+                for (String field : availableFields)
                     availableFieldsListView.getItems().add(resourceBundle.getString("prescription." + field));
-                }
             }
             case REFERRALS -> {
                 name = "referral.";
@@ -233,9 +223,8 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
                 availableFields.add("pointOfInterest");
                 availableFields.add("fulfilmentDate");
                 availableFields.add("feedback");
-                for (String field : availableFields) {
+                for (String field : availableFields)
                     availableFieldsListView.getItems().add(resourceBundle.getString("referral." + field));
-                }
             }
             case PATIENTS -> {
                 name = "user.";
@@ -248,9 +237,8 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
                 availableFields.add("id");
                 availableFields.add("internalName");
                 availableFields.add("doctorSpecialities");
-                for (String field : availableFields) {
+                for (String field : availableFields)
                     availableFieldsListView.getItems().add(resourceBundle.getString("user." + field));
-                }
             }
         }
     }
@@ -344,9 +332,8 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
         }
     }
 
-
     /**
-     * Sort selected fileds alphabetically. List is sorted by polish names, then according to order new
+     * Sorts selected filed alphabetically. List is sorted by Polish names, then according to order new
      * list in english is created for template
      */
     @FXML
@@ -375,7 +362,8 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
         LocalDate startDate = startDatePicker.getValue();
         LocalDate endDate = endDatePicker.getValue();
         if (startDate != null && endDate != null && startDate.isAfter(endDate)) {
-            showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Niepoprawny zakres dat", "Data początkowa nie może być późniejsza od daty końcowej.");
+            showAlert(Alert.AlertType.ERROR, "Błąd generowania", "Niepoprawny zakres dat",
+                    "Data początkowa nie może być późniejsza od daty końcowej.");
         } else {
             try {
                 FileChooser fileChooser = new FileChooser();
@@ -400,9 +388,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
                 }
 
                 template.process(dataModel, writer);
-
                 writer.close();
-
                 HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file),
                         properties);
 
@@ -420,7 +406,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
 
 
     /**
-     * Generates report containing 20 newest {@link pl.edu.ur.pz.clinicapp.models.Patient}
+     * Generates report containing 20 newest {@link pl.edu.ur.pz.clinicapp.models.Patient}.
      *
      * @param list - list of 20 newest {@link Patient} sent from view.
      * @throws IOException            when there is a file missing
@@ -448,9 +434,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
             dataModel.put("users", list);
 
             template.process(dataModel, writer);
-
             writer.close();
-
             HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file),
                     properties);
 
@@ -596,7 +580,7 @@ public class ReportDialog extends ChildControllerBase<MainWindowController> impl
     }
 
     /**
-     * Goes back to previous view
+     * Goes back to previous view, calls dispose method to clear lists.
      */
     @FXML
     public void onBackClick() {
