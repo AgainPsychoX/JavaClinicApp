@@ -1,5 +1,6 @@
 package pl.edu.ur.pz.clinicapp.views;
 
+import freemarker.template.SimpleDate;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
@@ -19,15 +20,13 @@ import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.net.URL;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.nullCoalesce;
 
@@ -130,13 +129,12 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
     public void populate(Object... context) {
         User.Role role = ClinicApplication.requireUser().getRole();
         currMode = (Mode) context[0];
-
         if (currMode == Mode.DETAILS) {
             appointment = (Appointment) context[1];
             populateDetails(appointment, role);
         }
         else if (currMode == Mode.CREATE) {
-            populateCreate();
+            populateCreate((Patient) context[2]);
         }
 
     }
@@ -154,6 +152,8 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
         patientCombo.setValue(appointment.getPatient());
         doctorCombo.getItems().add(appointment.getDoctor());
         doctorCombo.setValue(appointment.getDoctor());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        pickedDate.setText(dateFormat.format(Date.from(appointment.getDate())));
         datePicker.setDisable(true);
 
         notesTextField.setEditable(false);
@@ -173,7 +173,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
     /**
      * Part of populate which only executes when current mode is set to Create.
      */
-    private void populateCreate() {
+    private void populateCreate(Patient patient) {
         final var entityManger = ClinicApplication.getEntityManager();
         doctorCombo.getItems().clear();
         patientCombo.getItems().clear();
@@ -199,14 +199,15 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
 
         if (ClinicApplication.requireUser().getRole() == User.Role.PATIENT) {
             patients.add(ClinicApplication.requireUser().asPatient());
-            patientCombo.getItems().add(ClinicApplication.requireUser().asPatient());
-            patientCombo.setValue(ClinicApplication.requireUser().asPatient());
+        } if(patient != null) {
+            patients.add(patient);
         } else {
             patients = entityManger.createNamedQuery("patients", Patient.class).getResultList();
         }
-        doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
+        patients.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
         patientCombo.getItems().addAll(patients);
-
+        patientCombo.setValue(patients.get(0));
+        doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
     }
 
     /**
