@@ -405,12 +405,21 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
 
     /**
      * Exposed to ease customizations, as {@link WeekPane#getChildren} is already exposed anyway.
+     * Also used for a bit hacky, but nice way for printing week pane as report.
      * @return Grid part of the week pane (not really useful unless extending the class)
      */
     public GridPane getGrid() {
         return gridPane;
     }
-    public GridPane getHeader() { return headerGridPane; }
+
+    /**
+     * Exposed to ease customizations, as {@link WeekPane#getChildren} is already exposed anyway.
+     * Also used for a bit hacky, but nice way for printing week pane as report.
+     * @return Header part of the week pane (also grid itself; not really useful unless extending the class)
+     */
+    public GridPane getHeader() {
+        return headerGridPane;
+    }
 
 
     /**
