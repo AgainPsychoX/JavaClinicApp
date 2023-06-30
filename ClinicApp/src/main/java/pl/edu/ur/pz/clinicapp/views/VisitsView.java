@@ -12,6 +12,7 @@ import javafx.scene.input.MouseButton;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Appointment;
+import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
@@ -39,29 +40,40 @@ public class VisitsView extends ChildControllerBase<MainWindowController> implem
     @FXML
     protected void searchEnterAction() {
         searchTextField.setOnKeyPressed(keyEvent -> {
-            if (keyEvent.getCode().equals(KeyCode.ENTER)) {
-                FilteredList<Appointment> appointmentFilteredList = new FilteredList<>(appointments);
-                appointmentFilteredList.setPredicate(appointment -> {
-                    if (ClinicApplication.requireUser().getRole() == User.Role.DOCTOR) {
-                        return appointment.getDate().toString().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
-                                appointment.getPatient().getDisplayName().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
-                                appointment.getNotes().toLowerCase().contains(searchTextField.getText().toLowerCase());
-                    } else if (ClinicApplication.requireUser().getRole() == User.Role.PATIENT) {
-                        return appointment.getDate().toString().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
-                                appointment.getNotes().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
-                                appointment.getDoctor().getDisplayName().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
-                                appointment.getDoctor().getSpeciality().toLowerCase().contains(searchTextField.getText().toLowerCase());
-                    } else {
-                        return appointment.getDate().toString().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
-                                appointment.getNotes().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
-                                appointment.getDoctor().getDisplayName().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
-                                appointment.getDoctor().getSpeciality().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
-                                appointment.getPatient().getDisplayName().toLowerCase().contains(searchTextField.getText().toLowerCase());
-                    }
-                });
+                FilteredList<Appointment> appointmentFilteredList = filterList();
                 table.setItems(appointmentFilteredList);
-            }
         });
+    }
+
+    private FilteredList<Appointment> filterList() {
+        FilteredList<Appointment> appointmentFilteredList = new FilteredList<>(appointments);
+        appointmentFilteredList.setPredicate(appointment -> {
+            if (ClinicApplication.requireUser().getRole() == User.Role.DOCTOR) {
+                return appointment.getDate().toString().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
+                        appointment.getPatient().getDisplayName().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
+                        appointment.getNotes().toLowerCase().contains(searchTextField.getText().toLowerCase());
+            } else if (ClinicApplication.requireUser().getRole() == User.Role.PATIENT) {
+                return appointment.getDate().toString().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
+                        appointment.getNotes().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
+                        appointment.getDoctor().getDisplayName().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
+                        appointment.getDoctor().getSpeciality().toLowerCase().contains(searchTextField.getText().toLowerCase());
+            } else {
+                return appointment.getDate().toString().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
+                        appointment.getNotes().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
+                        appointment.getDoctor().getDisplayName().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
+                        appointment.getDoctor().getSpeciality().toLowerCase().contains(searchTextField.getText().toLowerCase()) ||
+                        appointment.getPatient().getDisplayName().toLowerCase().contains(searchTextField.getText().toLowerCase());
+            }
+    });
+        return appointmentFilteredList;
+    }
+
+    private FilteredList<Appointment> patientAppointments() {
+        FilteredList<Appointment> appointmentFilteredList = new FilteredList<>(appointments);
+        appointmentFilteredList.setPredicate(appointment -> {
+                return appointment.getPatient().getDisplayName().toLowerCase().contains(searchTextField.getText().toLowerCase());
+        });
+        return appointmentFilteredList;
     }
 
     @FXML
@@ -109,6 +121,15 @@ public class VisitsView extends ChildControllerBase<MainWindowController> implem
                 table.getItems().addAll(getAllVisits());
             } catch (Exception ignored) {}
             appointments.addAll(getAllVisits());
+            if (context.length > 0) {
+                Patient patient = (Patient) context[0];
+                searchTextField.setText(patient.getDisplayName());
+                FilteredList<Appointment> appointmentFilteredList = patientAppointments();
+                table.setItems(appointmentFilteredList);
+            } else {
+                searchTextField.setText("");
+                table.setItems(appointments);
+            }
         }
     }
 

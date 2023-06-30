@@ -276,8 +276,7 @@ public class PatientDetailsView extends ChildControllerBase<MainWindowController
         }
     }
 
-    public void addVisit() {
-    }
+    public void addVisit() {this.getParentController().goToView(MainWindowController.Views.VISITS, pat);}
 
     /**
      * Opens {@link PrescriptionsView}, passing current {@link Patient}
