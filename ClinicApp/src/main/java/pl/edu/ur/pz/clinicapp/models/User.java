@@ -28,7 +28,7 @@ import java.util.List;
         @NamedNativeQuery(name = "findDatabaseUser", query = "SELECT FROM pg_catalog.pg_roles WHERE rolname = :rolname",
                 resultClass = User.class),
 })
-public final class User implements UserReference {
+public class User implements UserReference {
     @Override
     public User asUser() {
         return this;
@@ -70,7 +70,7 @@ public final class User implements UserReference {
         return id;
     }
     @SuppressWarnings("unused") // required by @Access(AccessType.PROPERTY)
-    private void setId(Integer id) {
+    protected void setId(Integer id) {
         this.id = id;
     }
 
