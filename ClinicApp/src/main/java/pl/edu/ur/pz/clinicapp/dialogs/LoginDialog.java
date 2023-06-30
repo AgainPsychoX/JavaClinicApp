@@ -20,19 +20,13 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
  * Dialog responsible for logging in user.
  */
 public class LoginDialog extends Stage {
-    @FXML
-    protected VBox logInForm;
+    @FXML protected VBox logInForm;
     final protected VBox loadingView;
 
-    @FXML
-    protected TextField identityTextField;
-    @FXML
-    protected PasswordField passwordField;
-    @FXML
-    protected Text errorText;
+    @FXML protected TextField identityTextField;
+    @FXML protected PasswordField passwordField;
+    @FXML protected Text errorText;
 
-    protected static Scene loginScene;
-    protected static Scene registerScene;
     protected BorderPane pane;
 
     public LoginDialog() {
@@ -76,8 +70,7 @@ public class LoginDialog extends Stage {
         linkStageSizeToPane(this, pane);
 //        setWidth(pane.getMinWidth());
 //        setHeight(pane.getMinHeight());
-        loginScene = new Scene(pane);
-        setScene(loginScene);
+        setScene(new Scene(pane));
     }
 
     @Override
@@ -111,16 +104,14 @@ public class LoginDialog extends Stage {
 
         try {
             if (identity == null || identity.isBlank() || password == null || password.isBlank()) {
-                throw new LoginException();
+                throw new LoginException("Nie wypełniono wymaganych pól!");
             }
             ClinicApplication.logIn(identity, password);
             super.close();
         } catch (LoginException e) {
             pane.setCenter(logInForm);
             passwordField.clear();
-            errorText.setText((e.getMessage() == null)
-                    ? "Nie wypełniono wymaganych pól!"
-                    : "Nieprawidłowe dane logowania!");
+            errorText.setText(nullCoalesce(e.getMessage(), "Błąd logowania!"));
             errorText.setVisible(true);
             errorText.setManaged(true);
         }

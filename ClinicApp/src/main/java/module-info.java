@@ -13,6 +13,8 @@ module pl.edu.ur.pz.clinicapp {
     requires freemarker;
     requires javafx.swing;
     requires itextpdf;
+    requires com.google.guice;
+    requires javax.inject;
 
     exports pl.edu.ur.pz.clinicapp;
     exports pl.edu.ur.pz.clinicapp.controls;
