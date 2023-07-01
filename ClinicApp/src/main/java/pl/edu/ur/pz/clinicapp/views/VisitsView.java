@@ -42,6 +42,7 @@ public class VisitsView extends ChildControllerBase<MainWindowController> implem
     protected void searchEnterAction() {
         searchTextField.setOnKeyPressed(keyEvent -> {
                 FilteredList<Appointment> appointmentFilteredList = filterList();
+                appointments = appointmentFilteredList;
                 table.setItems(appointmentFilteredList);
         });
     }
@@ -131,10 +132,12 @@ public class VisitsView extends ChildControllerBase<MainWindowController> implem
             table.getItems().clear();
             table.refresh();
             appointments.addAll(getAllVisits());
+            filter.setValue("Wszystkie");
             if (ClinicApplication.requireUser().getRole() != User.Role.PATIENT && context.length > 0) {
                 Patient patient = (Patient) context[0];
                 searchTextField.setText(patient.getDisplayName());
                 FilteredList<Appointment> appointmentFilteredList = patientAppointments();
+                appointments = appointmentFilteredList;
                 table.setItems(appointmentFilteredList);
                 patientGlobal = patient;
                 searchTextField.setEditable(ClinicApplication.requireUser().getRole() != User.Role.RECEPTION);

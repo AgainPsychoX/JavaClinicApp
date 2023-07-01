@@ -182,15 +182,8 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
         if (!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
 
         List<Doctor> doctors = new ArrayList<>();
-
-        if (ClinicApplication.requireUser().getRole() == User.Role.DOCTOR) {
-            doctors.add(ClinicApplication.requireUser().asDoctor());
-            doctorCombo.getItems().addAll(doctors);
-            doctorCombo.setValue(ClinicApplication.requireUser().asDoctor());
-        } else {
-            doctors = entityManger.createNamedQuery("doctors", Doctor.class).getResultList();
-            doctorCombo.getItems().addAll(doctors);
-        }
+        doctors = entityManger.createNamedQuery("doctors", Doctor.class).getResultList();
+        doctorCombo.getItems().addAll(doctors);
         doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
         notesTextField.setText(null);
         editState.setValue(true);
@@ -293,7 +286,9 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             alert.showAndWait();
             createNotif(doctorCombo.getValue().asUser(), patientCombo.getValue().asUser(),
                     "Stworzono wizytę wizytę na dzień: " + formatter.format(timestamp.toInstant()) +'.');
+            editState.set(!editState.getValue());
             this.getParentController().goBack();
+
         }
     }
     /**
@@ -384,17 +379,21 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
 
     /** Function for picking date and time of appointment **/
     public void pickDate() {
-        Schedule schedule = Schedule.of(doctorCombo.getValue());
-        final var dialog = new AppointmentSlotPickerDialog(
-                schedule, nullCoalesce(LocalDateTime.now()));
-        dialog.showAndWait();
-        final var selection = dialog.getResult();
-        if (selection.isPresent()) {
-            final var begin = selection.get().getBeginInstant().atZone(ZoneId.systemDefault());
-            // TODO: use one picker for both point and duration
-            pickedDate.setText(begin.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
-            timestamp = Timestamp.valueOf(begin.toLocalDateTime());
-            // TODO: ditch the Timestamp class for Instant or ZonedDateTime
+        if (doctorCombo.getValue() != null) {
+            Schedule schedule = Schedule.of(doctorCombo.getValue());
+            final var dialog = new AppointmentSlotPickerDialog(
+                    schedule, nullCoalesce(LocalDateTime.now()));
+            dialog.showAndWait();
+            final var selection = dialog.getResult();
+            if (selection.isPresent()) {
+                final var begin = selection.get().getBeginInstant().atZone(ZoneId.systemDefault());
+                // TODO: use one picker for both point and duration
+                pickedDate.setText(begin.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
+                timestamp = Timestamp.valueOf(begin.toLocalDateTime());
+                // TODO: ditch the Timestamp class for Instant or ZonedDateTime
+            }
+        } else {
+            new Alert(Alert.AlertType.ERROR, "Nie wybrano lekarza.").showAndWait();
         }
     }
 
