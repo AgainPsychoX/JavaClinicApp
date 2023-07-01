@@ -16,13 +16,13 @@ import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.dialogs.RegisterDialog;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.net.URL;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.ResourceBundle;
 
 public class AccountsView extends ChildControllerBase<MainWindowController> implements Initializable {
@@ -152,8 +152,8 @@ public class AccountsView extends ChildControllerBase<MainWindowController> impl
 
     @FXML
     public void addUser(){
-        this.getParentController().goToView(MainWindowController.Views.ACCOUNT_DETAILS,
-             ClinicApplication.getUser(), AccountDetailsView.Mode.CREATE);
+        this.getParentController().goToViewRaw(MainWindowController.Views.REGISTER,
+                "INDIRECT",  RegisterDialog.Mode.ACCOUNT);
     }
 
     @FXML

@@ -28,9 +28,12 @@ import java.util.List;
 //        @NamedNativeQuery(name = "createDatabaseUser", query = "CREATE USER :userName LOGIN ENCRYPTED "
 //                +"PASSWORD :password IN ROLE gp_patients",
 //                resultClass = User.class),
-        @NamedNativeQuery(name = "createDatabaseUser", query = "SELECT 1 FROM create_database_user(:userName, :password)"),
+        @NamedNativeQuery(name = "createDatabaseUser", query = "SELECT 1 FROM create_database_user(:userName, :password, :role)"),
         @NamedNativeQuery(name = "findDatabaseUser", query = "SELECT FROM pg_catalog.pg_roles WHERE rolname = :rolname",
                 resultClass = User.class),
+        @NamedNativeQuery(name = "updatePassword", query = "SELECT 1 FROM update_user_password(:userName, :password, :role)",
+                resultClass = User.class),
+        @NamedNativeQuery(name = "change_password", query = "SELECT 1 FROM change_password(:uname, :passwd)")
 
 })
 public final class User implements UserReference {
@@ -47,10 +50,19 @@ public final class User implements UserReference {
         RECEPTION,
         NURSE,
         DOCTOR,
-        ADMIN;
+        DOCTOR_DB,
+        ADMIN,
+        ADMIN_DB;
 
         public boolean isGroupUser() {
             return this == RECEPTION || this == NURSE;
+        }
+
+        public static Role dbToAppRole(Role role){
+            if (role == Role.PATIENT_DB) return PATIENT;
+            else if(role == Role.ADMIN_DB) return ADMIN;
+            else return DOCTOR_DB;
+
         }
 
         public String toString() {
@@ -61,6 +73,8 @@ public final class User implements UserReference {
             if (this == NURSE)     return "Pielęgniarka";
             if (this == DOCTOR)    return "Lekarz";
             if (this == ADMIN)     return "Administrator";
+            if (this == ADMIN_DB) return "ADMIN";
+            if (this == DOCTOR_DB) return "DOCTOR";
             return this.name();
         }
     }
@@ -161,7 +175,17 @@ public final class User implements UserReference {
 
     // TODO: method to change password, potentially via some database function
     //  to allow changing other users (patients) passwords by doctor/reception/admin.
-
+    /**
+     * Sets new password for the user.
+     * @param newPassword new password to use
+     */
+    public void changePassword(String newPassword) {
+        final var em = ClinicApplication.getEntityManager();
+        final var query = em.createNamedQuery("change_password");
+        query.setParameter("uname", this.databaseUsername);
+        query.setParameter("passwd", newPassword);
+        query.executeUpdate();
+    }
     /**
      * Finds entity of user that currently connected (whose privileges are effective in this session).
      * Prefer using {@link ClinicApplication#getUser()} to check for logged-in user,

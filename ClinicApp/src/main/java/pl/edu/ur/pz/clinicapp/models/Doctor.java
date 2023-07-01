@@ -3,13 +3,21 @@ package pl.edu.ur.pz.clinicapp.models;
 import pl.edu.ur.pz.clinicapp.utils.DurationMinutesConverter;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
 @Table(name = "doctors")
 @NamedQueries({
         @NamedQuery(name = "doctors",  query = "FROM Doctor d LEFT JOIN FETCH d.user")
+})
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "createDoctor", query = "INSERT INTO public.doctors "
+                +"(id, default_visit_duration, max_days_in_advance, name, speciality, surname) "
+                +"VALUES (:id, :visitDuration, :maxDays, :name, :surname, :speciality)",
+                resultClass = Doctor.class)
 })
 public class Doctor implements UserReference {
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -21,6 +29,9 @@ public class Doctor implements UserReference {
     @Override
     public Integer getId() {
         return id;
+    }
+    public void setId(int id){
+        this.id = id;
     }
 
     @OneToOne(optional = false, orphanRemoval = true,

@@ -48,7 +48,13 @@ CREATE OR REPLACE FUNCTION public.create_database_user(uname varchar, passwrd va
     SECURITY DEFINER
 AS $$
 BEGIN
-    EXECUTE FORMAT('CREATE USER %I LOGIN ENCRYPTED PASSWORD %L IN ROLE gp_patients', uname, passwrd);
+    IF role = 'PATIENT' THEN
+        EXECUTE FORMAT('CREATE USER %I LOGIN ENCRYPTED PASSWORD %L IN ROLE gp_patients', uname, passwrd);
+    ELSIF role = 'DOCTOR' THEN
+        EXECUTE FORMAT('CREATE USER %I LOGIN ENCRYPTED PASSWORD %L IN ROLE gp_doctors', uname, passwrd);
+    ELSIF role = 'ADMIN' THEN
+        EXECUTE FORMAT('CREATE USER %I WITH SUPERUSER CREATEDB CREATEROLE REPLICATION BYPASSRLS LOGIN ENCRYPTED PASSWORD %L IN ROLE gp_admins', uname, passwrd);
+    END if;
 END;
 $$;
 
