@@ -42,7 +42,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -58,9 +57,6 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
      * Available window modes (details of existing referral or creation of a new one).
      */
     public enum RefMode {DETAILS, CREATE}
-
-    ;
-
     private RefMode currMode;
     @FXML
     protected CheckBox nursesCheck;
@@ -109,7 +105,6 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
 
     private static BooleanProperty editState = new SimpleBooleanProperty(false);
     private Patient targetPatient;
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     public static boolean getEditState() {
         return editState.getValue();
@@ -325,8 +320,8 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
                         alert.showAndWait();
                         editState.setValue(!editState.getValue());
                     } else {
-                        String newAddedDate = LocalDate.parse(dateVal, formatter).toString() + " " + dateTimeVal;
-                        String newFulDate = (fulDateVal == null || fulDateVal.isBlank()) ? "" : LocalDate.parse(fulDateVal, formatter).toString() + " " + fulDateTimeVal;
+                        String newAddedDate = LocalDate.parse(dateVal).toString() + " " + dateTimeVal;
+                        String newFulDate = (fulDateVal == null || fulDateVal.isBlank()) ? "" : LocalDate.parse(fulDateVal).toString() + " " + fulDateTimeVal;
                         editQuery.setParameter("addedDate", Timestamp.valueOf((dateTimeVal.length() != 8)
                                 ? newAddedDate + ":00" : newAddedDate));
                         if (newFulDate.isBlank()) {
@@ -382,8 +377,8 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
                     transaction = session.beginTransaction();
                     Referral newRef = new Referral();
                     newRef.setAddedBy(ClinicApplication.getUser());
-                    String newAddedDate = LocalDate.parse(dateVal, formatter).toString() + " " + dateTimeVal;
-                    String newFulDate = (fulDateVal == null || fulDateVal.isBlank()) ? "" : LocalDate.parse(fulDateVal, formatter).toString() + " " + fulDateTimeVal;
+                    String newAddedDate = LocalDate.parse(dateVal).toString() + " " + dateTimeVal;
+                    String newFulDate = (fulDateVal == null || fulDateVal.isBlank()) ? "" : LocalDate.parse(fulDateVal).toString() + " " + fulDateTimeVal;
                     newRef.setAddedDate(Timestamp.valueOf((dateTimeVal.length() != 8)
                             ? newAddedDate + ":00" : newAddedDate).toInstant());
                     if (fulDateVal == null || fulDateVal.isBlank()) {
@@ -423,7 +418,6 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
             }
             editState.setValue(!editState.getValue());
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
             transaction = session.getTransaction();
             if (transaction.isActive()) transaction.rollback();
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -432,6 +426,9 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
             alert.setContentText("Poprawne formaty: gg:mm lub gg:mm:ss");
             alert.showAndWait();
         } catch (DateTimeParseException d) {
+            d.printStackTrace();
+            transaction = session.getTransaction();
+            if (transaction.isActive()) transaction.rollback();
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Błąd zapisu");
             alert.setHeaderText("Niepoprawny format daty.");
