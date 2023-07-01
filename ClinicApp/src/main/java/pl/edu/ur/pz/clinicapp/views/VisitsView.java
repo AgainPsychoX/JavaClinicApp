@@ -132,7 +132,7 @@ public class VisitsView extends ChildControllerBase<MainWindowController> implem
             table.getItems().clear();
             table.refresh();
             appointments.addAll(getAllVisits());
-            filter.setValue("Wszystkie");
+            filter.setValue("");
             if (ClinicApplication.requireUser().getRole() != User.Role.PATIENT && context.length > 0) {
                 Patient patient = (Patient) context[0];
                 searchTextField.setText(patient.getDisplayName());

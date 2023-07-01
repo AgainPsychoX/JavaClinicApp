@@ -109,7 +109,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
     public void onBackClick() {
         if (getEditState()) {
             if (exitConfirm()) {
-                setEditState(!getEditState());
+                setEditState(false);
                 this.getParentController().goBack();
             }
         } else {
@@ -181,12 +181,11 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
         notesTextField.setEditable(true);
         if (!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
 
-        List<Doctor> doctors = new ArrayList<>();
-        doctors = entityManger.createNamedQuery("doctors", Doctor.class).getResultList();
+        List<Doctor> doctors = entityManger.createNamedQuery("doctors", Doctor.class).getResultList();
         doctorCombo.getItems().addAll(doctors);
         doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
         notesTextField.setText(null);
-        editState.setValue(true);
+        setEditState(true);
 
         List<Patient> patients = new ArrayList<>();
 
@@ -213,6 +212,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
     /** Creating transaction and execute queries depending on type of action **/
     @FXML
     public void editSave() {
+        setEditState(true);
         datePicker.setDisable(false);
         try {
             if (currMode == Mode.DETAILS) {
@@ -221,13 +221,13 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             else {
                 editSaveCreate();
             }
-            setEditState(!getEditState());
         } catch (IllegalArgumentException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Błąd zapisu");
             alert.setContentText(e.getLocalizedMessage());
             alert.showAndWait();
         }
+        setEditState(false);
     }
 
     /** Function executes query for editing {@link pl.edu.ur.pz.clinicapp.models.Appointment}. **/
@@ -239,7 +239,6 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
                 alert.setHeaderText("Nie wypełniono wymaganych pól");
                 alert.setContentText("Wszytkie pola są wymagane.");
                 alert.showAndWait();
-                setEditState(!getEditState());
             } else {
                 Transaction transaction;
                 editQuery.setParameter("date", timestamp);
@@ -263,7 +262,6 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             alert.setHeaderText("Nie wypełniono wymaganych pól");
             alert.setContentText("Wszystkie pola są wymagane");
             alert.showAndWait();
-            setEditState(!getEditState());
         } else {
             Transaction transaction;
             transaction = session.beginTransaction();
@@ -279,7 +277,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             newVisit.setDate(timestamp.toInstant());
             session.persist(newVisit);
             transaction.commit();
-            setEditState(!getEditState());
+            pickedDate.setText(null);
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Dodawanie wizyty");
             alert.setHeaderText("Pomyślnie dodano wizytę.");
