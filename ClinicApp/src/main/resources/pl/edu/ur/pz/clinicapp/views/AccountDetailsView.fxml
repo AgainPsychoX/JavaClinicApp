@@ -168,7 +168,7 @@
                   <Font size="16.0" />
                </font>
             </Text>
-            <GridPane fx:id="doctorGridPane" prefHeight="90.0" prefWidth="449.0">
+            <GridPane fx:id="doctorGridPane" prefHeight="90.0" prefWidth="449.0" visible="false">
               <columnConstraints>
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="361.0" minWidth="10.0" prefWidth="352.0" />
                 <ColumnConstraints hgrow="SOMETIMES" maxWidth="451.0" minWidth="10.0" prefWidth="352.0" />

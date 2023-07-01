@@ -411,7 +411,7 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
     }
 
     public static boolean nameSurnameSpecializationValidator(String text) {
-        return text.matches("[a-zA-ZżźćńółęąśŻŹĆĄŚĘŁÓŃ]+");
+        return text.matches("[a-zA-ZżźćńółęąśŻŹĆĄŚĘŁÓŃ\\s-]+");
     }
 
     public static boolean doctorFieldsValidator(String days) {

@@ -261,6 +261,7 @@ public class AccountDetailsView extends ChildControllerBase<MainWindowController
             maxDaysTextField.setText(String.valueOf(doctor.getMaxDaysInAdvance()));
             doctorGridPane.setVisible(true);
         }
+
         if(ClinicApplication.requireUser().getRole() != User.Role.ADMIN){
             roleComboBox.setDisable(true);
         }
@@ -450,7 +451,7 @@ public class AccountDetailsView extends ChildControllerBase<MainWindowController
     }
 
     public static boolean nameSurnameSpecializationValidator(String text) {
-        return text.matches("[a-zA-ZżźćńółęąśŻŹĆĄŚĘŁÓŃ]+");
+        return text.matches("[a-zA-ZżźćńółęąśŻŹĆĄŚĘŁÓŃ\\s-]+");
     }
 
     public static boolean doctorFieldsValidator(String days) {
