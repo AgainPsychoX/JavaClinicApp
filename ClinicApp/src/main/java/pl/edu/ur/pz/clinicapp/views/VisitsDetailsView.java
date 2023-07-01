@@ -227,7 +227,6 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             alert.setContentText(e.getLocalizedMessage());
             alert.showAndWait();
         }
-        setEditState(false);
     }
 
     /** Function executes query for editing {@link pl.edu.ur.pz.clinicapp.models.Appointment}. **/
@@ -249,6 +248,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
                 datePicker.setDisable(true);
                 createNotif(doctorCombo.getValue().asUser(), patientCombo.getValue().asUser(),
                         "Zmieniono datę wizyty na: " + formatter.format(timestamp.toInstant()) + ".");
+                setEditState(false);
             }
         }
     }
@@ -284,6 +284,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             alert.showAndWait();
             createNotif(doctorCombo.getValue().asUser(), patientCombo.getValue().asUser(),
                     "Stworzono wizytę wizytę na dzień: " + formatter.format(timestamp.toInstant()) +'.');
+            setEditState(false);
             this.getParentController().goBack();
 
         }
