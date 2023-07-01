@@ -333,10 +333,10 @@ CREATE POLICY update_own_as_doctor ON public.doctors FOR UPDATE TO gp_doctors
 
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
-GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.notifications TO gp_admins;
+GRANT INSERT, SELECT, UPDATE, DELETE ON TABLE public.notifications TO gp_admins, gp_patients, gp_receptionists, gp_doctors;
 
 DROP POLICY IF EXISTS admin ON public.notifications;
-CREATE POLICY admin ON public.notifications FOR ALL TO gp_admins
+CREATE POLICY admin ON public.notifications FOR ALL TO gp_admins, gp_patients, gp_receptionists, gp_doctors
     USING (TRUE);
 
 ----------------------------------------

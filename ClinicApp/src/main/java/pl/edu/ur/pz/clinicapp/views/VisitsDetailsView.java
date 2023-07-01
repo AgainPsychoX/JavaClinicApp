@@ -286,7 +286,6 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             alert.showAndWait();
             createNotif(doctorCombo.getValue().asUser(), patientCombo.getValue().asUser(),
                     "Stworzono wizytę wizytę na dzień: " + formatter.format(timestamp.toInstant()) +'.');
-            editState.set(!editState.getValue());
             this.getParentController().goBack();
 
         }

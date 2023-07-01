@@ -21,13 +21,9 @@ import pl.edu.ur.pz.clinicapp.utils.ReportObject;
 
 import java.net.URL;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 import java.net.URL;
 import java.sql.Timestamp;
@@ -42,7 +38,7 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
 
     @FXML protected TextField searchTextField;
     @FXML protected TableView<Notification> table;
-    @FXML protected TableColumn<Notification, ZonedDateTime> dateCol;
+    @FXML protected TableColumn<Notification, String> dateCol;
     @FXML protected TableColumn<Notification, String> fromCol;
     @FXML protected TableColumn<Notification, String> contentCol;
     @FXML protected TableColumn<Notification, String> readCol;
@@ -57,9 +53,12 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
     Transaction transaction = null;
 
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            .withZone(ZoneId.systemDefault());
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSentDate().atZone(ZoneId.systemDefault())));
+        dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(formatter.format(features.getValue().getSentDate())));
         fromCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSourceUser().getDisplayName()));
         contentCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getContent()));
         readCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(wasReadPL(features.getValue().wasRead())));
