@@ -4,7 +4,6 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Date;
 
 @NamedNativeQueries(
         {
@@ -67,13 +66,6 @@ public class Referral extends MedicalHistoryEntry {
      */
     public Doctor getDoctor() {
         return getAddedBy().asDoctor();
-    }
-
-    /**
-     * Name and surname of the doctor who created the referral (displayed in referrals list).
-     */
-    public String getDoctorName() {
-        return this.getAddedBy().getDisplayName();
     }
 
     /**

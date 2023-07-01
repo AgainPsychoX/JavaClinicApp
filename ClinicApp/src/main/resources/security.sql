@@ -42,17 +42,30 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.get_user_internal_name TO anonymous;
 
--- Function that creates a database user
-CREATE OR REPLACE FUNCTION public.create_database_user(uname varchar, passwrd varchar) RETURNS void
-    LANGUAGE plpgsql
+-- Function that checks if given database username is taken
+CREATE OR REPLACE FUNCTION public.check_user_internal_name_taken(p_name VARCHAR)
+    RETURNS BOOLEAN
+    LANGUAGE sql
     SECURITY DEFINER
 AS $$
-BEGIN
-    EXECUTE FORMAT('CREATE USER %I LOGIN ENCRYPTED PASSWORD %L IN ROLE gp_patients', uname, passwrd);
-END;
+    SELECT EXISTS(SELECT 1 FROM pg_catalog.pg_roles WHERE rolname = p_name);
 $$;
 
-REVOKE EXECUTE ON FUNCTION public.create_database_user FROM gp_receptionists, gp_doctors, gp_admins;
+GRANT EXECUTE ON FUNCTION public.check_user_internal_name_taken TO anonymous;
+
+-- Note: For creating users refer to `users` INSERT trigger
+
+CREATE OR REPLACE PROCEDURE public.change_password(uname VARCHAR, passwd VARCHAR)
+    LANGUAGE plpgsql
+    -- TODO: make it SECURITY DEFINER, allowing changing password other people conditionally
+    --  (always allow own, and doctor manage patients, but not other employees)
+AS $$
+    BEGIN
+        EXECUTE FORMAT('ALTER USER %I WITH PASSWORD %L', uname, passwd);
+    END;
+$$;
+
+GRANT EXECUTE ON PROCEDURE public.change_password TO PUBLIC;
 
 
 
@@ -73,8 +86,6 @@ CREATE ROLE gp_receptionists;
 CREATE ROLE gp_nurses;
 CREATE ROLE gp_doctors;
 CREATE ROLE gp_admins SUPERUSER CREATEDB CREATEROLE REPLICATION BYPASSRLS;
-
-GRANT EXECUTE ON FUNCTION public.create_database_user TO gp_receptionists, gp_doctors, gp_admins;
 
 -- Note for admin users:
 -- > The role attributes `LOGIN`, `SUPERUSER`, `CREATEDB`, and `CREATEROLE` can be thought of as special privileges,
@@ -581,6 +592,48 @@ DROP POLICY IF EXISTS insert_auth ON public.users;
 CREATE POLICY insert_auth ON public.users FOR INSERT TO gp_receptionists, gp_doctors
     WITH CHECK (true);
 
+-- Trigger that creates the internal database user for new user
+CREATE OR REPLACE FUNCTION users_insert_trigger()
+    RETURNS TRIGGER
+    LANGUAGE plpgsql
+    SECURITY DEFINER
+AS $$
+    DECLARE
+        uname VARCHAR;
+        passwd VARCHAR;
+    BEGIN
+        passwd := SUBSTRING(RANDOM()::VARCHAR FROM 3); -- password should be after creating user
+
+        IF NEW.internal_name = '!' THEN
+            uname := CONCAT('u_', LOWER(MD5(COALESCE(NEW.email, SUBSTRING(RANDOM()::VARCHAR FROM 3)))));
+        ELSE
+            uname := NEW.internal_name;
+        END IF;
+
+        IF NEW.internal_name LIKE 'u\_old\_%' ESCAPE '\' THEN
+            RETURN NEW; -- allow to proceed
+        END IF;
+
+        IF LENGTH(uname) < 8 THEN
+            RAISE EXCEPTION 'specified internal database username is too short';
+        END IF;
+        IF public.check_user_internal_name_taken(uname) THEN
+            RAISE EXCEPTION 'User with specified internal database username exists';
+        END IF;
+
+        EXECUTE FORMAT('CREATE USER %I LOGIN ENCRYPTED PASSWORD %L IN ROLE gp_patients', uname, passwd);
+        UPDATE public.users SET internal_name = uname WHERE id = NEW.id;
+        IF NOT EXISTS (SELECT 1 FROM public.users WHERE id = NEW.id) THEN
+            RAISE EXCEPTION 'Failed to update the internal database username';
+        END IF;
+
+        RETURN NEW; -- allow to proceed
+    END;
+$$;
+
+CREATE TRIGGER users_insert AFTER INSERT ON users
+    FOR EACH ROW EXECUTE FUNCTION users_insert_trigger();
+
 ----------------------------------------
 -- SELECT
 
@@ -614,7 +667,7 @@ CREATE POLICY select_asdf ON public.users FOR UPDATE TO gp_receptionists, gp_doc
 
 DROP RULE IF EXISTS validate ON public.users;
 CREATE RULE validate AS ON UPDATE TO public.users
-    WHERE NEW.id <> OLD.id OR NEW.internal_name <> OLD.internal_name
+    WHERE OLD.id <> NEW.id OR (OLD.internal_name <> '!' AND OLD.internal_name <> NEW.internal_name)
     DO INSTEAD NOTHING;
 
 -- TODO: rules to validate update/inserts

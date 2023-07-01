@@ -12,7 +12,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -278,7 +277,7 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
      */
     @Override
     public void refresh() {
-        doctorField.setText(ref.getDoctorName());
+        doctorField.setText(ref.getDoctor().getDisplayName());
         fulDatePicker.setValue((ref.getFulfilmentDate() == null)
                 ? null
                 : Timestamp.from(ref.getFulfilmentDate()).toLocalDateTime().toLocalDate());

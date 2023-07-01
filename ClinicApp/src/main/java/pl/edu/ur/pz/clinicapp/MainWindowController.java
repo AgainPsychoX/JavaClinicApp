@@ -178,7 +178,7 @@ public class MainWindowController implements Initializable {
         if (displayName != null) {
             loggedAsText.setText("Zalogowany jako " + displayName);
         }
-        roleText.setText(loggedInUser.getRole().toString());
+        roleText.setText(loggedInUser.getRole().localizedName());
 
         // Populate navigation menu
         {

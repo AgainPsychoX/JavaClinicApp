@@ -22,8 +22,6 @@ import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.regex.Pattern;
 
 public class RegisterDialog extends ChildControllerBase<MainWindowController> {
 
@@ -42,9 +40,6 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
 
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
     Query createPatientQuery = session.getNamedQuery("createPatient");
-    Query createDatabaseUserQuery = session.getNamedQuery("createDatabaseUser");
-    Query createUserQuery = session.getNamedQuery("createUser");
-    Query findDatabaseUserQuery = session.getNamedQuery("findDatabaseUser");
     @FXML
     protected HBox banner;
     @FXML
@@ -155,29 +150,16 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
         } else {
             try {
                 transaction = session.beginTransaction();
-                String internalName;
-
-                // XXX
-                while (true) {
-                    int random = ThreadLocalRandom.current().nextInt(1000, 10000);
-                    internalName = "u" + Character.toLowerCase(nameField.getText().charAt(0))
-                            + Character.toLowerCase(surnameField.getText().charAt(0)) + random;
-                    findDatabaseUserQuery.setParameter("rolname", internalName);
-                    if (findDatabaseUserQuery.getResultList().size() == 0) break;
-                }
-
-                createDatabaseUserQuery.setParameter("userName", internalName);
-                createDatabaseUserQuery.setParameter("password", passwordField.getText().trim());
 
                 User newUser = new User();
-                newUser.setDatabaseUsername(internalName);
                 newUser.setEmail((emailField.getText() == null || emailField.getText().isBlank()) ? null : emailField.getText().trim());
                 newUser.setName(nameField.getText().trim());
                 newUser.setPhone((phoneField.getText() == null || phoneField.getText().isBlank()) ? null : phoneField.getText().trim());
-                newUser.setRole(User.Role.PATIENT_DB);
+                newUser.setRole(User.Role.PATIENT);
                 newUser.setSurname(surnameField.getText().trim());
 
                 session.persist(newUser);
+                newUser.changePassword(passwordField.getText());
                 // FIXME: instead of using query to create patient data, let's use hibernate
 
                 createPatientQuery.setParameter("building", (buildingField.getText() == null
@@ -203,7 +185,6 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
                         : streetField.getText().trim());
                 createPatientQuery.setParameter("id", newUser.getId());
 
-                createDatabaseUserQuery.getSingleResult();
                 createPatientQuery.executeUpdate();
                 transaction.commit();
 

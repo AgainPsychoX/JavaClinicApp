@@ -330,11 +330,11 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
     @Override
     public void refresh() {
         if (getMode() == Mode.DETAILS) {
-            doctorTextField.setText(prescription.getDoctorName());
+            doctorTextField.setText(prescription.getAddedBy().getDisplayName());
             notesTextField.setText(prescription.getNotes());
             tagsTextField.setText(prescription.getStringTags());
             govIdTextField.setText(prescription.getGovernmentId());
-            patientTextField.setText(prescription.getPatientName());
+            patientTextField.setText(prescription.getPatient().getDisplayName());
             Instant instant = prescription.getAddedDate();
             LocalDate date = instant.atZone(ZoneId.systemDefault()).toLocalDate();
             addedDatePicker.setValue(date);

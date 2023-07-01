@@ -15,6 +15,7 @@ module pl.edu.ur.pz.clinicapp {
     requires itextpdf;
     requires com.google.guice;
     requires javax.inject;
+    requires javafaker;
 
     exports pl.edu.ur.pz.clinicapp;
     exports pl.edu.ur.pz.clinicapp.controls;

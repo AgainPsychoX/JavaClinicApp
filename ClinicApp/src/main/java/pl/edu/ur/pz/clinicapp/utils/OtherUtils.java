@@ -26,6 +26,15 @@ public class OtherUtils {
         return null;
     }
 
+    public static String notBlankCoalesce(@Nullable String... params) {
+        for (String param : params) {
+            if (param != null && !param.isBlank()) {
+                return param;
+            }
+        }
+        return null;
+    }
+
     @SuppressWarnings("unused")
     public static void doNothing(Object... params) {
         // This function really does nothing, but good luck removing it without introducing errors or warnings :)

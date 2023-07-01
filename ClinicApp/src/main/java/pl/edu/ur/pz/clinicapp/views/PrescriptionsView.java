@@ -126,7 +126,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
         }
 
         doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getDoctorName()));
-        patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatientName()));
+        patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatient().getDisplayName()));
         codeCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getGovernmentId()));
         tagsCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getStringTags()));
         dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddedDateFormatted()));

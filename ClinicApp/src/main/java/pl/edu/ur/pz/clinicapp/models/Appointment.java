@@ -161,4 +161,12 @@ public class Appointment extends MedicalHistoryEntry implements Schedule.Entry {
     public boolean doesCrossDays(ZoneId zone) {
         return false;
     }
+
+
+
+    @Override
+    public String toString() {
+        return String.format("Appointment{id=%d,date=%s,duration=%s,patient_id=%d,doctor_id=%d}",
+                getId(), getDate(), getDuration(), getPatient().getId(), getDoctor().getId());
+    }
 }

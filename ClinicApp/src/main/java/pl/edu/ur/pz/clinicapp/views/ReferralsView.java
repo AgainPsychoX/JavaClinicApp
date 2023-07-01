@@ -1,6 +1,7 @@
 package pl.edu.ur.pz.clinicapp.views;
 
 import javafx.animation.PauseTransition;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -19,7 +20,6 @@ import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
-import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
@@ -176,8 +176,8 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         dateCol.setCellValueFactory(new PropertyValueFactory<>("addedDateFormatted"));
         fulDateCol.setCellValueFactory(new PropertyValueFactory<>("fulfilmentDateFormatted"));
         interestCol.setCellValueFactory(new PropertyValueFactory<>("pointOfInterest"));
-        patientCol.setCellValueFactory(new PropertyValueFactory<>("patientName"));
-        doctorCol.setCellValueFactory(new PropertyValueFactory<>("doctorName"));
+        patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatient().getDisplayName()));
+        doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getDoctor().getDisplayName()));
         notesCol.setCellValueFactory(new PropertyValueFactory<>("notes"));
         feedbackCol.setCellValueFactory(new PropertyValueFactory<>("feedback"));
         tagsCol.setCellValueFactory(new PropertyValueFactory<>("StringTags"));
@@ -272,7 +272,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
                 return true;
             if (referral.getPointOfInterest() != null && referral.getPointOfInterest().toLowerCase().contains(text.trim()))
                 return true;
-            if (referral.getDoctorName().toLowerCase().contains(text.trim())) return true;
+            if (referral.getDoctor().getDisplayName().toLowerCase().contains(text.trim())) return true;
             if (referral.getNotes().toLowerCase().contains(text.trim())) return true;
             if (referral.getFeedback() != null && referral.getFeedback().toLowerCase().contains(text.trim()))
                 return true;

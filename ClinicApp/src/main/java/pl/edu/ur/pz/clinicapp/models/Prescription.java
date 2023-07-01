@@ -44,17 +44,11 @@ import javax.persistence.*;
         })
 
 public class Prescription extends MedicalHistoryEntry {
-    @Id
-    @Column(nullable = false)
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
-
     /**
      * Government assigned ID for prescriptions (Polish "e-recepta").
      */
     @Column(length = 80, nullable = true)
     private String governmentId;
-
 
     public String getGovernmentId() {
         return governmentId;
@@ -63,16 +57,4 @@ public class Prescription extends MedicalHistoryEntry {
     public void setGovernmentId(String governmentId) {
         this.governmentId = governmentId;
     }
-
-    /**
-     * Name and surname of the doctor who created the referral (displayed in referrals list).
-     */
-    public String getDoctorName() {
-        return this.getAddedBy().getDisplayName();
-    }
-
-    public Integer getId(){
-        return this.id;
-    }
-
 }

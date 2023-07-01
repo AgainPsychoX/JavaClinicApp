@@ -5,6 +5,7 @@ import org.hibernate.exception.GenericJDBCException;
 import org.hibernate.service.spi.ServiceException;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ExampleDataSeeder;
+import pl.edu.ur.pz.clinicapp.utils.JPAUtils;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -20,6 +21,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.logging.Logger;
 
+import static java.util.regex.Matcher.quoteReplacement;
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrBlank;
 
 public class DefaultApplicationContext implements ApplicationContext {
@@ -87,6 +89,41 @@ public class DefaultApplicationContext implements ApplicationContext {
         logger.fine("----------------------------------------------------------------");
         logger.info("Seeding database...");
         try {
+            if (Boolean.parseBoolean(properties.getProperty("seeding.force-drop"))) {
+                entityManagerFactory = Persistence.createEntityManagerFactory("default", Map.ofEntries(
+                        Map.entry("hibernate.connection.username", properties.getProperty("seeding.username")),
+                        Map.entry("hibernate.connection.password", properties.getProperty("seeding.password"))
+                ));
+                entityManager = entityManagerFactory.createEntityManager();
+
+                logger.finer("Dropping schema");
+                JPAUtils.transaction(em -> {
+                    entityManager.createNativeQuery("DROP SCHEMA IF EXISTS public CASCADE").executeUpdate();
+                    entityManager.createNativeQuery("CREATE SCHEMA public").executeUpdate();
+                });
+
+                final var dropUsersPrefix = properties.getProperty("seeding.drop-users");
+                if (dropUsersPrefix != null) {
+                    logger.finer("Dropping users");
+                    final var sql = """
+                            DO $$
+                            DECLARE
+                                role_name TEXT;
+                            BEGIN
+                                FOR role_name IN (SELECT rolname FROM pg_catalog.pg_roles WHERE rolname LIKE '%s%%' ESCAPE '\\')
+                                LOOP
+                                    EXECUTE 'DROP OWNED BY ' || quote_ident(role_name);
+                            		EXECUTE 'DROP ROLE ' || quote_ident(role_name);
+                                END LOOP;
+                            END $$
+                            """.formatted(dropUsersPrefix.replaceAll("_", quoteReplacement("\\_")));
+                    JPAUtils.transaction(em -> em.createNativeQuery(sql).executeUpdate());
+                }
+
+                entityManager.close();
+                entityManagerFactory.close();
+            }
+
             // For seeding we need superuser and special setting, so we shadow default settings from `persistence.xml`.
             entityManagerFactory = Persistence.createEntityManagerFactory("default", Map.ofEntries(
                     Map.entry("hibernate.connection.username", properties.getProperty("seeding.username")),
@@ -111,7 +148,8 @@ public class DefaultApplicationContext implements ApplicationContext {
             if (!isStringNullOrBlank(seedString)) {
                 seed = Long.parseLong(seedString);
             }
-            new ExampleDataSeeder(entityManager, seed).run();
+            new ExampleDataSeeder(entityManager, seed, getLocale()).run();
+            // TODO: make example data seeding optional (minimalist/structure only mode)
 
             logger.info("Finished seeding!");
         }

@@ -48,7 +48,6 @@ public class Schedule {
         // Find possibly effective timetable for the beginning
         Iterator<Timetable> timetablesIterator = timetables.iterator();
         if (!timetablesIterator.hasNext()) {
-            assert false; // throw only in debug
             return List.of();
         }
         Timetable effectiveTimetable = timetablesIterator.next();
@@ -491,6 +490,12 @@ public class Schedule {
 
         // Empty constructor is required for JPA standard.
         public SimpleEntry() {}
+
+        public SimpleEntry(Instant begin, Instant end) {
+            this.type = Type.NONE;
+            this.begin = begin;
+            this.end = end;
+        }
 
         public SimpleEntry(Entry.Type type, Instant begin, Instant end) {
             this.type = type;

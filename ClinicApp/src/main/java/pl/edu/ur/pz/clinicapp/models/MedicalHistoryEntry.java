@@ -18,7 +18,7 @@ public abstract class MedicalHistoryEntry {
     }
 
     /**
-     * Notes about the referral.
+     * Notes about the medical entry.
      */
     @Column(nullable = false, length = 800)
     private String notes;
@@ -30,7 +30,7 @@ public abstract class MedicalHistoryEntry {
     }
 
     /**
-     * Notes about the referral.
+     * Tags for the medical entry.
      */
     @Column(nullable = false, length = 255)
     private String tags;
@@ -45,6 +45,7 @@ public abstract class MedicalHistoryEntry {
         // TODO: Internally should be using some smart class acting like `List`, but assuring max length of underlying string.
         //       Would be nice to use converter `AttributeConverter` to avoid duplicate memory usage.
     }
+    // TODO: https://docs.jboss.org/hibernate/orm/5.6/userguide/html_single/Hibernate_User_Guide.html#collections-as-basic
 
     /**
      * Patient the entry belongs to.
@@ -57,13 +58,6 @@ public abstract class MedicalHistoryEntry {
     }
     public void setPatient(Patient patient) {
         this.patient = patient;
-    }
-
-    /**
-     * Name and surname of the patient.
-     */
-    public String getPatientName() {
-        return this.getPatient().getDisplayName();
     }
 
     /**

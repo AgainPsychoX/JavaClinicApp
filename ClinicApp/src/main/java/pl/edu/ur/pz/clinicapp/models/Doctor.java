@@ -4,7 +4,6 @@ import pl.edu.ur.pz.clinicapp.utils.DurationMinutesConverter;
 
 import javax.persistence.*;
 import java.time.Duration;
-import java.util.List;
 
 @Entity
 @Table(name = "doctors")
@@ -12,6 +11,19 @@ import java.util.List;
         @NamedQuery(name = "doctors",  query = "FROM Doctor d LEFT JOIN FETCH d.user")
 })
 public class Doctor implements UserReference {
+    // Empty constructor is required for JPA standard.
+    private Doctor() {}
+
+
+    public Doctor(User user) {
+        this.id = user.getId();
+        this.user = user;
+        this.name = user.getName();
+        this.surname = user.getSurname();
+    }
+
+
+
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Doctors are users
      */
@@ -114,7 +126,7 @@ public class Doctor implements UserReference {
 
     @Column(nullable = false, columnDefinition = "int default 30")
     @Convert(converter = DurationMinutesConverter.class)
-    private Duration defaultVisitDuration;
+    private Duration defaultVisitDuration = Duration.ofMinutes(30);
     public Duration getDefaultVisitDuration() {
         return defaultVisitDuration;
     }
@@ -127,17 +139,11 @@ public class Doctor implements UserReference {
      * the doctor themselves can bypass this check.
      */
     @Column(nullable = false, columnDefinition = "int default 60")
-    private int maxDaysInAdvance;
+    private int maxDaysInAdvance = 60;
     public int getMaxDaysInAdvance() {
         return maxDaysInAdvance;
     }
     public void setMaxDaysInAdvance(int maxDaysInAdvance) {
         this.maxDaysInAdvance = maxDaysInAdvance;
-    }
-
-
-
-    public List<Timetable> getTimetables() {
-        return Timetable.forUser(this);
     }
 }
