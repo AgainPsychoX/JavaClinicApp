@@ -359,19 +359,6 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
                 editState = (after.intValue() != 0);
             }
         });
-
-
-        nameField.setText("Nowy");
-        surnameField.setText("Admin");
-        emailField.setText("nadmin@gmail.com");
-        phoneField.setText("987654321");
-        PESELField.setText("00202008144");
-        cityField.setText("Rzeszów");
-        postCityField.setText("Rzeszów");
-        streetField.setText("Rzeszowska");
-        buildingField.setText("123");
-        passwordField.setText("123");
-        repPasswordField.setText("123");
     }
 
     /**
