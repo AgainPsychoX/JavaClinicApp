@@ -3,6 +3,9 @@
     <meta charset="UTF-8">
 
     <style>
+        @page{
+            size: landscape;
+        }
         body{
             font-family: Calibri;
         }

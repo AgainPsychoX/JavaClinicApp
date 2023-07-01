@@ -244,9 +244,9 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
     }
 
     /**
-     * Popluates the view from given context.
+     * Populates the view from given context.
      * <p>
-     * If no arguemnts are given, the view will show empty values.
+     * If no arguments are given, the view will show empty values.
      *
      * <ol>
      *     <li>First argument can specify {@link Mode} /li>
@@ -346,7 +346,8 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
     }
 
     /**
-     *
+     * According to current edit state sets fields editable or saves entered data (edits chosen {@link Prescription}
+     * or creates a new one).
      */
     @FXML
     public void editSave() {

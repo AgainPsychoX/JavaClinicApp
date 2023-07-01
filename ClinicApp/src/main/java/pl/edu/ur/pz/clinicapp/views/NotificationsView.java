@@ -17,6 +17,13 @@ import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Notification;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.ReportObject;
+
+import java.net.URL;
+import java.sql.Timestamp;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 import java.net.URL;
 import java.sql.Timestamp;
@@ -31,10 +38,10 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
 
     @FXML protected TextField searchTextField;
     @FXML protected TableView<Notification> table;
-    @FXML protected TableColumn<Notification, ZonedDateTime> dateCol;
+    @FXML protected TableColumn<Notification, String> dateCol;
     @FXML protected TableColumn<Notification, String> fromCol;
     @FXML protected TableColumn<Notification, String> contentCol;
-    @FXML protected TableColumn<Notification, Boolean> readCol;
+    @FXML protected TableColumn<Notification, String> readCol;
     @FXML protected Button markReadButton;
     @FXML protected Button markUnreadButton;
     @FXML protected Button deleteButton;
@@ -46,12 +53,15 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
     Transaction transaction = null;
 
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            .withZone(ZoneId.systemDefault());
+
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSentDate().atZone(ZoneId.systemDefault())));
+        dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(formatter.format(features.getValue().getSentDate())));
         fromCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSourceUser().getDisplayName()));
         contentCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getContent()));
-        readCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().wasRead()));
+        readCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(wasReadPL(features.getValue().wasRead())));
 
         table.getSelectionModel().selectedItemProperty().addListener(observable -> {
             if (table.getSelectionModel().getSelectedItem() == null){
@@ -73,6 +83,9 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
 
     }
 
+    /**
+     * @return all notifications fot current user
+     */
     private List<Notification> getAllNotifications(){
         return ClinicApplication.getUser().getAllReceivedNotifications();
 
@@ -115,6 +128,11 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
         table.refresh();
     }
 
+
+    /**
+     * If notification not read, sets read date, if read date set, deletes read date.
+     * @param event
+     */
     @FXML
     protected void readAction(ActionEvent event){
 
@@ -134,6 +152,11 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
         transaction.commit();
         refresh();
     }
+
+    /**
+     * Deletes selected notification.
+     * @param event
+     */
 
     @FXML
     protected void deleteAction(ActionEvent event){
@@ -157,6 +180,16 @@ public class NotificationsView extends ChildControllerBase<MainWindowController>
             alert.close();
         }
 
+    }
+
+    /**
+     * Localization to polish.
+     * @return "Tak" if already read, "Nie" if pending.
+     */
+    public String wasReadPL(boolean b){
+        if (b) {
+            return "Tak";
+        }else return "Nie";
     }
 
 }

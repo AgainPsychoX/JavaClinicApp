@@ -1,5 +1,6 @@
 package pl.edu.ur.pz.clinicapp.views;
 
+import freemarker.template.SimpleDate;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
@@ -19,15 +20,13 @@ import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.net.URL;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.nullCoalesce;
 
@@ -108,9 +107,9 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
      * Checks if window is in edit state and accordingly displays alert and/or changes view to previous one.
      */
     public void onBackClick() {
-        if (editState.getValue()) {
+        if (getEditState()) {
             if (exitConfirm()) {
-                editState.setValue(!editState.getValue());
+                setEditState(false);
                 this.getParentController().goBack();
             }
         } else {
@@ -130,13 +129,12 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
     public void populate(Object... context) {
         User.Role role = ClinicApplication.requireUser().getRole();
         currMode = (Mode) context[0];
-
         if (currMode == Mode.DETAILS) {
             appointment = (Appointment) context[1];
             populateDetails(appointment, role);
         }
         else if (currMode == Mode.CREATE) {
-            populateCreate();
+            populateCreate((Patient) context[2]);
         }
 
     }
@@ -154,6 +152,8 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
         patientCombo.setValue(appointment.getPatient());
         doctorCombo.getItems().add(appointment.getDoctor());
         doctorCombo.setValue(appointment.getDoctor());
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        pickedDate.setText(dateFormat.format(Date.from(appointment.getDate())));
         datePicker.setDisable(true);
 
         notesTextField.setEditable(false);
@@ -173,7 +173,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
     /**
      * Part of populate which only executes when current mode is set to Create.
      */
-    private void populateCreate() {
+    private void populateCreate(Patient patient) {
         final var entityManger = ClinicApplication.getEntityManager();
         doctorCombo.getItems().clear();
         patientCombo.getItems().clear();
@@ -181,32 +181,25 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
         notesTextField.setEditable(true);
         if (!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
 
-        List<Doctor> doctors = new ArrayList<>();
-
-        if (ClinicApplication.requireUser().getRole() == User.Role.DOCTOR) {
-            doctors.add(ClinicApplication.requireUser().asDoctor());
-            doctorCombo.getItems().addAll(doctors);
-            doctorCombo.setValue(ClinicApplication.requireUser().asDoctor());
-        } else {
-            doctors = entityManger.createNamedQuery("doctors", Doctor.class).getResultList();
-            doctorCombo.getItems().addAll(doctors);
-        }
+        List<Doctor> doctors = entityManger.createNamedQuery("doctors", Doctor.class).getResultList();
+        doctorCombo.getItems().addAll(doctors);
         doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
         notesTextField.setText(null);
-        editState.setValue(true);
+        setEditState(true);
 
         List<Patient> patients = new ArrayList<>();
 
         if (ClinicApplication.requireUser().getRole() == User.Role.PATIENT) {
             patients.add(ClinicApplication.requireUser().asPatient());
-            patientCombo.getItems().add(ClinicApplication.requireUser().asPatient());
-            patientCombo.setValue(ClinicApplication.requireUser().asPatient());
+        } else if(patient != null) {
+            patients.add(patient);
         } else {
             patients = entityManger.createNamedQuery("patients", Patient.class).getResultList();
         }
-        doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
+        patients.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
         patientCombo.getItems().addAll(patients);
-
+        patientCombo.setValue(patients.get(0));
+        doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
     }
 
     /**
@@ -219,6 +212,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
     /** Creating transaction and execute queries depending on type of action **/
     @FXML
     public void editSave() {
+        setEditState(true);
         datePicker.setDisable(false);
         try {
             if (currMode == Mode.DETAILS) {
@@ -227,7 +221,6 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             else {
                 editSaveCreate();
             }
-            editState.setValue(!editState.getValue());
         } catch (IllegalArgumentException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Błąd zapisu");
@@ -238,14 +231,13 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
 
     /** Function executes query for editing {@link pl.edu.ur.pz.clinicapp.models.Appointment}. **/
     private void editSaveDetails() {
-        if (editState.getValue()) {
+        if (getEditState()) {
             if (pickedDate.getText() == null) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Błąd zapisu");
                 alert.setHeaderText("Nie wypełniono wymaganych pól");
                 alert.setContentText("Wszytkie pola są wymagane.");
                 alert.showAndWait();
-                editState.setValue(!editState.getValue());
             } else {
                 Transaction transaction;
                 editQuery.setParameter("date", timestamp);
@@ -256,6 +248,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
                 datePicker.setDisable(true);
                 createNotif(doctorCombo.getValue().asUser(), patientCombo.getValue().asUser(),
                         "Zmieniono datę wizyty na: " + formatter.format(timestamp.toInstant()) + ".");
+                setEditState(false);
             }
         }
     }
@@ -269,7 +262,6 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             alert.setHeaderText("Nie wypełniono wymaganych pól");
             alert.setContentText("Wszystkie pola są wymagane");
             alert.showAndWait();
-            editState.setValue(!editState.getValue());
         } else {
             Transaction transaction;
             transaction = session.beginTransaction();
@@ -285,14 +277,16 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             newVisit.setDate(timestamp.toInstant());
             session.persist(newVisit);
             transaction.commit();
-            editState.setValue(!editState.getValue());
+            pickedDate.setText(null);
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Dodawanie wizyty");
             alert.setHeaderText("Pomyślnie dodano wizytę.");
             alert.showAndWait();
             createNotif(doctorCombo.getValue().asUser(), patientCombo.getValue().asUser(),
                     "Stworzono wizytę wizytę na dzień: " + formatter.format(timestamp.toInstant()) +'.');
+            setEditState(false);
             this.getParentController().goBack();
+
         }
     }
     /**
@@ -383,17 +377,21 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
 
     /** Function for picking date and time of appointment **/
     public void pickDate() {
-        Schedule schedule = Schedule.of(doctorCombo.getValue());
-        final var dialog = new AppointmentSlotPickerDialog(
-                schedule, nullCoalesce(LocalDateTime.now()));
-        dialog.showAndWait();
-        final var selection = dialog.getResult();
-        if (selection.isPresent()) {
-            final var begin = selection.get().getBeginInstant().atZone(ZoneId.systemDefault());
-            // TODO: use one picker for both point and duration
-            pickedDate.setText(begin.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
-            timestamp = Timestamp.valueOf(begin.toLocalDateTime());
-            // TODO: ditch the Timestamp class for Instant or ZonedDateTime
+        if (doctorCombo.getValue() != null) {
+            Schedule schedule = Schedule.of(doctorCombo.getValue());
+            final var dialog = new AppointmentSlotPickerDialog(
+                    schedule, nullCoalesce(LocalDateTime.now()));
+            dialog.showAndWait();
+            final var selection = dialog.getResult();
+            if (selection.isPresent()) {
+                final var begin = selection.get().getBeginInstant().atZone(ZoneId.systemDefault());
+                // TODO: use one picker for both point and duration
+                pickedDate.setText(begin.format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm")));
+                timestamp = Timestamp.valueOf(begin.toLocalDateTime());
+                // TODO: ditch the Timestamp class for Instant or ZonedDateTime
+            }
+        } else {
+            new Alert(Alert.AlertType.ERROR, "Nie wybrano lekarza.").showAndWait();
         }
     }
 

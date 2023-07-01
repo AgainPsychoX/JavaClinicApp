@@ -15,10 +15,27 @@ import java.util.List;
         @NamedQuery(name = "User.getByLogin", query = "FROM User u WHERE u.databaseUsername = FUNCTION('get_user_internal_name', :input)"),
         @NamedQuery(name = "User.byRole", query = "FROM User u WHERE u.role = :role"),
         @NamedQuery(name = "User.clearTimetables", query = "DELETE FROM Timetable t WHERE t.user.id = :id"),
+        // TODO: clean up queries (again)
+        @NamedQuery(name = "allWorkers", query = "FROM User WHERE role = 'RECEPTION' OR role ='NURSE' or role = 'ADMIN'")
+        @NamedQuery(name = "allUsers", query = "FROM User"),
+        @NamedQuery(name = "allDoctors", query = "FROM User WHERE role = 'DOCTOR'"),
+        @NamedQuery(name = "allPatients", query = "FROM User WHERE role = 'PATIENT'"),
 })
 @NamedNativeQueries({
         @NamedNativeQuery(name = "login", query = "SELECT get_user_internal_name(:input) AS internal_name"),
         @NamedNativeQuery(name = "changePassword", query = "CALL change_password(:uname, :passwd)"),
+        // TODO: clean up queries (again)
+//        @NamedNativeQuery(name = "createUser", query = "INSERT INTO users "
+//                +"(internal_name, email, name, phone, role, surname) VALUES "
+//                +"(:internalName, :email, :name, :phone, :role, :surname)",
+//                resultClass = User.class),
+        @NamedNativeQuery(name = "createUser", query = "SELECT 1 FROM create_user(:internalName, :email, :name, :phone, :role, :surname)"),
+//        @NamedNativeQuery(name = "createDatabaseUser", query = "CREATE USER :userName LOGIN ENCRYPTED "
+//                +"PASSWORD :password IN ROLE gp_patients",
+//                resultClass = User.class),
+        @NamedNativeQuery(name = "createDatabaseUser", query = "SELECT 1 FROM create_database_user(:userName, :password, :role)"),
+        @NamedNativeQuery(name = "findDatabaseUser", query = "SELECT FROM pg_catalog.pg_roles WHERE rolname = :rolname",
+                resultClass = User.class),
 })
 public class User implements UserReference {
     @Override

@@ -2,6 +2,8 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.ColumnConstraints?>
@@ -12,7 +14,7 @@
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
-<BorderPane minHeight="400.0" minWidth="600.0" prefHeight="540.0" prefWidth="720.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.AccountDetailsView">
+<BorderPane minHeight="400.0" minWidth="600.0" prefHeight="540.0" prefWidth="720.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.AccountDetailsView">
    <center>
       <VBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="4.0" stylesheets="@../common.css">
           <children>
@@ -29,12 +31,13 @@
                       <ColumnConstraints hgrow="ALWAYS" minWidth="100.0" percentWidth="33.0" prefWidth="100.0" />
                       <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="100.0" percentWidth="33.0" prefWidth="100.0" />
                       <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="100.0" percentWidth="33.0" prefWidth="100.0" />
+                  <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="100.0" percentWidth="33.0" prefWidth="100.0" />
                   </columnConstraints>
                   <rowConstraints>
                       <RowConstraints minHeight="10.0" vgrow="NEVER" />
                       <RowConstraints minHeight="10.0" valignment="TOP" vgrow="NEVER" />
                       <RowConstraints minHeight="10.0" vgrow="NEVER" />
-                      <RowConstraints minHeight="10.0" valignment="TOP" vgrow="NEVER" />
+                  <RowConstraints minHeight="10.0" valignment="TOP" vgrow="NEVER" />
                   </rowConstraints>
                   <children>
                       <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Imię" GridPane.halignment="LEFT">
@@ -42,7 +45,7 @@
                               <Insets />
                           </GridPane.margin>
                       </Text>
-                      <TextField fx:id="nameField" text="Adam" GridPane.rowIndex="1">
+                      <TextField fx:id="nameField" GridPane.rowIndex="1">
                           <GridPane.margin>
                               <Insets bottom="8.0" />
                           </GridPane.margin>
@@ -52,7 +55,7 @@
                               <Insets />
                           </GridPane.margin>
                       </Text>
-                      <TextField fx:id="surnameField" text="Kwaśniewski" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                      <TextField fx:id="surnameField" GridPane.columnIndex="1" GridPane.rowIndex="1">
                           <GridPane.margin>
                               <Insets bottom="8.0" />
                           </GridPane.margin>
@@ -62,7 +65,7 @@
                               <Insets />
                           </GridPane.margin>
                       </Text>
-                      <TextField fx:id="peselField" text="91011754321" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                      <TextField fx:id="peselField" GridPane.columnIndex="2" GridPane.rowIndex="1">
                           <GridPane.margin>
                               <Insets bottom="8.0" />
                           </GridPane.margin>
@@ -72,17 +75,17 @@
                               <Insets />
                           </GridPane.margin>
                       </Text>
-                      <TextField fx:id="emailField" text="adam.kwasniewski@example.com" GridPane.rowIndex="3">
+                      <TextField fx:id="emailField" GridPane.rowIndex="3">
                           <GridPane.margin>
                               <Insets bottom="8.0" />
                           </GridPane.margin>
                       </TextField>
-                      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Telefon" GridPane.columnIndex="1" GridPane.halignment="LEFT" GridPane.rowIndex="2">
+                      <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Telefon" GridPane.columnIndex="3" GridPane.halignment="LEFT">
                           <GridPane.margin>
                               <Insets />
                           </GridPane.margin>
                       </Text>
-                      <TextField fx:id="phoneField" text="+48 731 731 731" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                      <TextField fx:id="phoneField" GridPane.columnIndex="3" GridPane.rowIndex="1">
                           <GridPane.margin>
                               <Insets bottom="8.0" />
                           </GridPane.margin>
@@ -118,7 +121,7 @@
                               <Insets />
                           </GridPane.margin>
                       </Text>
-                      <TextField fx:id="cityField" text="Rzeszów" GridPane.rowIndex="1">
+                      <TextField fx:id="cityField" GridPane.rowIndex="1">
                           <GridPane.margin>
                               <Insets bottom="8.0" />
                           </GridPane.margin>
@@ -128,7 +131,7 @@
                         <Insets />
                      </GridPane.margin>
                   </Text>
-                  <TextField fx:id="streetField" text="Nieistniejąca" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                  <TextField fx:id="streetField" GridPane.columnIndex="1" GridPane.rowIndex="1">
                      <GridPane.margin>
                         <Insets bottom="8.0" />
                      </GridPane.margin>
@@ -138,19 +141,19 @@
                         <Insets />
                      </GridPane.margin>
                   </Text>
-                  <TextField fx:id="buildingField" text="17a/6" GridPane.columnIndex="2" GridPane.rowIndex="1">
+                  <TextField fx:id="buildingField" GridPane.columnIndex="2" GridPane.rowIndex="1">
                      <GridPane.margin>
                         <Insets bottom="8.0" />
                      </GridPane.margin>
                   </TextField>
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Kod pocztowy" textAlignment="CENTER" GridPane.rowIndex="2" />
-                  <TextField fx:id="postalCodeField" text="35-123" GridPane.rowIndex="3">
+                  <TextField fx:id="postalCodeField" GridPane.rowIndex="3">
                      <GridPane.margin>
                         <Insets bottom="8.0" />
                      </GridPane.margin>
                   </TextField>
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Miasto poczty" textAlignment="CENTER" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                  <TextField fx:id="postalCityField" text="Rzeszów" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                  <TextField fx:id="postalCityField" GridPane.columnIndex="1" GridPane.rowIndex="3">
                      <GridPane.margin>
                         <Insets bottom="8.0" />
                      </GridPane.margin>
@@ -160,11 +163,49 @@
                   <Insets bottom="8.0" />
                </VBox.margin>
               </GridPane>
-            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Dane lekarza" visible="false" VBox.vgrow="ALWAYS">
+            <Text fx:id="doctorText" strokeType="OUTSIDE" strokeWidth="0.0" text="Dane lekarza" visible="false" VBox.vgrow="ALWAYS">
                <font>
                   <Font size="16.0" />
                </font>
             </Text>
+            <GridPane fx:id="doctorGridPane" prefHeight="90.0" prefWidth="449.0" visible="false">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="361.0" minWidth="10.0" prefWidth="352.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="451.0" minWidth="10.0" prefWidth="352.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Czas trwania wizyty" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Maksymalna liczba dni do rejestracji" GridPane.rowIndex="1" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Specjalizacja" GridPane.rowIndex="2" />
+                  <TextField fx:id="visitDurationTextField" prefWidth="406.0" GridPane.columnIndex="1" />
+                  <TextField fx:id="maxDaysTextField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <TextField fx:id="specializationTextField" prefWidth="327.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               </children>
+            </GridPane>
+            <GridPane fx:id="adminRolePane">
+              <columnConstraints>
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+              </columnConstraints>
+              <rowConstraints>
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+              </rowConstraints>
+               <children>
+                  <ComboBox fx:id="roleComboBox" disable="true" prefHeight="25.0" prefWidth="351.0" visible="false" GridPane.columnIndex="1" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Rola" visible="false" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Nowe hasło" GridPane.rowIndex="1" />
+                  <PasswordField fx:id="passwordField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Powtórz hasło" GridPane.rowIndex="2" />
+                  <PasswordField fx:id="repeatPasswordField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+               </children>
+            </GridPane>
           </children>
          <opaqueInsets>
             <Insets />
@@ -176,31 +217,17 @@
             <children>
                 <HBox alignment="CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
                     <children>
-                        <Button fx:id="goToVisitsButton" mnemonicParsing="false" onAction="#goToVisitsAction" prefWidth="200.0" text="Przejdź do wizyt" styleClass="my-primary-button">
+                        <Button fx:id="editButton" mnemonicParsing="false" onAction="#editAction" prefWidth="200.0" styleClass="my-primary-button" text="Edytuj">
                             <padding>
                                 <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                             </padding>
                         </Button>
-                        <Button fx:id="goToPrescriptionsButton" mnemonicParsing="false" onAction="#goToPrescriptionsAction" prefWidth="200.0" text="Przejdź do recept" styleClass="my-primary-button">
-                            <padding>
-                                <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                            </padding>
-                        </Button>
-                        <Button fx:id="goToReferralsButton" mnemonicParsing="false" onAction="#goToReferralsAction" prefWidth="200.0" text="Przejdź do skierowań" styleClass="my-primary-button">
-                            <padding>
-                                <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                            </padding>
-                        </Button>
-                        <Button fx:id="editButton" mnemonicParsing="false" onAction="#editAction" prefWidth="200.0" text="Edytuj" styleClass="my-primary-button">
-                            <padding>
-                                <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
-                            </padding>
-                        </Button>
-                  <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveButton" prefWidth="200.0" text="Zapisz" styleClass="my-primary-button">
+                  <Button fx:id="saveButton" mnemonicParsing="false" onAction="#saveButton" prefWidth="200.0" styleClass="my-primary-button" text="Zapisz">
                      <padding>
                         <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
                      </padding>
                   </Button>
+                  <Button fx:id="changePasswordButton" mnemonicParsing="false" onAction="#updatePassword" styleClass="my-primary-button" text="Zmiana hasła" />
                     </children>
                 </HBox>
             </children>

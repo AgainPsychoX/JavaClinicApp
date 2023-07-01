@@ -1,15 +1,15 @@
 package pl.edu.ur.pz.clinicapp.dialogs;
 
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.text.Text;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.jpa.TypedParameterValue;
@@ -21,6 +21,7 @@ import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Optional;
 
 public class RegisterDialog extends ChildControllerBase<MainWindowController> {
@@ -40,38 +41,22 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
 
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
     Query createPatientQuery = session.getNamedQuery("createPatient");
-    @FXML
-    protected HBox banner;
-    @FXML
-    protected PasswordField passwordField;
-    @FXML
-    protected PasswordField repPasswordField;
-    @FXML
-    protected BorderPane BPane;
-    @FXML
-    protected TextField PESELField;
-    @FXML
-    protected TextField buildingField;
-    @FXML
-    protected TextField cityField;
-    @FXML
-    protected TextField emailField;
-    @FXML
-    protected VBox logInForm;
-    @FXML
-    protected TextField nameField;
-    @FXML
-    protected TextField phoneField;
-    @FXML
-    protected TextField postCityField;
-    @FXML
-    protected TextField postCodeField;
-    @FXML
-    protected Button registerButton;
-    @FXML
-    protected TextField streetField;
-    @FXML
-    protected TextField surnameField;
+    @FXML protected HBox banner;
+    @FXML protected PasswordField passwordField;
+    @FXML protected PasswordField repPasswordField;
+    @FXML protected BorderPane BPane;
+    @FXML protected TextField PESELField;
+    @FXML protected TextField buildingField;
+    @FXML protected TextField cityField;
+    @FXML protected TextField emailField;
+    @FXML protected VBox logInForm;
+    @FXML protected TextField nameField;
+    @FXML protected TextField phoneField;
+    @FXML protected TextField postCityField;
+    @FXML protected TextField postCodeField;
+    @FXML protected Button registerButton;
+    @FXML protected TextField streetField;
+    @FXML protected TextField surnameField;
 
     /**
      * List of all fields in the view.
@@ -83,6 +68,35 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
      */
     private IntegerProperty fieldsEdited = new SimpleIntegerProperty(0);
 
+    private final ReadOnlyObjectWrapper<RegisterDialog.Mode> mode = new ReadOnlyObjectWrapper<>();
+
+    public Mode getMode() {return mode.get();}
+    public User.Role selectedRole;
+
+    public void setMode (Mode mode){
+        this.mode.set(mode);
+        switch (mode){
+            case ACCOUNT -> {
+                doctorGridPane.setVisible(true);
+                doctorGridPane.setDisable(false);
+                backText.setText("< Powrót do listy użytkowników");
+                roleText.setVisible(true);
+                roleComboBox.setVisible(true);
+                roleComboBox.setDisable(false);
+                roleComboBox.getItems().setAll("Administrator", "Lekarz", "Pacjent");
+                roleComboBox.setValue("Pacjent");
+            }
+            case PATIENT -> {
+                selectedRole = User.Role.PATIENT_DB;
+                doctorGridPane.setVisible(false);
+                doctorGridPane.setDisable(true);
+                backText.setText("< Powrót do listy pacjentów");
+                roleText.setVisible(false);
+                roleComboBox.setVisible(false);
+                roleComboBox.setDisable(true);
+            }
+        }
+    }
 
     /**
      * Shows a simple error alert.
@@ -115,7 +129,32 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
     @FXML
     void register() {
         Transaction transaction;
-
+        selectedRole = User.Role.PATIENT_DB;
+        if(getMode() == Mode.ACCOUNT) {
+            String roleName = roleComboBox.getSelectionModel().getSelectedItem();
+            if (roleName.equals("Lekarz")){
+                if(specializationTextField.getText().isBlank() || specializationTextField.getText() == null
+                        || maxDaysTextField.getText().isBlank() || maxDaysTextField.getText() == null
+                        || visitDurationTextField.getText().isBlank() || visitDurationTextField.getText() == null){
+                    showErrorAlert("Błąd zapisu", "Nie wypełniono wymaganych pól",
+                            "Pola \"specjalizacji\", \"czasu wizyty\", \"dni\" są wymagane.");
+                 }
+            }
+            if(roleName.equals("Pacjent")) selectedRole = User.Role.PATIENT_DB;
+            else if(roleName.equals("Lekarz")){
+                selectedRole = User.Role.DOCTOR_DB;
+                if (!nameSurnameSpecializationValidator(specializationTextField.getText().trim()))
+                    showErrorAlert("Błąd zapisu", "Niepoprwana specjalizacja",
+                            "Pole \"SPECIALIZACJA\" nie jest poprawną wartością");
+                else if (!doctorFieldsValidator(maxDaysTextField.getText().trim()))
+                    showErrorAlert("Błąd zapisu", "Niepoprawna liczba dni",
+                            "Maksymalna liczba dni wynosi 999");
+                else if (!doctorFieldsValidator(visitDurationTextField.getText().trim()))
+                    showErrorAlert("Błąd zapisu", "Niepoprawna liczba minut",
+                            "Maksymalna liczba minut wynosi 999");
+            }
+            else selectedRole = User.Role.ADMIN_DB;
+        }
         if (nameField.getText() == null || nameField.getText().isBlank() || surnameField.getText() == null
                 || surnameField.getText().isBlank() || PESELField.getText() == null
                 || PESELField.getText().isBlank() || passwordField.getText() == null
@@ -123,10 +162,11 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
                 || repPasswordField.getText().isBlank()) {
             showErrorAlert("Błąd zapisu", "Nie wypełniono wymaganych pól",
                     "Pola \"imię\", \"nazwisko\", \"PESEL\", \"hasło\" i \"powtórz hasło\" są wymagane.");
-        } else if (!nameSurnameValidator(nameField.getText().trim())) {
+        }
+        else if (!nameSurnameSpecializationValidator(nameField.getText().trim())) {
             showErrorAlert("Błąd zapisu", "Niepoprawne imię",
                     "Pole \"imię\" nie jest poprawną wartością.");
-        } else if (!nameSurnameValidator(surnameField.getText().trim())) {
+        } else if (!nameSurnameSpecializationValidator(surnameField.getText().trim())) {
             showErrorAlert("Błąd zapisu", "Niepoprawne nazwisko",
                     "Pole \"nazwisko\" nie jest poprawną wartością.");
         } else if (emailField.getText() != null && !emailField.getText().isBlank()
@@ -186,16 +226,29 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
                 createPatientQuery.setParameter("id", newUser.getId());
 
                 createPatientQuery.executeUpdate();
-                transaction.commit();
 
+                if(selectedRole == User.Role.DOCTOR_DB){
+                    createDoctorQuery.setParameter("id", newUser.getId());
+                    createDoctorQuery.setParameter("visitDuration",
+                            Integer.parseInt(visitDurationTextField.getText().trim()));
+                    createDoctorQuery.setParameter("maxDays", Integer.parseInt(maxDaysTextField.getText().trim()));
+                    createDoctorQuery.setParameter("name", newUser.getName());
+                    createDoctorQuery.setParameter("surname", newUser.getSurname());
+                    createDoctorQuery.setParameter("speciality", specializationTextField.getText().trim());
+                    createDoctorQuery.executeUpdate();
+                }
+                transaction.commit();
                 Alert exit = new Alert(Alert.AlertType.INFORMATION);
                 exit.setTitle("Rejestracja");
                 exit.setHeaderText("Rejestracja zakończona pomyślnie");
-                exit.setContentText("Zarejestrowano nowego pacjenta.");
+                exit.setContentText("Zarejestrowano nową osobę.");
                 exit.showAndWait();
 
                 fieldsEdited.setValue(0);
-                this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS); //WrongClassException?
+                if(getMode() == Mode.PATIENT)
+                    this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS); //WrongClassException?
+                else
+                    this.getParentController().goToViewRaw(MainWindowController.Views.ACCOUNTS);
             } catch (Exception e) {
                 transaction = session.getTransaction();
                 if (transaction.isActive()) transaction.rollback();
@@ -221,6 +274,8 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
      */
     @Override
     public void populate(Object... context) {
+        var mode = RegisterDialog.Mode.PATIENT;
+        backText.setText("< Powrót do listy pacjentów");
 
         allFields.add(PESELField);
         allFields.add(buildingField);
@@ -239,6 +294,16 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
             BPane.getChildren().remove(banner);
             registerButton.setText("Zarejestruj");
         }
+
+        if(context.length > 1){
+            if(context[1] instanceof Mode m){
+                mode = m;
+            }else{
+                throw new IllegalArgumentException();
+            }
+        }
+
+        setMode(mode);
 
         for (TextField field : allFields) {
             field.setText("");
@@ -279,10 +344,16 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
         if (editState) {
             if (exitConfirm()) {
                 editState = false;
-                this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS);
+                if(getMode() == Mode.PATIENT)
+                    this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS);
+                else
+                    this.getParentController().goToViewRaw(MainWindowController.Views.ACCOUNTS);
             }
         } else {
-            this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS);
+            if(getMode() == Mode.PATIENT)
+                this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS);
+            else
+                this.getParentController().goToViewRaw(MainWindowController.Views.ACCOUNTS);
         }
     }
 
@@ -307,8 +378,12 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
         return code.matches("[0-9]{2}-[0-9]{3}");
     }
 
-    public static boolean nameSurnameValidator(String text) {
-        return text.matches("[a-zA-ZżźćńółęąśŻŹĆĄŚĘŁÓŃ]+");
+    public static boolean nameSurnameSpecializationValidator(String text) {
+        return text.matches("[a-zA-ZżźćńółęąśŻŹĆĄŚĘŁÓŃ\\s-]+");
+    }
+
+    public static boolean doctorFieldsValidator(String days) {
+        return days.matches("[0-9]{1,3}");
     }
 
 }

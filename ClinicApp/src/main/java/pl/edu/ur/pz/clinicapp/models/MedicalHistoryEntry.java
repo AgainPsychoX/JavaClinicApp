@@ -1,6 +1,9 @@
 package pl.edu.ur.pz.clinicapp.models;
 
 
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -65,6 +68,7 @@ public abstract class MedicalHistoryEntry {
      */
     @ManyToOne(fetch = FetchType.LAZY, optional = false, targetEntity = User.class)
     @JoinColumn(name = "added_by_user_id", referencedColumnName = "id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     private User addedBy;
     public User getAddedBy() {
         return addedBy;

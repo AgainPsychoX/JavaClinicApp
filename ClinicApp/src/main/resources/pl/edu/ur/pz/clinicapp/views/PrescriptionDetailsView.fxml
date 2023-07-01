@@ -46,12 +46,12 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField fx:id="patientTextField" GridPane.columnIndex="1">
+                <TextField fx:id="patientTextField" disable="true" GridPane.columnIndex="1">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
                 </TextField>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Szczegóły recepty" wrappingWidth="118.716796875" GridPane.halignment="LEFT" GridPane.rowIndex="3">
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Szczegóły recepty *" wrappingWidth="118.716796875" GridPane.halignment="LEFT" GridPane.rowIndex="3">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
@@ -66,7 +66,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
                 </TextField>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Tagi" wrappingWidth="118.716796875" GridPane.halignment="LEFT" GridPane.rowIndex="4">
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Tagi *" wrappingWidth="118.716796875" GridPane.halignment="LEFT" GridPane.rowIndex="4">
                <GridPane.margin>
                   <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                </GridPane.margin></Text>
@@ -75,7 +75,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
                 </TextField>
-                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Kod e-recepty" wrappingWidth="118.716796875" GridPane.halignment="LEFT" GridPane.rowIndex="5">
+                <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Kod e-recepty *" wrappingWidth="118.716796875" GridPane.halignment="LEFT" GridPane.rowIndex="5">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
@@ -85,7 +85,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
                 </Text>
-                <TextField fx:id="doctorTextField" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                <TextField fx:id="doctorTextField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
                     <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                     </GridPane.margin>
