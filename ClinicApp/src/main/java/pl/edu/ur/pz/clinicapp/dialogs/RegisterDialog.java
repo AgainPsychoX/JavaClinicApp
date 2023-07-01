@@ -8,7 +8,10 @@ import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
@@ -21,7 +24,6 @@ import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.Optional;
 
 public class RegisterDialog extends ChildControllerBase<MainWindowController> {
@@ -41,6 +43,10 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
 
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
     Query createPatientQuery = session.getNamedQuery("createPatient");
+    Query createDatabaseUserQuery = session.getNamedQuery("createDatabaseUser");
+    Query createDoctorQuery = session.getNamedQuery("createDoctor");
+    Query findDatabaseUserQuery = session.getNamedQuery("findDatabaseUser");
+
     @FXML protected HBox banner;
     @FXML protected PasswordField passwordField;
     @FXML protected PasswordField repPasswordField;
@@ -57,6 +63,15 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
     @FXML protected Button registerButton;
     @FXML protected TextField streetField;
     @FXML protected TextField surnameField;
+    @FXML protected Text backText;
+    @FXML protected Text roleText;
+    @FXML protected ComboBox<String> roleComboBox;
+    @FXML protected GridPane doctorGridPane;
+    @FXML protected TextField visitDurationTextField;
+    @FXML protected TextField maxDaysTextField;
+    @FXML protected TextField specializationTextField;
+
+    public enum Mode{PATIENT, ACCOUNT}
 
     /**
      * List of all fields in the view.
@@ -87,7 +102,7 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
                 roleComboBox.setValue("Pacjent");
             }
             case PATIENT -> {
-                selectedRole = User.Role.PATIENT_DB;
+                selectedRole = User.Role.PATIENT;
                 doctorGridPane.setVisible(false);
                 doctorGridPane.setDisable(true);
                 backText.setText("< Powrót do listy pacjentów");
@@ -129,7 +144,7 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
     @FXML
     void register() {
         Transaction transaction;
-        selectedRole = User.Role.PATIENT_DB;
+        selectedRole = User.Role.PATIENT;
         if(getMode() == Mode.ACCOUNT) {
             String roleName = roleComboBox.getSelectionModel().getSelectedItem();
             if (roleName.equals("Lekarz")){
@@ -140,9 +155,9 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
                             "Pola \"specjalizacji\", \"czasu wizyty\", \"dni\" są wymagane.");
                  }
             }
-            if(roleName.equals("Pacjent")) selectedRole = User.Role.PATIENT_DB;
+            if(roleName.equals("Pacjent")) selectedRole = User.Role.PATIENT;
             else if(roleName.equals("Lekarz")){
-                selectedRole = User.Role.DOCTOR_DB;
+                selectedRole = User.Role.DOCTOR;
                 if (!nameSurnameSpecializationValidator(specializationTextField.getText().trim()))
                     showErrorAlert("Błąd zapisu", "Niepoprwana specjalizacja",
                             "Pole \"SPECIALIZACJA\" nie jest poprawną wartością");
@@ -153,7 +168,7 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
                     showErrorAlert("Błąd zapisu", "Niepoprawna liczba minut",
                             "Maksymalna liczba minut wynosi 999");
             }
-            else selectedRole = User.Role.ADMIN_DB;
+            else selectedRole = User.Role.ADMIN;
         }
         if (nameField.getText() == null || nameField.getText().isBlank() || surnameField.getText() == null
                 || surnameField.getText().isBlank() || PESELField.getText() == null
@@ -198,6 +213,7 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
                 newUser.setRole(User.Role.PATIENT);
                 newUser.setSurname(surnameField.getText().trim());
 
+
                 session.persist(newUser);
                 newUser.changePassword(passwordField.getText());
                 // FIXME: instead of using query to create patient data, let's use hibernate
@@ -227,7 +243,9 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
 
                 createPatientQuery.executeUpdate();
 
-                if(selectedRole == User.Role.DOCTOR_DB){
+                // FIXME: use hibernate ffs
+
+                if(selectedRole == User.Role.DOCTOR){
                     createDoctorQuery.setParameter("id", newUser.getId());
                     createDoctorQuery.setParameter("visitDuration",
                             Integer.parseInt(visitDurationTextField.getText().trim()));

@@ -621,7 +621,18 @@ AS $$
             RAISE EXCEPTION 'User with specified internal database username exists';
         END IF;
 
-        EXECUTE FORMAT('CREATE USER %I LOGIN ENCRYPTED PASSWORD %L IN ROLE gp_patients', uname, passwd);
+        IF NEW.role = 'PATIENT' THEN
+            EXECUTE FORMAT('CREATE USER %I LOGIN ENCRYPTED PASSWORD %L IN ROLE gp_patients', uname, passwd);
+        ELSIF NEW.role = 'RECEPTION' THEN
+            EXECUTE FORMAT('CREATE USER %I LOGIN ENCRYPTED PASSWORD %L IN ROLE gp_receptionists', uname, passwd);
+        ELSIF NEW.role = 'NURSE' THEN
+            EXECUTE FORMAT('CREATE USER %I LOGIN ENCRYPTED PASSWORD %L IN ROLE gp_nurses', uname, passwd);
+        ELSIF NEW.role = 'DOCTOR' THEN
+            EXECUTE FORMAT('CREATE USER %I LOGIN ENCRYPTED PASSWORD %L IN ROLE gp_doctors', uname, passwd);
+        ELSIF NEW.role = 'ADMIN' THEN
+            EXECUTE FORMAT('CREATE USER %I WITH SUPERUSER CREATEDB CREATEROLE REPLICATION BYPASSRLS LOGIN ENCRYPTED PASSWORD %L IN ROLE gp_admins', uname, passwd);
+        END if;
+
         UPDATE public.users SET internal_name = uname WHERE id = NEW.id;
         IF NOT EXISTS (SELECT 1 FROM public.users WHERE id = NEW.id) THEN
             RAISE EXCEPTION 'Failed to update the internal database username';

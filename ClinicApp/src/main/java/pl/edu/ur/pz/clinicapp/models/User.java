@@ -16,10 +16,10 @@ import java.util.List;
         @NamedQuery(name = "User.byRole", query = "FROM User u WHERE u.role = :role"),
         @NamedQuery(name = "User.clearTimetables", query = "DELETE FROM Timetable t WHERE t.user.id = :id"),
         // TODO: clean up queries (again)
-        @NamedQuery(name = "allWorkers", query = "FROM User WHERE role = 'RECEPTION' OR role ='NURSE' or role = 'ADMIN'")
         @NamedQuery(name = "allUsers", query = "FROM User"),
         @NamedQuery(name = "allDoctors", query = "FROM User WHERE role = 'DOCTOR'"),
         @NamedQuery(name = "allPatients", query = "FROM User WHERE role = 'PATIENT'"),
+        @NamedQuery(name = "allWorkers", query = "FROM User WHERE role = 'RECEPTION' OR role ='NURSE' or role = 'ADMIN'"),
 })
 @NamedNativeQueries({
         @NamedNativeQuery(name = "login", query = "SELECT get_user_internal_name(:input) AS internal_name"),

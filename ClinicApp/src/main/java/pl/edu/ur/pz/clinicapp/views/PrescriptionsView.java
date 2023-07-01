@@ -20,7 +20,6 @@ import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.MainWindowController;
-import pl.edu.ur.pz.clinicapp.dialogs.RegisterDialog;
 import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
@@ -126,7 +125,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
             addButton.setVisible(false);
         }
 
-        doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getDoctorName()));
+        doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddedBy().getDisplayName()));
         patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatient().getDisplayName()));
         codeCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getGovernmentId()));
         tagsCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getStringTags()));
@@ -252,7 +251,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
         filteredPrescriptions.setPredicate(referral -> {
             if (text.isBlank()) return true;
             if (referral.getAddedDate().toString().contains(text.trim())) return true;
-            if (referral.getDoctorName().toLowerCase().contains(text.trim())) return true;
+            if (referral.getAddedBy().getDisplayName().toLowerCase().contains(text.trim())) return true;
             if (referral.getNotes().toLowerCase().contains(text.trim())) return true;
             if (referral.getStringTags().toLowerCase().contains(text.trim())) return true;
             return referral.getGovernmentId() != null && referral.getGovernmentId().contains(text.trim());
