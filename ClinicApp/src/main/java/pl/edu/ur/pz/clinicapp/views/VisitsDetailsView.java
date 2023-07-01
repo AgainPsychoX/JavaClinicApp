@@ -107,9 +107,9 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
      * Checks if window is in edit state and accordingly displays alert and/or changes view to previous one.
      */
     public void onBackClick() {
-        if (editState.getValue()) {
+        if (getEditState()) {
             if (exitConfirm()) {
-                editState.setValue(!editState.getValue());
+                setEditState(!getEditState());
                 this.getParentController().goBack();
             }
         } else {
@@ -221,7 +221,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             else {
                 editSaveCreate();
             }
-            editState.setValue(!editState.getValue());
+            setEditState(!getEditState());
         } catch (IllegalArgumentException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Błąd zapisu");
@@ -232,14 +232,14 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
 
     /** Function executes query for editing {@link pl.edu.ur.pz.clinicapp.models.Appointment}. **/
     private void editSaveDetails() {
-        if (editState.getValue()) {
+        if (getEditState()) {
             if (pickedDate.getText() == null) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Błąd zapisu");
                 alert.setHeaderText("Nie wypełniono wymaganych pól");
                 alert.setContentText("Wszytkie pola są wymagane.");
                 alert.showAndWait();
-                editState.setValue(!editState.getValue());
+                setEditState(!getEditState());
             } else {
                 Transaction transaction;
                 editQuery.setParameter("date", timestamp);
@@ -263,7 +263,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             alert.setHeaderText("Nie wypełniono wymaganych pól");
             alert.setContentText("Wszystkie pola są wymagane");
             alert.showAndWait();
-            editState.setValue(!editState.getValue());
+            setEditState(!getEditState());
         } else {
             Transaction transaction;
             transaction = session.beginTransaction();
@@ -279,7 +279,7 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
             newVisit.setDate(timestamp.toInstant());
             session.persist(newVisit);
             transaction.commit();
-            editState.setValue(!editState.getValue());
+            setEditState(!getEditState());
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Dodawanie wizyty");
             alert.setHeaderText("Pomyślnie dodano wizytę.");
