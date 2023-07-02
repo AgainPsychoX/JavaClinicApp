@@ -4,7 +4,6 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
@@ -14,17 +13,14 @@ import javafx.scene.layout.HBox;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
-import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
-import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.util.Optional;
 
 
-public class PatientDetailsView extends ChildControllerBase<MainWindowController> {
+public class PatientDetailsView extends ViewControllerBase {
 
     public HBox CRUDBox;
     @FXML protected HBox medEntryBox;
@@ -103,10 +99,10 @@ public class PatientDetailsView extends ChildControllerBase<MainWindowController
         if (editState.getValue()) {
             if (exitConfirm()) {
                 editState.setValue(!editState.getValue());
-                this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS);
+                this.getParentController().goToViewRaw(PatientsView.class);
             }
         } else {
-            this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS);
+            this.getParentController().goToViewRaw(PatientsView.class);
         }
     }
 
@@ -276,17 +272,25 @@ public class PatientDetailsView extends ChildControllerBase<MainWindowController
         }
     }
 
-    public void addVisit() {this.getParentController().goToView(MainWindowController.Views.VISITS, pat);}
-
     /**
-     * Opens {@link PrescriptionsView}, passing current {@link Patient}
+     * Opens {@link VisitsView}, passing current {@link Patient}.
      */
-    public void addPrescription() {this.getParentController().goToView(MainWindowController.Views.PRESCRIPTIONS, pat);
+    public void addVisit() {
+        this.getParentController().goToView(VisitsView.class, pat);
     }
 
+    /**
+     * Opens {@link PrescriptionsView}, passing current {@link Patient}.
+     */
+    public void addPrescription() {
+        this.getParentController().goToView(PrescriptionsView.class, pat);
+    }
 
+    /**
+     * Opens {@link ReferralsView}, passing current {@link Patient}.
+     */
     public void addReferral() {
-        this.getParentController().goToView(MainWindowController.Views.REFERRALS, pat);
+        this.getParentController().goToView(ReferralsView.class, pat);
     }
 
 }

@@ -15,17 +15,16 @@ import javafx.util.Duration;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.dialogs.RegisterDialog;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.net.URL;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class AccountsView extends ChildControllerBase<MainWindowController> implements Initializable {
+public class AccountsView extends ViewControllerBase implements Initializable {
     @FXML protected VBox vBox;
     @FXML protected TableView<User> table;
     @FXML protected TableColumn<User, Integer> idCol;
@@ -146,13 +145,13 @@ public class AccountsView extends ChildControllerBase<MainWindowController> impl
 
     @FXML
     public void displayDetails(){
-        this.getParentController().goToView(MainWindowController.Views.ACCOUNT_DETAILS,
+        this.getParentController().goToView(AccountDetailsView.class,
                 table.getSelectionModel().getSelectedItem(), AccountDetailsView.Mode.VIEW);
     }
 
     @FXML
     public void addUser(){
-        this.getParentController().goToViewRaw(MainWindowController.Views.REGISTER,
+        this.getParentController().goToViewRaw(RegisterDialog.class,
                 "INDIRECT",  RegisterDialog.Mode.ACCOUNT);
     }
 

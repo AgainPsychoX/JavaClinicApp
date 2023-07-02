@@ -12,11 +12,8 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 import pl.edu.ur.pz.clinicapp.dialogs.LoginDialog;
-import pl.edu.ur.pz.clinicapp.dialogs.RegisterDialog;
 import pl.edu.ur.pz.clinicapp.localization.JavaFxBuiltInsLocalizationFix;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.views.PrescriptionDetailsView;
-import pl.edu.ur.pz.clinicapp.views.ReferralDetailsView;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
@@ -203,17 +200,18 @@ public class ClinicApplication extends Application {
         stage.setTitle("ClinicApp");
         stage.setScene(scene);
         linkStageSizeToPane(stage, pane);
-//        mainWindowController = loader.getController();
 //        stage.setWidth(pane.getMinWidth());
 //        stage.setHeight(pane.getMinHeight());
+
+        final MainWindowController mainWindowController = loader.getController();
         stage.setOnCloseRequest(we -> {
-            if((ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm())
-            || (PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm())
-            || (RegisterDialog.getEditState() && !RegisterDialog.exitConfirm())){
+            if (mainWindowController.isPreventingClose()) {
+                logger.fine("Main window closing cancelled");
                 we.consume();
-            }else {
-                logOut();
+                return;
             }
+
+            logOut();
         });
         stage.showAndWait();
     }

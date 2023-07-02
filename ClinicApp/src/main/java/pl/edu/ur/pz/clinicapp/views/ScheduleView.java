@@ -11,7 +11,6 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.text.Text;
 import org.jetbrains.annotations.Nullable;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneFreeSelectionModel;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneScheduleEntryCell;
@@ -22,8 +21,8 @@ import pl.edu.ur.pz.clinicapp.models.Appointment;
 import pl.edu.ur.pz.clinicapp.models.Doctor;
 import pl.edu.ur.pz.clinicapp.models.Schedule;
 import pl.edu.ur.pz.clinicapp.models.UserReference;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.InteractionGuard;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.io.IOException;
 import java.net.URL;
@@ -34,7 +33,7 @@ import java.util.ResourceBundle;
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
 import static pl.edu.ur.pz.clinicapp.utils.TemporalUtils.alignDateToWeekStart;
 
-public class ScheduleView extends ChildControllerBase<MainWindowController> implements Initializable {
+public class ScheduleView extends ViewControllerBase implements Initializable {
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Elements and initialization
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
@@ -205,7 +204,7 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
     @FXML
     protected void goTimetableAction(ActionEvent actionEvent) {
         getParentController().goToView(
-                MainWindowController.Views.TIMETABLE,
+                TimetableView.class,
                 getUserReference(),
                 TimetableView.Mode.VIEW,
                 nullCoalesce(getSelectedDateTime(), getDate().atStartOfDay())
@@ -215,7 +214,7 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
     @FXML
     protected void newVisitAction(ActionEvent actionEvent) {
         getParentController().goToView(
-                MainWindowController.Views.VISIT_DETAILS,
+                VisitsDetailsView.class,
                 VisitsDetailsView.Mode.CREATE
         );
         // TODO: allow passing preset info, like date = getSelectedDateTime()
@@ -250,7 +249,7 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
             final var scheduleEntry = proxy.getScheduleEntry();
             if (scheduleEntry instanceof Appointment appointment) {
                 getParentController().goToView(
-                        MainWindowController.Views.VISIT_DETAILS,
+                        VisitsDetailsView.class,
                         VisitsDetailsView.Mode.DETAILS,
                         appointment
                 );
@@ -265,7 +264,7 @@ public class ScheduleView extends ChildControllerBase<MainWindowController> impl
                                 widoku harmonogramu. Czy chcesz kontynuować?
                                 """, ButtonType.YES, ButtonType.CANCEL)) {
                             getParentController().goToView(
-                                    MainWindowController.Views.TIMETABLE,
+                                    TimetableView.class,
                                     getUserReference(),
                                     TimetableView.Mode.EDIT,
                                     simpleEntry.getBeginInstant()

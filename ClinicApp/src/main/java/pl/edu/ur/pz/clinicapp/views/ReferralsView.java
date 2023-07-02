@@ -17,12 +17,11 @@ import javafx.util.Duration;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.time.LocalDate;
 import java.util.EnumMap;
@@ -31,7 +30,7 @@ import java.util.List;
 /**
  * View controller to view and search for {@link Referral}s.
  */
-public class ReferralsView extends ChildControllerBase<MainWindowController> {
+public class ReferralsView extends ViewControllerBase {
 
     @FXML
     protected HBox backBox;
@@ -290,7 +289,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
      * Opens details view of the chosen referral in DETAILS mode.
      */
     public void displayDetails() {
-        this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS,
+        this.getParentController().goToView(ReferralDetailsView.class,
                 ReferralDetailsView.RefMode.DETAILS, table.getSelectionModel().getSelectedItem(), targetPatient);
     }
 
@@ -298,12 +297,12 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
      * Opens details view in CREATE mode.
      */
     public void addReferral() {
-        this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS,
+        this.getParentController().goToView(ReferralDetailsView.class,
                 ReferralDetailsView.RefMode.CREATE, targetPatient);
     }
 
     public void onBackClick() {
-        this.getParentController().goToView(MainWindowController.Views.PATIENT_DETAILS,
+        this.getParentController().goToView(PatientDetailsView.class,
                 PatientDetailsView.RefMode.DETAILS, targetPatient);
     }
 
@@ -312,7 +311,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
      */
     @FXML
     public void printReferrals(){
-        this.getParentController().goToView(MainWindowController.Views.REPORTS, ReportDialog.Mode.REFERRALS, referrals);
+        this.getParentController().goToView(ReportDialog.class, ReportDialog.Mode.REFERRALS, referrals);
     }
 
 

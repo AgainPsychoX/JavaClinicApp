@@ -11,7 +11,6 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.util.StringConverter;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneSelectionModel;
 import pl.edu.ur.pz.clinicapp.dialogs.TimetableEntryEditDialog;
@@ -19,10 +18,11 @@ import pl.edu.ur.pz.clinicapp.models.Doctor;
 import pl.edu.ur.pz.clinicapp.models.Timetable;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.models.UserReference;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DirtyFixes;
 import pl.edu.ur.pz.clinicapp.utils.DurationUtils;
 import pl.edu.ur.pz.clinicapp.utils.InteractionGuard;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewController;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -46,7 +46,7 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
 /**
  * Main window view controller to display and manage timetables for the user.
  */
-public class TimetableView extends ChildControllerBase<MainWindowController> implements Initializable {
+public class TimetableView extends ViewControllerBase implements Initializable {
     private static final Logger logger = Logger.getLogger(TimetableView.class.getName());
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -191,6 +191,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
         return mode.get();
     }
 
+
     private void setButtonEnabledVisibleManaged(Button button, boolean show) {
         button.setDisable(!show);
         button.setVisible(show);
@@ -228,6 +229,22 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
                 setButtonEnabledVisibleManaged(cancelButton, true);
                 setButtonEnabledVisibleManaged(saveButton, true);
             }
+        }
+    }
+
+    @Override
+    public boolean onNavigation(Class<? extends ViewController> which, Object... context) {
+        // TODO: more proper dirty flag
+        if (getMode() == Mode.VIEW) {
+            return true;
+        }
+        else {
+            final var dialog = new Alert(Alert.AlertType.WARNING);
+            dialog.setTitle("Niezapisane zmiany");
+            dialog.setHeaderText(null);
+            dialog.setContentText("Musisz najpierw anulować lub zapisać zmiany.");
+            dialog.showAndWait();
+            return false;
         }
     }
 
@@ -921,22 +938,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
     protected void goScheduleAction(ActionEvent actionEvent) {
         interactionGuard.begin();
 
-        // TODO: allow in edit if not dirty
-        if (getMode() == Mode.EDIT) {
-            final var dialog = new Alert(Alert.AlertType.WARNING);
-            dialog.setTitle("Niezapisane zmiany");
-            dialog.setHeaderText(null);
-            dialog.setContentText("Musisz najpierw anulować lub zapisać zmiany.");
-            dialog.showAndWait();
-            interactionGuard.end();
-            return;
-        }
-
-        getParentController().goToView(
-                MainWindowController.Views.SCHEDULE,
-                getUserReference(),
-                getTimetable().getEffectiveDate()
-        );
+        getParentController().goToView(ScheduleView.class, getUserReference(), getTimetable().getEffectiveDate());
 
         interactionGuard.end();
     }

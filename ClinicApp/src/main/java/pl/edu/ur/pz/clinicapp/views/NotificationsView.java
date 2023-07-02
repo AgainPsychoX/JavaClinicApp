@@ -14,27 +14,19 @@ import javafx.util.Duration;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Notification;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
-import pl.edu.ur.pz.clinicapp.utils.ReportObject;
-
-import java.net.URL;
-import java.sql.Timestamp;
-import java.time.*;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.net.URL;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
-public class NotificationsView extends ChildControllerBase<MainWindowController> implements Initializable {
+public class NotificationsView extends ViewControllerBase implements Initializable {
 
     @FXML protected TextField searchTextField;
     @FXML protected TableView<Notification> table;

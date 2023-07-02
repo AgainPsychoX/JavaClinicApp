@@ -27,12 +27,12 @@ import org.hibernate.jpa.TypedParameterValue;
 import org.hibernate.query.Query;
 import org.hibernate.type.StandardBasicTypes;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DateUtils;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewController;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.awt.*;
 import java.io.*;
@@ -50,7 +50,7 @@ import java.util.TimeZone;
 /**
  * View controller to edit, delete or display details of a {@link Referral}.
  */
-public class ReferralDetailsView extends ChildControllerBase<MainWindowController> {
+public class ReferralDetailsView extends ViewControllerBase {
 
     /**
      * Available window modes (details of existing referral or creation of a new one).
@@ -102,6 +102,8 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
     Query deleteQuery = session.getNamedQuery("deleteReferral");
     private Referral ref;
 
+    // TODO: editState is bad name: What true/false means? Consider 'isDirty` boolean or enum
+
     private static BooleanProperty editState = new SimpleBooleanProperty(false);
     private Patient targetPatient;
 
@@ -111,6 +113,11 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
 
     public static void setEditState(boolean editState) {
         ReferralDetailsView.editState.set(editState);
+    }
+
+    @Override
+    public boolean onNavigation(Class<? extends ViewController> which, Object... context) {
+        return !getEditState() || exitConfirm();
     }
 
     /**
@@ -134,13 +141,13 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
             if (exitConfirm()) {
                 editState.setValue(!editState.getValue());
                 if (targetPatient!=null) {
-                    this.getParentController().goToView(MainWindowController.Views.REFERRALS, targetPatient);
-                } else this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
+                    this.getParentController().goToView(ReferralsView.class, targetPatient);
+                } else this.getParentController().goToViewRaw(ReferralsView.class);
             }
         } else {
             if (targetPatient!=null) {
-                this.getParentController().goToView(MainWindowController.Views.REFERRALS, targetPatient);
-            } else this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
+                this.getParentController().goToView(ReferralsView.class, targetPatient);
+            } else this.getParentController().goToViewRaw(ReferralsView.class);
         }
     }
 
@@ -411,7 +418,7 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
                     exit.setContentText("Dodano nowe skierowanie.");
                     exit.showAndWait();
 
-                    this.getParentController().goToView(MainWindowController.Views.REFERRALS, targetPatient);
+                    this.getParentController().goToView(ReferralsView.class, targetPatient);
                     return;
                 }
             }
@@ -459,8 +466,8 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
             exit.showAndWait();
 
             if (targetPatient!=null) {
-                this.getParentController().goToView(MainWindowController.Views.REFERRALS, targetPatient);
-            } else this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
+                this.getParentController().goToView(ReferralsView.class, targetPatient);
+            } else this.getParentController().goToViewRaw(ReferralsView.class);
         } else {
             alert.close();
         }

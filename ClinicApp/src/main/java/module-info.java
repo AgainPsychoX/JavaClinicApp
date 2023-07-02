@@ -22,13 +22,15 @@ module pl.edu.ur.pz.clinicapp {
     exports pl.edu.ur.pz.clinicapp.controls;
     exports pl.edu.ur.pz.clinicapp.models;
     exports pl.edu.ur.pz.clinicapp.utils;
+    exports pl.edu.ur.pz.clinicapp.utils.javafx;
+    exports pl.edu.ur.pz.clinicapp.utils.views;
 
     opens pl.edu.ur.pz.clinicapp to javafx.fxml;
     opens pl.edu.ur.pz.clinicapp.controls to javafx.fxml;
     opens pl.edu.ur.pz.clinicapp.dialogs to javafx.fxml;
     opens pl.edu.ur.pz.clinicapp.models to org.hibernate.orm.core;
     opens pl.edu.ur.pz.clinicapp.utils to org.hibernate.orm.core, javafx.fxml;
-    opens pl.edu.ur.pz.clinicapp.views to javafx.fxml;
-    exports pl.edu.ur.pz.clinicapp.utils.javafx;
     opens pl.edu.ur.pz.clinicapp.utils.javafx to javafx.fxml, org.hibernate.orm.core;
+    opens pl.edu.ur.pz.clinicapp.utils.views to javafx.fxml, org.hibernate.orm.core;
+    opens pl.edu.ur.pz.clinicapp.views to javafx.fxml;
 }

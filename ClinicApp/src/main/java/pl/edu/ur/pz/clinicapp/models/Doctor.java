@@ -3,7 +3,6 @@ package pl.edu.ur.pz.clinicapp.models;
 import pl.edu.ur.pz.clinicapp.utils.DurationMinutesConverter;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 import java.time.Duration;
 
 @Entity
@@ -19,7 +18,7 @@ import java.time.Duration;
 })
 public class Doctor implements UserReference {
     // Empty constructor is required for JPA standard.
-    private Doctor() {}
+    protected Doctor() {}
 
 
     public Doctor(User user) {

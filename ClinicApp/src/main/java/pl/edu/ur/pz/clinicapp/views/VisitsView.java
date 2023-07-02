@@ -7,14 +7,12 @@ import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Appointment;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.net.URL;
 import java.sql.Timestamp;
@@ -25,7 +23,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class VisitsView extends ChildControllerBase<MainWindowController> implements Initializable {
+public class VisitsView extends ViewControllerBase implements Initializable {
     @FXML protected Button newButton;
     @FXML protected ComboBox<String> filter;
     @FXML protected TableView<Appointment> table;
@@ -96,7 +94,7 @@ public class VisitsView extends ChildControllerBase<MainWindowController> implem
     /** Moving you to add view **/
     @FXML
     protected void newAction() {
-        this.getParentController().goToView(MainWindowController.Views.VISIT_DETAILS,
+        this.getParentController().goToView(VisitsDetailsView.class,
                 VisitsDetailsView.Mode.CREATE, ClinicApplication.getUser(), patientGlobal);
     }
 
@@ -187,7 +185,7 @@ public class VisitsView extends ChildControllerBase<MainWindowController> implem
             localRow.setOnMouseClicked(mouseEvent -> {
                 if (mouseEvent.getButton() == MouseButton.PRIMARY) {
                     if (mouseEvent.getClickCount() == 2 && table.getSelectionModel().getSelectedItem() != null) {
-                        this.getParentController().goToView(MainWindowController.Views.VISIT_DETAILS, VisitsDetailsView.Mode.DETAILS, table.getSelectionModel().getSelectedItem());
+                        this.getParentController().goToView(VisitsDetailsView.class, VisitsDetailsView.Mode.DETAILS, table.getSelectionModel().getSelectedItem());
                     }
                 }
             });

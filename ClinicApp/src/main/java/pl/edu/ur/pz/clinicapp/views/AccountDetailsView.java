@@ -12,9 +12,8 @@ import javafx.scene.text.Text;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.net.URL;
 import java.time.Duration;
@@ -37,7 +36,7 @@ import java.util.ResourceBundle;
 /**
  * View controller to display and edit account details.
  */
-public class AccountDetailsView extends ChildControllerBase<MainWindowController> implements Initializable {
+public class AccountDetailsView extends ViewControllerBase implements Initializable {
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Elements and initialization
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */

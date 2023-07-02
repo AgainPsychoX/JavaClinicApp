@@ -19,12 +19,11 @@ import javafx.util.Duration;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.awt.*;
 import java.io.IOException;
@@ -36,7 +35,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class PrescriptionsView extends ChildControllerBase<MainWindowController> implements Initializable {
+public class PrescriptionsView extends ViewControllerBase implements Initializable {
     @FXML protected VBox vBox;
     @FXML protected TableView<Prescription> table;
     @FXML protected TableColumn<Prescription, String> patientCol;
@@ -267,7 +266,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
      */
     @FXML
     public void displayDetails() {
-        this.getParentController().goToView(MainWindowController.Views.PRESCRIPTION_DETAILS,
+        this.getParentController().goToView(PrescriptionDetailsView.class,
                 PrescriptionDetailsView.Mode.DETAILS, table.getSelectionModel().getSelectedItem(), targetPatient);
     }
 
@@ -276,7 +275,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
      */
     @FXML
     protected void addPrescription() {
-        this.getParentController().goToView(MainWindowController.Views.PRESCRIPTION_DETAILS,
+        this.getParentController().goToView(PrescriptionDetailsView.class,
                 PrescriptionDetailsView.Mode.CREATE, targetPatient);
     }
 
@@ -297,7 +296,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
      */
     @FXML
     public void onBackClick(){
-        this.getParentController().goToView(MainWindowController.Views.PATIENT_DETAILS,
+        this.getParentController().goToView(PatientDetailsView.class,
         PatientDetailsView.RefMode.DETAILS, targetPatient);
     }
 
@@ -306,7 +305,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
      */
     @FXML
     protected void printPrescriptions() {
-        this.getParentController().goToView(MainWindowController.Views.REPORTS, ReportDialog.Mode.PRESCRIPTIONS, prescriptions);
+        this.getParentController().goToView(ReportDialog.class, ReportDialog.Mode.PRESCRIPTIONS, prescriptions);
 
     }
 }

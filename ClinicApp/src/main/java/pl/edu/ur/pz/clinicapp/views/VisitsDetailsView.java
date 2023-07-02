@@ -1,6 +1,5 @@
 package pl.edu.ur.pz.clinicapp.views;
 
-import freemarker.template.SimpleDate;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.fxml.FXML;
@@ -12,11 +11,10 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.dialogs.AppointmentSlotPickerDialog;
-import pl.edu.ur.pz.clinicapp.dialogs.ScheduleSlotPickerDialog;
 import pl.edu.ur.pz.clinicapp.models.*;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewController;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.net.URL;
 import java.sql.Timestamp;
@@ -36,7 +34,7 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.nullCoalesce;
  */
 
 
-public class VisitsDetailsView extends ChildControllerBase<MainWindowController> implements Initializable {
+public class VisitsDetailsView extends ViewControllerBase implements Initializable {
 
     private static final BooleanProperty editState = new SimpleBooleanProperty(false);
 
@@ -79,7 +77,11 @@ public class VisitsDetailsView extends ChildControllerBase<MainWindowController>
      */
     private Mode currMode;
     private Appointment appointment;
-
+    
+    @Override
+    public boolean onNavigation(Class<? extends ViewController> which, Object... context) {
+        return !getEditState() || exitConfirm();
+    }
 
     /**
      * Displays alert about unsaved changes and returns whether user wants to discard them or not.

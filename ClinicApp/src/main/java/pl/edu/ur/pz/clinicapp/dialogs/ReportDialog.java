@@ -19,15 +19,13 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.Referral;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DateUtils;
 import pl.edu.ur.pz.clinicapp.utils.ReportObject;
-import pl.edu.ur.pz.clinicapp.views.PrescriptionDetailsView;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -41,7 +39,7 @@ import java.util.*;
  * Class for generating PDF reports using .ftl templates based on HTML files using {@link Template} library.
  * PDF reports are created from .ftl templates using {@link HtmlConverter}.
  */
-public class ReportDialog extends ChildControllerBase<MainWindowController> implements Initializable {
+public class ReportDialog extends ViewControllerBase implements Initializable {
 
     @FXML private Button saveButton;
     @FXML private DatePicker startDatePicker;

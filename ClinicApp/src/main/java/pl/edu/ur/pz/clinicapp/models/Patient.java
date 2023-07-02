@@ -17,7 +17,7 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.isStringNullOrBlank;
 })
 public class Patient implements UserReference {
     // Empty constructor is required for JPA standard.
-    private Patient() {}
+    protected Patient() {}
 
 
     public Patient(User user, String pesel) {

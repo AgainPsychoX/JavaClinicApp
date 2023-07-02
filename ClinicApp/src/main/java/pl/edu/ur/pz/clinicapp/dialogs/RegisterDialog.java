@@ -19,14 +19,16 @@ import org.hibernate.jpa.TypedParameterValue;
 import org.hibernate.query.Query;
 import org.hibernate.type.StandardBasicTypes;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewController;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
+import pl.edu.ur.pz.clinicapp.views.AccountsView;
+import pl.edu.ur.pz.clinicapp.views.PatientsView;
 
 import java.util.ArrayList;
 import java.util.Optional;
 
-public class RegisterDialog extends ChildControllerBase<MainWindowController> {
+public class RegisterDialog extends ViewControllerBase {
 
     /**
      * Tells if any fields have been edited.
@@ -122,6 +124,11 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
         alert.setHeaderText(headerText);
         alert.setContentText(contentText);
         alert.showAndWait();
+    }
+
+    @Override
+    public boolean onNavigation(Class<? extends ViewController> which, Object... context) {
+        return !getEditState() || exitConfirm();
     }
 
     /**
@@ -264,9 +271,9 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
 
                 fieldsEdited.setValue(0);
                 if(getMode() == Mode.PATIENT)
-                    this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS); //WrongClassException?
+                    this.getParentController().goToViewRaw(PatientsView.class); //WrongClassException?
                 else
-                    this.getParentController().goToViewRaw(MainWindowController.Views.ACCOUNTS);
+                    this.getParentController().goToViewRaw(AccountsView.class);
             } catch (Exception e) {
                 transaction = session.getTransaction();
                 if (transaction.isActive()) transaction.rollback();
@@ -359,20 +366,14 @@ public class RegisterDialog extends ChildControllerBase<MainWindowController> {
      * Checks for edited fields and accordingly displays exit alert. Goes to the previous view.
      */
     public void onBackClick(MouseEvent mouseEvent) {
-        if (editState) {
-            if (exitConfirm()) {
-                editState = false;
-                if(getMode() == Mode.PATIENT)
-                    this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS);
-                else
-                    this.getParentController().goToViewRaw(MainWindowController.Views.ACCOUNTS);
-            }
-        } else {
-            if(getMode() == Mode.PATIENT)
-                this.getParentController().goToViewRaw(MainWindowController.Views.PATIENTS);
-            else
-                this.getParentController().goToViewRaw(MainWindowController.Views.ACCOUNTS);
+        if (editState && !exitConfirm()) {
+            return;
         }
+        editState = false;
+        if (getMode() == Mode.PATIENT)
+            this.getParentController().goToViewRaw(PatientsView.class);
+        else
+            this.getParentController().goToViewRaw(AccountsView.class);
     }
 
     public static boolean emailValidator(String email) {
