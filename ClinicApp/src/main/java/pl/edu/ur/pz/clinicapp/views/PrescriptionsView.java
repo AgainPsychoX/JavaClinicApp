@@ -22,6 +22,7 @@ import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
+import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
@@ -35,6 +36,9 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
+/**
+ * View controller to view and search for {@link Prescription}s.
+ */
 public class PrescriptionsView extends ViewControllerBase implements Initializable {
     @FXML protected VBox vBox;
     @FXML protected TableView<Prescription> table;
@@ -262,7 +266,7 @@ public class PrescriptionsView extends ViewControllerBase implements Initializab
     }
 
     /**
-     * Opens details view of the chosen referral in DETAILS mode.
+     * Opens {@link PrescriptionDetailsView} view of the chosen referral in DETAILS mode.
      */
     @FXML
     public void displayDetails() {
@@ -271,7 +275,7 @@ public class PrescriptionsView extends ViewControllerBase implements Initializab
     }
 
     /**
-     * Opens details view in CREATE mode.
+     * Opens {@link PrescriptionDetailsView} view in CREATE mode.
      */
     @FXML
     protected void addPrescription() {
