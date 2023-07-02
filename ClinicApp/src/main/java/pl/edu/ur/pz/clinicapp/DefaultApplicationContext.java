@@ -165,6 +165,8 @@ public class DefaultApplicationContext implements ApplicationContext {
         // For anonymous connect, the login details are used from  `persistence.xml` along other settings.
         entityManagerFactory = Persistence.createEntityManagerFactory("default");
         entityManager = entityManagerFactory.createEntityManager();
+
+        user = null;
     }
 
     @Override
