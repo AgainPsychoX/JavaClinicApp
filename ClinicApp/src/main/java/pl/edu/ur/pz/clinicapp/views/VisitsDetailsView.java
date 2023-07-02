@@ -278,6 +278,7 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
             newVisit.setDate(timestamp.toInstant());
             session.persist(newVisit);
             transaction.commit();
+            setEditState(false);
             pickedDate.setText(null);
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Dodawanie wizyty");
