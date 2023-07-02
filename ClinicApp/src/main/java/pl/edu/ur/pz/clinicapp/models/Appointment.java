@@ -47,7 +47,7 @@ import java.time.ZoneId;
         // TODO: use Hibernate `persist` (or `merge`) to insert/update and `remove` to delete
         @NamedNativeQuery(
                 name = "editAppointment",
-                query = "UPDATE appointments SET date = :date, notes = :notes",
+                query = "UPDATE appointments SET date = :date, notes = :notes WHERE id = :id",
                 resultClass = Appointment.class
         ),
         @NamedNativeQuery(

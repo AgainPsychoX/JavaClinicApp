@@ -46,6 +46,10 @@ public class VisitsView extends ViewControllerBase implements Initializable {
     }
 
     private FilteredList<Appointment> filterList() {
+        if (searchTextField.getText().isEmpty()) {
+            appointments = FXCollections.observableArrayList(getAllVisits());
+            return new FilteredList<>(appointments);
+        }
         patientGlobal = null;
         FilteredList<Appointment> appointmentFilteredList = new FilteredList<>(appointments);
         appointmentFilteredList.setPredicate(appointment -> {
