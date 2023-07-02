@@ -7,5 +7,6 @@
     </inspection_tool>
     <inspection_tool class="DefaultAnnotationParam" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
     <inspection_tool class="RedundantLabeledSwitchRuleCodeBlock" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
+    <inspection_tool class="TextBlockMigration" enabled="true" level="WEAK WARNING" enabled_by_default="true" />
   </profile>
 </component>
