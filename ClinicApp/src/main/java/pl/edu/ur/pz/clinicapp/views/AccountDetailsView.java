@@ -423,7 +423,7 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
     private void updatePassword(){
         if(!passwordField.getText().equals(repeatPasswordField.getText()) || passwordField.getText() == null ||
         passwordField.getText().trim().equals("")){
-            showErrorAlert("Niepoprawne hasło", "Złe hasło", "Hasła w obu polach muszą" +
+            showErrorAlert("Niepoprawne hasło", "Złe hasło", "Hasła w obu polach muszą " +
                     "być identyczne.");
         }
         else {
