@@ -16,6 +16,7 @@ module pl.edu.ur.pz.clinicapp {
     requires com.google.guice;
     requires javax.inject;
     requires javafaker;
+    requires commons.lang3;
 
     exports pl.edu.ur.pz.clinicapp;
     exports pl.edu.ur.pz.clinicapp.controls;

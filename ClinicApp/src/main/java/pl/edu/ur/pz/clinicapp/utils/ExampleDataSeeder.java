@@ -12,6 +12,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.logging.Logger;
 
+import static org.apache.commons.lang3.StringUtils.stripAccents;
+
 public class ExampleDataSeeder
 {
     private static final Logger logger = Logger.getLogger(ExampleDataSeeder.class.getName());
@@ -74,22 +76,24 @@ public class ExampleDataSeeder
             }
 
             for (int i = 0; i <= patientsCount; i++) {
-                final var patientUser = new User();
+                final var user = new User();
+                user.setName(faker.name().firstName());
+                user.setSurname(faker.name().lastName());
                 if (1 != random.nextInt(4)) {
-                    patientUser.setEmail(faker.internet().emailAddress());
+                    user.setEmail(generateEmailAddress(user.getName(), user.getSurname()));
                 }
-                patientUser.setName(faker.name().firstName());
-                patientUser.setSurname(faker.name().lastName());
                 if (1 != random.nextInt(10)) {
-                    patientUser.setPhone(randomPhoneNumber());
+                    user.setPhone(randomPhoneNumber());
                     // Note: Yes, 1 in 40 might not have both e-mail and phone.
                 }
-                patientUser.setRole(User.Role.PATIENT);
+                user.setRole(User.Role.PATIENT);
 
-                final var patient = setupPatient(patientUser);
+                final var patient = setupPatient(user);
 
-                entityManager.persist(patientUser);
-                patientUser.changePassword("12345678");
+                logger.finer("Adding %d. pesel=%s %s".formatted(i, patient.getPESEL(), user));
+
+                entityManager.persist(user);
+                user.changePassword("12345678");
 
                 entityManager.persist(patient);
                 patients.add(patient);
@@ -205,6 +209,9 @@ public class ExampleDataSeeder
             // TODO: prescriptions, referrals, medical records, etc.
             // TODO: notifications
             // TODO: admins
+
+            logger.fine("Example doctor: %s %s".formatted(doctors.get(0), doctors.get(0).asUser()));
+            logger.fine("Example patient: %s %s".formatted(patients.get(10), patients.get(10).asUser()));
         }
         catch (Throwable e) {
             transaction.rollback();
@@ -233,12 +240,12 @@ public class ExampleDataSeeder
         switch (random.nextInt(10)) {
             case 1 -> parts.add(faker.number().digits(1));
             case 2 -> parts.add(faker.number().digits(2));
-            case 3 -> parts.add(faker.numerify("20##"));
+            case 3 -> parts.add(faker.numerify("200#"));
             case 4 -> parts.add(faker.numerify("199#"));
             case 5 -> parts.add(faker.numerify("198#"));
         }
         Collections.shuffle(parts);
-        return String.join(random.nextBoolean() ? "." : "", parts)
+        return stripAccents(String.join(random.nextBoolean() ? "." : "", parts))
                 + "@" + emailDomains[random.nextInt(emailDomains.length)];
     }
 
