@@ -189,7 +189,7 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
 
         List<Patient> patients = new ArrayList<>();
 
-        if (ClinicApplication.requireUser().getRole() == User.Role.PATIENT) {
+        if (!ClinicApplication.requireUser().isDoctor() || ClinicApplication.requireUser().getRole() != User.Role.RECEPTION) {
             patients.add(ClinicApplication.requireUser().asPatient());
         } else if(patient != null) {
             patients.add(patient);
@@ -351,19 +351,23 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
         patientCombo.setButtonCell(cellPatientFactory.call(null));
         patientCombo.setCellFactory(cellPatientFactory);
         patientCombo.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
-            if (newValue != null && ClinicApplication.requireUser().asDoctor().getId().equals(newValue.getId())) {
+            if (newValue != null) {
                 EntityManager entityManger = ClinicApplication.getEntityManager();
                 List<Doctor> doctors = entityManger.createNamedQuery("doctors", Doctor.class).getResultList();
-                doctors.remove(ClinicApplication.requireUser().asDoctor());
                 doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
+                if (ClinicApplication.requireUser().isDoctor()) {
+                    if (ClinicApplication.requireUser().asDoctor().getId().equals(newValue.getId()))
+                        doctors.remove(ClinicApplication.requireUser().asDoctor());
+                    else {
+                        Doctor doctor = ClinicApplication.requireUser().asDoctor();
+                        doctors.clear();
+                        doctors.add(doctor);
+                    }
+                }
+
                 doctorCombo.getItems().clear();
                 doctorCombo.getItems().addAll(doctors);
                 doctorCombo.setValue(doctors.get(0));
-            } else {
-                Doctor doctor = ClinicApplication.requireUser().asDoctor();
-                doctorCombo.getItems().clear();
-                doctorCombo.getItems().addAll(doctor);
-                doctorCombo.setValue(doctor);
             }
         });
         Callback<ListView<Doctor>, ListCell<Doctor>> cellDoctorFactory = new Callback<>() {
