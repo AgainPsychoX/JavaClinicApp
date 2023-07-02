@@ -102,8 +102,9 @@ public class ReferralDetailsView extends ViewControllerBase {
     Query deleteQuery = session.getNamedQuery("deleteReferral");
     private Referral ref;
 
-    // TODO: editState is bad name: What true/false means? Consider 'isDirty` boolean or enum
-
+    /**
+     * Indicates whether view is editable or not.
+     */
     private static BooleanProperty editState = new SimpleBooleanProperty(false);
     private Patient targetPatient;
 
@@ -486,6 +487,9 @@ public class ReferralDetailsView extends ViewControllerBase {
         }
     }
 
+    /**
+     * Redirects referral to nurses (sets special value and disables field).
+     */
     public void setForNurses(ActionEvent actionEvent) {
         if (nursesCheck.isSelected()) {
             interestField.setText(Referral.forNurses);
