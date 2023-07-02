@@ -216,6 +216,7 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
     public void editSave() {
         setEditState(true);
         datePicker.setDisable(false);
+        notesTextField.setEditable(true);
         try {
             if (currMode == Mode.DETAILS) {
                 editSaveDetails();
@@ -234,7 +235,7 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
     /** Function executes query for editing {@link pl.edu.ur.pz.clinicapp.models.Appointment}. **/
     private void editSaveDetails() {
         if (getEditState()) {
-            if (pickedDate.getText() == null) {
+            if (pickedDate.getText() == null || notesTextField.getText() == null) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Błąd zapisu");
                 alert.setHeaderText("Nie wypełniono wymaganych pól");
@@ -243,13 +244,14 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
             } else {
                 Transaction transaction;
                 editQuery.setParameter("date", timestamp);
+                editQuery.setParameter("notes", notesTextField.getText());
                 transaction = session.beginTransaction();
                 editQuery.executeUpdate();
                 transaction.commit();
                 ClinicApplication.getEntityManager().refresh(appointment);
                 datePicker.setDisable(true);
                 createNotif(doctorCombo.getValue().asUser(), patientCombo.getValue().asUser(),
-                        "Zmieniono datę wizyty na: " + formatter.format(timestamp.toInstant()) + ".");
+                        "Wprowadzono zmiany wizyty na: " + formatter.format(timestamp.toInstant()) + ".");
                 setEditState(false);
             }
         }
@@ -319,8 +321,8 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
 
     /**
      * Initialize all factories on start.
-     * @param url
-     * @param resourceBundle
+     * @param url url
+     * @param resourceBundle resourceBundle
      */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
