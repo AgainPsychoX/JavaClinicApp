@@ -352,6 +352,16 @@ public class RegisterDialog extends ViewControllerBase {
                 editState = (after.intValue() != 0);
             }
         });
+
+        roleComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            boolean value = newValue.equals("Lekarz");
+            specializationTextField.setEditable(value);
+            specializationTextField.setDisable(!value);
+            maxDaysTextField.setEditable(value);
+            maxDaysTextField.setDisable(!value);
+            visitDurationTextField.setEditable(value);
+            visitDurationTextField.setDisable(!value);
+        });
     }
 
     /**

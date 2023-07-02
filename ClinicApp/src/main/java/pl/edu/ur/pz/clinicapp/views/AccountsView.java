@@ -93,7 +93,7 @@ public class AccountsView extends ViewControllerBase implements Initializable {
         filteredModeToString.put(filterMode.ALL, "Wszyscy użytkownicy");
         filteredModeToString.put(filterMode.DOCTORS, "Lekarze");
         filteredModeToString.put(filterMode.PATIENTS, "Pacjenci");
-        filteredModeToString.put(filterMode.WORKERS, "Pozostali praocownicy");
+        filteredModeToString.put(filterMode.WORKERS, "Pozostali pracownicy");
 
         currQuery = allUsers;
         setFilterVals();

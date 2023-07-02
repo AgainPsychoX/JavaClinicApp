@@ -70,7 +70,7 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
     @FXML private PasswordField repeatPasswordField;
 
     private List<Node> patientOnlyThings;
-    private List<Node> doctoryOnlyThings;
+    private List<Node> doctorOnlyThings;
 
 
     Query createDBUser;
@@ -91,7 +91,7 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
                 repeatPasswordField
         );
 
-        doctoryOnlyThings = List.of(
+        doctorOnlyThings = List.of(
                 visitDurationTextField,
                 specializationTextField,
                 maxDaysTextField
@@ -139,7 +139,7 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
                 }
             }
             if (doctor != null){
-                for(final var node : doctoryOnlyThings){
+                for(final var node : doctorOnlyThings){
                     setNodeEnabledVisibleManaged(node, true);
                 }
             }
@@ -160,7 +160,7 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
                         field.setEditable(false);
                     }
                 }
-                for (final var node : doctoryOnlyThings) {
+                for (final var node : doctorOnlyThings) {
                     if (node instanceof TextField field) {
                         field.setEditable(false);
                     }
@@ -183,7 +183,7 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
                     }
                 }
                 if (doctor != null){
-                    for (final var node : doctoryOnlyThings){
+                    for (final var node : doctorOnlyThings){
                         if(node instanceof TextField field){
                             field.setEditable(true);
                         }
