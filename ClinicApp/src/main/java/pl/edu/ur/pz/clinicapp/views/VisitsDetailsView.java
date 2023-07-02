@@ -251,7 +251,7 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
                 ClinicApplication.getEntityManager().refresh(appointment);
                 datePicker.setDisable(true);
                 createNotif(doctorCombo.getValue().asUser(), patientCombo.getValue().asUser(),
-                        "Wprowadzono zmiany wizyty na: " + formatter.format(timestamp.toInstant()) + ".");
+                        "Wprowadzono zmiany do wizyty odbywającej się w dniu: " + formatter.format(timestamp.toInstant()) + ".");
                 setEditState(false);
             }
         }
