@@ -196,13 +196,13 @@
                <children>
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Czas trwania wizyty" />
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Specjalizacja" GridPane.rowIndex="2" />
-                  <TextField fx:id="visitDurationTextField" prefHeight="25.0" prefWidth="370.0" GridPane.columnIndex="1" />
-                  <TextField fx:id="maxDaysTextField" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                  <TextField fx:id="visitDurationTextField" disable="true" editable="false" prefHeight="25.0" prefWidth="370.0" GridPane.columnIndex="1" />
+                  <TextField fx:id="maxDaysTextField" disable="true" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1">
                      <GridPane.margin>
                         <Insets />
                      </GridPane.margin>
                   </TextField>
-                  <TextField fx:id="specializationTextField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <TextField fx:id="specializationTextField" disable="true" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Maksymalna liczba dni do rejestracji" GridPane.rowIndex="1" />
                </children>
             </GridPane>

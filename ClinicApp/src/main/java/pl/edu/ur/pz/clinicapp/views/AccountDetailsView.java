@@ -10,11 +10,14 @@ import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import java.net.URL;
 import java.time.Duration;
 import java.util.List;
@@ -420,11 +423,21 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
     private void updatePassword(){
         if(!passwordField.getText().equals(repeatPasswordField.getText()) || passwordField.getText() == null ||
         passwordField.getText().trim().equals("")){
-            showErrorAlert("Niepoprawne hasło", "Złe hasło", "");
+            showErrorAlert("Niepoprawne hasło", "Złe hasło", "Hasła w obu polach muszą" +
+                    "być identyczne.");
         }
         else {
-            //TODO
+            EntityManager em = ClinicApplication.getEntityManager();
+            em.getTransaction().begin();
+            javax.persistence.Query query = ClinicApplication.getEntityManager().createNamedQuery("changePassword");
+            query.setParameter("uname", user.getDatabaseUsername());
+            query.setParameter("passwd", passwordField.getText());
+            query.executeUpdate();
+            em.getTransaction().commit();
+            em.close();
             showAlert(Alert.AlertType.CONFIRMATION,"Zmiana hasła", "Zmieniono hasło", "");
+            passwordField.setText(null);
+            repeatPasswordField.setText(null);
         }
     }
 
