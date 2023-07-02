@@ -68,7 +68,6 @@ public class ReportDialogTest {
     }
 
 
-
 //    @ParameterizedTest
 //    @EnumSource(ReportDialog.Mode.class)
 //    void testCurrMode(ReportDialog.Mode mode) {

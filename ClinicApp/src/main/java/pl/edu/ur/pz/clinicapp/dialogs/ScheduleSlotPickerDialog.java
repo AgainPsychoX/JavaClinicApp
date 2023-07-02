@@ -254,7 +254,7 @@ public class ScheduleSlotPickerDialog extends Stage {
     }
 
     /**
-     * Performs reordering of begin & end - date pickers and time spinners if necessary.
+     * Performs reordering of begin and end - date pickers and time spinners if necessary.
      * @return true if reordering was needed (refreshing week pane already performed after reordering),
      *         false otherwise (refreshing week pane might be required).
      */

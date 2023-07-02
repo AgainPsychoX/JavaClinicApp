@@ -48,7 +48,6 @@ public class ScheduleView extends ViewControllerBase implements Initializable {
     protected WeekPaneFreeSelectionModel<WeekPane.Entry> weekPaneSelectionModel;
 
     @FXML protected Button goTimetableButton;
-    @FXML protected Button newVisitButton;
     @FXML protected Button newEntryButton;
     @FXML protected Button detailsButton;
 

@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 import static pl.edu.ur.pz.clinicapp.utils.TemporalUtils.alignDateToWeekStart;
 
 /**
- * Utility class that eases manipulation of user schedule & timetables.
+ * Utility class that eases manipulation of user schedule and timetables.
  */
 public class Schedule {
     protected UserReference userReference;
