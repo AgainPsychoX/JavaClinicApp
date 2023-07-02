@@ -245,7 +245,7 @@ CREATE POLICY admin ON public.appointments FOR ALL TO gp_admins, gp_receptionist
 GRANT INSERT ON TABLE public.appointments TO gp_patients, gp_receptionists, gp_doctors;
 
 DROP POLICY IF EXISTS insert_own_as_patient ON public.appointments;
-CREATE POLICY insert_own_as_patient ON public.appointments FOR INSERT TO gp_patients
+CREATE POLICY insert_own_as_patient ON public.appointments FOR INSERT TO gp_patients, gp_doctors
     WITH CHECK (patient_id = (SELECT id FROM public.users WHERE internal_name = CURRENT_USER));
 
 DROP POLICY IF EXISTS insert_as_reception ON public.appointments;
