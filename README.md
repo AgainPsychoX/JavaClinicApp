@@ -18,13 +18,12 @@ System pozwala na łatwe zarządzanie przychodnią, od rejestracji wizyt przez t
 
 ## Cele projektu 
 
-+ Umożliwienie rejestracji (w tym samodzielnej i pośredniej przez recepcje/lekarza) i ewidencji wizyt pacjentów przychodni.
++ Umożliwienie rejestracji i ewidencji wizyt pacjentów przychodni.
 + Koorydynacja terminarzy dostępności lekarzy.
 + Zarządzanie personelem (np. lekarze, pielęgniarki).
 + System składa się z aplikacji złożonej z kilku modułów oraz bazy danych.
 
 ## Zakres projektu 
-
 
 ## Wymagania stawiane aplikacji / systemowi 
 
@@ -70,15 +69,23 @@ System pozwala na łatwe zarządzanie przychodnią, od rejestracji wizyt przez t
 ## Panele / zakładki systemu, które będą oferowały potrzebne funkcjonalności 
 
 - Panel administratora 
-	- Główne narzędzie administratorów systemu umożliwiające wykonanie wszystkich czynności potrzebnych do zarządzania systemem np. dodawanie, edycja, usuwanie użytkowników, tworzenie i modyfikacja grup, zarządzanie innymi administratorami. 
-- Panel innego użytkownika 
-	- Funkcjonalność 1
-	- ... kolejna funkcjonalność
-...
-- Zakładka raportów 
-	- Generowanie raportów
-- Zakładka ustawień 
-# To Do
+	- Administrator ma dostęp do edycji, usuwania, dodawania użytkowników lub zasobów stworzonych przez uzytkowników 
+- Panel lekarza 
+	- przegladanie powiadomień
+	- edycja swoich danych
+ 	- ustalanie terminarza
+    	- przeglądanie i edycja recept
+       	- przegladanie i edycja skierowań
+       	- zarzadzanie pacjentami 
+- Panel recepcji
+	- zarzadzanie pacjentami
+- Panel pielegniarek
+  	- zarzadzanie skierowaniami oznaczynymi jako zabieg
+- Panel pacjenta
+  	- umawianie sie na wizyte do lekarza
+  	- edycja sowjego profilu
+	- przegladanie recept
+   	- przegladanie skierowań
 
 ## Design 
 
@@ -214,7 +221,6 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 	+ data przeczytania 
 	+ treść
 
-
 ## Wykorzystane technologie 
 - Język Java 17
 	- JavaFX
@@ -222,3 +228,5 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 - Baza danych PostgreSQL
 
 ## Pliki instalacyjne wraz z opisem instalacji i konfiguracji wraz pierwszego uruchomienia
+Instalator aplikacji jest wformie pliku ClinicAppInstall.exe
+Instrukcja wraz z opisem instalacji i konfiguracji wraz z pierwszym uruchomieniem znajduje się w pliku manual.pdf
