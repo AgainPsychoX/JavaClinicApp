@@ -159,8 +159,10 @@
                     <source>17</source>
                     <target>17</target>
                     <compilerArgs>
-                        <arg>--add-opens java.base/java.util=pl.edu.ur.pz.clinicapp</arg>
-                        <arg>--add-exports javafx.controls/com.sun.javafx.scene.control.skin.resources=pl.edu.ur.pz.clinicapp</arg>
+                        <arg>--add-exports</arg>
+                        <arg>javafx.controls/com.sun.javafx.scene.control.skin.resources=pl.edu.ur.pz.clinicapp</arg>
+                        <arg>--add-opens</arg>
+                        <arg>java.base/java.util=pl.edu.ur.pz.clinicapp</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
