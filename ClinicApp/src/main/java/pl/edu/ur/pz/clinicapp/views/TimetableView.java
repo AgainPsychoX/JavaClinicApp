@@ -407,14 +407,14 @@ public class TimetableView extends ViewControllerBase implements Initializable {
         if (nextTimetable != null) {
             nextTimetableButton.setDisable(false);
             endDatePicker.setValue(nextTimetable.getEffectiveDate().toLocalDate());
-            resetEndDateButton.setDisable(false); // in view mode always disabled
+            if (getMode() != Mode.VIEW) {
+                resetEndDateButton.setDisable(false); // in view mode always disabled
+            }
         }
         else {
             nextTimetableButton.setDisable(true);
             endDatePicker.setValue(null);
-            if (getMode() != Mode.VIEW) {
-                resetEndDateButton.setDisable(true); // in view mode always disabled
-            }
+            resetEndDateButton.setDisable(true); // already unlimited effectiveness
         }
 
         deleteTimetableButton.setDisable(index == 0);
