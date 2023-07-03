@@ -464,7 +464,6 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
             query.setParameter("passwd", passwordField.getText());
             query.executeUpdate();
             em.getTransaction().commit();
-            em.close();
             showAlert(Alert.AlertType.CONFIRMATION,"Zmiana hasła", "Zmieniono hasło", "");
             passwordField.setText(null);
             repeatPasswordField.setText(null);

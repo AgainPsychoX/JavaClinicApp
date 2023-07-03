@@ -21,9 +21,11 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.util.Callback;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
 import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -298,7 +300,18 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
 
         setRowGenerationParams(rowGenerationParams); // will generate rows
         setEntries(entries); // will generate entries cells
-        // TODO: menu
+
+        weekDaysDateLabels = List.of(
+                (Label) headerGridPane.lookup("#mondayDateLabel"),
+                (Label) headerGridPane.lookup("#tuesdayDateLabel"),
+                (Label) headerGridPane.lookup("#wednesdayDateLabel"),
+                (Label) headerGridPane.lookup("#thursdayDateLabel"),
+                (Label) headerGridPane.lookup("#fridayDateLabel"),
+                (Label) headerGridPane.lookup("#saturdayDateLabel"),
+                (Label) headerGridPane.lookup("#sundayDateLabel")
+        );
+        displayDatesInHeader(null); // hide the days dates labels for default
+
         // TODO: allow hide weekend
         // TODO: show current time line?
     }
@@ -552,5 +565,34 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             }
         }
         return -1;
+    }
+
+    /**
+     * List of weekdays date labels.
+     */
+    protected List<Label> weekDaysDateLabels;
+
+    final static private DateTimeFormatter weekDayDateFormatter = DateTimeFormatter.ofPattern("(d MMMM)");
+
+    /**
+     * Enables (or disables) displaying dates next to week days names.
+     * @param date start date of the week (monday date), or null to disable
+     */
+    public void displayDatesInHeader(@Nullable LocalDate date) {
+        // TODO: consider having the dates below names
+        if (date == null) {
+            for (Label label : weekDaysDateLabels) {
+                label.setVisible(false);
+                label.setManaged(false);
+            }
+        }
+        else {
+            for (Label label : weekDaysDateLabels) {
+                label.setVisible(true);
+                label.setManaged(true);
+                label.setText(weekDayDateFormatter.format(date));
+                date = date.plusDays(1);
+            }
+        }
     }
 }

@@ -78,3 +78,5 @@
 .week-pane .entry.other             { -entry-color: #d4d4d4; }
 
 .timetable-view .week-pane .entry { -entry-color: #7bff70; }
+
+.week-pane .entry.small { -fx-font-size: 9px ;}
