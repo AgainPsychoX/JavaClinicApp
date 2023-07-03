@@ -176,6 +176,7 @@ public class ScheduleView extends ViewControllerBase implements Initializable {
         datePicker.setValue(weekStartDate);
         weekPane.setEntries(schedule.generateWeekPaneEntriesForSchedule(weekStartDate));
         weekPaneSelectionModel.clearSelection();
+        weekPane.displayDatesInHeader(weekStartDate);
     }
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *

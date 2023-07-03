@@ -214,6 +214,7 @@ public class ScheduleSlotPickerDialog extends Stage {
                     weekStart, List.of(selectionScheduleEntry));
             entries.addAll(selectionWeekPaneEntries);
             weekPane.setEntries(entries);
+            weekPane.displayDatesInHeader(weekStart);
         }
     }
 
