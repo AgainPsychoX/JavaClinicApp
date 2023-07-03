@@ -3,10 +3,7 @@ package pl.edu.ur.pz.clinicapp.views;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.DatePicker;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseButton;
 import javafx.scene.text.Text;
 import org.jetbrains.annotations.Nullable;
@@ -17,10 +14,7 @@ import pl.edu.ur.pz.clinicapp.controls.WeekPaneScheduleEntryCell;
 import pl.edu.ur.pz.clinicapp.dialogs.AppointmentSlotPickerDialog;
 import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.dialogs.ScheduleSimpleEntryEditDialog;
-import pl.edu.ur.pz.clinicapp.models.Appointment;
-import pl.edu.ur.pz.clinicapp.models.Doctor;
-import pl.edu.ur.pz.clinicapp.models.Schedule;
-import pl.edu.ur.pz.clinicapp.models.UserReference;
+import pl.edu.ur.pz.clinicapp.models.*;
 import pl.edu.ur.pz.clinicapp.utils.InteractionGuard;
 import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
@@ -28,6 +22,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.time.*;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
@@ -73,11 +68,44 @@ public class ScheduleView extends ViewControllerBase implements Initializable {
                 });
             }
         });
+
+        // TODO: abstract up repeated logic (2x TimetableView, 1x here, 1x ScheduleSlotPickerDialog?)
+        datePicker.setDayCellFactory(datePicker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (!empty) {
+                    final var zonedDateTime = item.atStartOfDay(ZoneId.systemDefault());
+                    final var index = findEffectiveTimetableIndex(zonedDateTime);
+
+                    getStyleClass().removeIf(s -> s.startsWith("fancy"));
+                    if (index != -1) {
+                        getStyleClass().add("fancy" + (index % 9 + 1));
+                    }
+                }
+            }
+        });
     }
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * State
      * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+    /**
+     * Used for colouring the date picker.
+     */
+    private List<ZonedDateTime> timetableEffectiveDates;
+
+    private int findEffectiveTimetableIndex(ZonedDateTime givenDate) {
+        for (int i = timetableEffectiveDates.size() - 1; i >= 0; i--) {
+            final var effectiveDate = timetableEffectiveDates.get(i);
+            if (!givenDate.isBefore(effectiveDate)) {
+                return i;
+            }
+        }
+        return -1;
+    }
 
     /**
      * @return date of currently selected week start (monday).
@@ -164,11 +192,15 @@ public class ScheduleView extends ViewControllerBase implements Initializable {
         //  it would be nice to jump to next week (but do not generate the entries twice; maybe separate query?)
         //  And consider we want to show the weekend columns if we get exact date...
         select(preselectedDate);
+
+        timetableEffectiveDates = schedule.getCachedTimetables().stream().map(Timetable::getEffectiveDate).toList();
     }
 
     @Override
     public void refresh() {
         select(getDate());
+
+        timetableEffectiveDates = schedule.getCachedTimetables().stream().map(Timetable::getEffectiveDate).toList();
     }
 
     public void select(LocalDate date) {
