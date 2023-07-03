@@ -190,12 +190,10 @@ public class Schedule {
             final var endDateTime = scheduleEntry.getEndInstant().atZone(zone);
             if (scheduleEntry.doesCrossDays(zone)) {
                 var date = beginDateTime.toLocalDate();
-                if (date.isBefore(weekStartDate)) {
+                if (date.isBefore(weekEndDate)) {
                     // Add first entry if starts inside the week
                     final var startMinute = beginDateTime.getHour() * 60 + beginDateTime.getMinute();
                     resultList.add(new ScheduleWeekPaneEntry(scheduleEntry, date.getDayOfWeek(), startMinute, 1440));
-
-                    date = weekStartDate;
                 }
 
                 final var dayBeforeEndDate = endDateTime.toLocalDate().minusDays(1);
