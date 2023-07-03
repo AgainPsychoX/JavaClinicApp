@@ -113,10 +113,11 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
                 configuration.getLocale());
 
         try {
-            configuration.setDirectoryForTemplateLoading(new File(templatesURL.toURI()));
+            File templatesDirectory = new File(templatesURL.getPath());
+            configuration.setDirectoryForTemplateLoading(templatesDirectory);
             configuration.setSharedVariable("bundle", resourceBundle);
             configuration.setSharedVariable("DateUtils", new DateUtils());
-        } catch (IOException | URISyntaxException | TemplateModelException e) {
+        } catch (IOException | TemplateModelException e) {
             showAlert(Alert.AlertType.ERROR, "Błąd inicializacji", "Brak potrzebnych plików",
                     e.getLocalizedMessage());
             throw new RuntimeException(e);
