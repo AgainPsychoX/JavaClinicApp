@@ -400,8 +400,8 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
     public void pickDate() {
         if (doctorCombo.getValue() != null) {
             Schedule schedule = Schedule.of(doctorCombo.getValue());
-            final var dialog = new AppointmentSlotPickerDialog(
-                    schedule, nullCoalesce(LocalDateTime.now()));
+            final var dialog = new AppointmentSlotPickerDialog(schedule, nullCoalesce(
+                    appointment.getDate().atZone(ZoneId.systemDefault()).toLocalDateTime(), LocalDateTime.now()));
             dialog.showAndWait();
             final var selection = dialog.getResult();
             if (selection.isPresent()) {
