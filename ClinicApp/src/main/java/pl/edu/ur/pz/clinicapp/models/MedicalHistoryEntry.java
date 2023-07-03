@@ -92,4 +92,12 @@ public abstract class MedicalHistoryEntry {
     public void setAddedDate(Instant addedDate) {
         this.addedDate = addedDate;
     }
+
+
+    /**
+     * Name and surname of the doctor who created the referral (displayed in referrals list).
+     */
+    public String getDoctorName() {
+        return this.getAddedBy().getDisplayName();
+    }
 }
