@@ -28,13 +28,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.nullCoalesce;
-
-
-/**
- * Available window modes (details of existing referral or creation of a new one).
- */
-
-
 public class VisitsDetailsView extends ViewControllerBase implements Initializable {
 
     private static final BooleanProperty editState = new SimpleBooleanProperty(false);
@@ -77,6 +70,10 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
      * Current view mode.
      */
     private Mode currMode;
+
+    /**
+     * Current {@link pl.edu.ur.pz.clinicapp.models.Appointment} which is currently displaying/editing.
+     */
     private Appointment appointment;
     
     @Override
@@ -164,7 +161,8 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
         // in case the referral was edited while app is running
         ClinicApplication.getEntityManager().refresh(appointment);
 
-        if (role != User.Role.ADMIN && appointment.getAddedBy() != ClinicApplication.requireUser() && role != User.Role.RECEPTION) {
+        if ((role != User.Role.ADMIN && appointment.getAddedBy() != ClinicApplication.requireUser()
+                && role != User.Role.RECEPTION) || appointment.getDate().isBefore(Instant.now())) {
             buttonBox.getChildren().remove(editButton);
             buttonBox.getChildren().remove(deleteButton);
         } else {
@@ -393,6 +391,9 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
         pickedDate.setEditable(false);
     }
 
+    /**
+     * Available window modes (details of existing visit or creation of a new one).
+     */
     public enum Mode {DETAILS, CREATE}
 
 
