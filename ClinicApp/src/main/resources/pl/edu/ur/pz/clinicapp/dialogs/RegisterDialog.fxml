@@ -43,7 +43,7 @@
                   <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
               </rowConstraints>
                <children>
-                  <Text fx:id="roleText" strokeType="OUTSIDE" strokeWidth="0.0" text="Imię*" GridPane.rowIndex="3">
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Imię*" GridPane.rowIndex="3">
                      <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </GridPane.margin>
@@ -176,7 +176,7 @@
                         <Insets bottom="4.0" left="4.0" right="4.0" />
                      </GridPane.margin>
                   </ComboBox>
-                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Rola" wrappingWidth="333.220703125" GridPane.rowIndex="1">
+                  <Text fx:id="roleText" strokeType="OUTSIDE" strokeWidth="0.0" text="Rola" wrappingWidth="333.220703125" GridPane.rowIndex="1">
                      <GridPane.margin>
                         <Insets bottom="4.0" left="4.0" right="4.0" top="4.0" />
                      </GridPane.margin>
@@ -196,13 +196,13 @@
                <children>
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Czas trwania wizyty" />
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Specjalizacja" GridPane.rowIndex="2" />
-                  <TextField fx:id="visitDurationTextField" prefHeight="25.0" prefWidth="370.0" GridPane.columnIndex="1" />
-                  <TextField fx:id="maxDaysTextField" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                  <TextField fx:id="visitDurationTextField" disable="true" editable="false" prefHeight="25.0" prefWidth="370.0" GridPane.columnIndex="1" />
+                  <TextField fx:id="maxDaysTextField" disable="true" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1">
                      <GridPane.margin>
                         <Insets />
                      </GridPane.margin>
                   </TextField>
-                  <TextField fx:id="specializationTextField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <TextField fx:id="specializationTextField" disable="true" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                   <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Maksymalna liczba dni do rejestracji" GridPane.rowIndex="1" />
                </children>
             </GridPane>

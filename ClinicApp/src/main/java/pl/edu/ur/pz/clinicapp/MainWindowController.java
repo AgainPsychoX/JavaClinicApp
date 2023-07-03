@@ -150,7 +150,6 @@ public class MainWindowController extends ViewsContainerController {
 
             if (role == User.Role.ADMIN) {
                 c.add(buttonForNavigationMenu("Zarządzanie kontami", (e) -> goToView(AccountsView.class)));
-                c.add(buttonForNavigationMenu("Raporty", (e) -> goToView(ReportDialog.class)));
             }
 
             c.add(buttonForLogout());

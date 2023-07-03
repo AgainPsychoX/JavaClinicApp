@@ -217,9 +217,8 @@ public class RegisterDialog extends ViewControllerBase {
                 newUser.setEmail((emailField.getText() == null || emailField.getText().isBlank()) ? null : emailField.getText().trim());
                 newUser.setName(nameField.getText().trim());
                 newUser.setPhone((phoneField.getText() == null || phoneField.getText().isBlank()) ? null : phoneField.getText().trim());
-                newUser.setRole(User.Role.PATIENT);
                 newUser.setSurname(surnameField.getText().trim());
-
+                newUser.setRole(selectedRole);
 
                 session.persist(newUser);
                 newUser.changePassword(passwordField.getText());
@@ -334,6 +333,10 @@ public class RegisterDialog extends ViewControllerBase {
             field.setText("");
         }
 
+        specializationTextField.setText("");
+        visitDurationTextField.setText("");
+        maxDaysTextField.setText("");
+
         for (TextField field : allFields) {
             field.textProperty().addListener((observable, oldValue, newValue) -> {
                 int oldFieldsVal = fieldsEdited.getValue();
@@ -351,6 +354,18 @@ public class RegisterDialog extends ViewControllerBase {
             public void changed(ObservableValue<? extends Number> observableValue, Number before, Number after) {
                 editState = (after.intValue() != 0);
             }
+        });
+
+        roleComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            boolean value = false;
+            if (newValue != null)
+                    value = newValue.equals("Lekarz");
+            specializationTextField.setEditable(value);
+            specializationTextField.setDisable(!value);
+            maxDaysTextField.setEditable(value);
+            maxDaysTextField.setDisable(!value);
+            visitDurationTextField.setEditable(value);
+            visitDurationTextField.setDisable(!value);
         });
     }
 

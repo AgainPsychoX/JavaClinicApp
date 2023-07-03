@@ -16,6 +16,7 @@ import pl.edu.ur.pz.clinicapp.models.*;
 import pl.edu.ur.pz.clinicapp.utils.views.ViewController;
 import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
+import javax.persistence.EntityManager;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
@@ -181,17 +182,14 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
         patientCombo.getItems().clear();
         buttonBox.getChildren().remove(deleteButton);
         notesTextField.setEditable(true);
+        datePicker.setDisable(false);
         if (!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
-
-        List<Doctor> doctors = entityManger.createNamedQuery("doctors", Doctor.class).getResultList();
-        doctorCombo.getItems().addAll(doctors);
-        doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
         notesTextField.setText(null);
         setEditState(true);
 
         List<Patient> patients = new ArrayList<>();
 
-        if (ClinicApplication.requireUser().getRole() == User.Role.PATIENT) {
+        if (!ClinicApplication.requireUser().isDoctor() || ClinicApplication.requireUser().getRole() != User.Role.RECEPTION) {
             patients.add(ClinicApplication.requireUser().asPatient());
         } else if(patient != null) {
             patients.add(patient);
@@ -201,7 +199,6 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
         patients.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
         patientCombo.getItems().addAll(patients);
         patientCombo.setValue(patients.get(0));
-        doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
     }
 
     /**
@@ -214,8 +211,8 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
     /** Creating transaction and execute queries depending on type of action **/
     @FXML
     public void editSave() {
-        setEditState(true);
         datePicker.setDisable(false);
+        notesTextField.setEditable(true);
         try {
             if (currMode == Mode.DETAILS) {
                 editSaveDetails();
@@ -234,7 +231,7 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
     /** Function executes query for editing {@link pl.edu.ur.pz.clinicapp.models.Appointment}. **/
     private void editSaveDetails() {
         if (getEditState()) {
-            if (pickedDate.getText() == null) {
+            if (pickedDate.getText() == null || notesTextField.getText() == null) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Błąd zapisu");
                 alert.setHeaderText("Nie wypełniono wymaganych pól");
@@ -243,16 +240,18 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
             } else {
                 Transaction transaction;
                 editQuery.setParameter("date", timestamp);
+                editQuery.setParameter("notes", notesTextField.getText());
+                editQuery.setParameter("id", appointment.getId());
                 transaction = session.beginTransaction();
                 editQuery.executeUpdate();
                 transaction.commit();
                 ClinicApplication.getEntityManager().refresh(appointment);
                 datePicker.setDisable(true);
                 createNotif(doctorCombo.getValue().asUser(), patientCombo.getValue().asUser(),
-                        "Zmieniono datę wizyty na: " + formatter.format(timestamp.toInstant()) + ".");
-                setEditState(false);
+                        "Wprowadzono zmiany do wizyty odbywającej się w dniu: " + formatter.format(timestamp.toInstant()) + ".");
             }
         }
+        setEditState(!getEditState());
     }
 
     /** Function executes query for creating {@link pl.edu.ur.pz.clinicapp.models.Appointment}. **/
@@ -279,6 +278,7 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
             newVisit.setDate(timestamp.toInstant());
             session.persist(newVisit);
             transaction.commit();
+            setEditState(false);
             pickedDate.setText(null);
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Dodawanie wizyty");
@@ -286,7 +286,6 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
             alert.showAndWait();
             createNotif(doctorCombo.getValue().asUser(), patientCombo.getValue().asUser(),
                     "Stworzono wizytę wizytę na dzień: " + formatter.format(timestamp.toInstant()) +'.');
-            setEditState(false);
             this.getParentController().goBack();
 
         }
@@ -319,8 +318,8 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
 
     /**
      * Initialize all factories on start.
-     * @param url
-     * @param resourceBundle
+     * @param url url
+     * @param resourceBundle resourceBundle
      */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -328,7 +327,7 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
             if (after) {
                 editButton.setText("Zapisz");
             } else {
-                editButton.setText("Przełóż");
+                editButton.setText("Edytuj");
             }
         });
         Callback<ListView<Patient>, ListCell<Patient>> cellPatientFactory = new Callback<>() {
@@ -351,6 +350,26 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
         };
         patientCombo.setButtonCell(cellPatientFactory.call(null));
         patientCombo.setCellFactory(cellPatientFactory);
+        patientCombo.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
+            if (newValue != null) {
+                EntityManager entityManger = ClinicApplication.getEntityManager();
+                List<Doctor> doctors = entityManger.createNamedQuery("doctors", Doctor.class).getResultList();
+                doctors.sort((a, b) -> a.getDisplayName().compareToIgnoreCase(b.getDisplayName()));
+                if (ClinicApplication.requireUser().isDoctor()) {
+                    if (ClinicApplication.requireUser().asDoctor().getId().equals(newValue.getId()))
+                        doctors.remove(ClinicApplication.requireUser().asDoctor());
+                    else {
+                        Doctor doctor = ClinicApplication.requireUser().asDoctor();
+                        doctors.clear();
+                        doctors.add(doctor);
+                    }
+                }
+
+                doctorCombo.getItems().clear();
+                doctorCombo.getItems().addAll(doctors);
+                doctorCombo.setValue(doctors.get(0));
+            }
+        });
         Callback<ListView<Doctor>, ListCell<Doctor>> cellDoctorFactory = new Callback<>() {
 
             @Override

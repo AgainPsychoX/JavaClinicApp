@@ -91,6 +91,7 @@ public class DefaultApplicationContext implements ApplicationContext {
         try {
             if (Boolean.parseBoolean(properties.getProperty("seeding.force-drop"))) {
                 entityManagerFactory = Persistence.createEntityManagerFactory("default", Map.ofEntries(
+                        Map.entry("hibernate.connection.url", properties.getProperty("database.url")),
                         Map.entry("hibernate.connection.username", properties.getProperty("seeding.username")),
                         Map.entry("hibernate.connection.password", properties.getProperty("seeding.password"))
                 ));
@@ -126,6 +127,7 @@ public class DefaultApplicationContext implements ApplicationContext {
 
             // For seeding we need superuser and special setting, so we shadow default settings from `persistence.xml`.
             entityManagerFactory = Persistence.createEntityManagerFactory("default", Map.ofEntries(
+                    Map.entry("hibernate.connection.url", properties.getProperty("database.url")),
                     Map.entry("hibernate.connection.username", properties.getProperty("seeding.username")),
                     Map.entry("hibernate.connection.password", properties.getProperty("seeding.password")),
                     Map.entry("hibernate.hbm2ddl.auto", "create")
@@ -137,6 +139,7 @@ public class DefaultApplicationContext implements ApplicationContext {
             entityManager.close();
             entityManagerFactory.close();
             entityManagerFactory = Persistence.createEntityManagerFactory("default", Map.ofEntries(
+                    Map.entry("hibernate.connection.url", properties.getProperty("database.url")),
                     Map.entry("hibernate.connection.username", properties.getProperty("seeding.username")),
                     Map.entry("hibernate.connection.password", properties.getProperty("seeding.password"))
             ));
@@ -163,7 +166,9 @@ public class DefaultApplicationContext implements ApplicationContext {
         disconnectFromDatabase();
 
         // For anonymous connect, the login details are used from  `persistence.xml` along other settings.
-        entityManagerFactory = Persistence.createEntityManagerFactory("default");
+        entityManagerFactory = Persistence.createEntityManagerFactory("default", Map.ofEntries(
+                Map.entry("hibernate.connection.url", properties.getProperty("database.url"))
+        ));
         entityManager = entityManagerFactory.createEntityManager();
 
         user = null;
@@ -177,6 +182,7 @@ public class DefaultApplicationContext implements ApplicationContext {
 
             // We shadow default (anonymous) login details from `persistence.xml` with user specific ones.
             final var emf = Persistence.createEntityManagerFactory("default", Map.ofEntries(
+                    Map.entry("hibernate.connection.url", properties.getProperty("database.url")),
                     Map.entry("hibernate.connection.username", username),
                     Map.entry("hibernate.connection.password", password)
             ));

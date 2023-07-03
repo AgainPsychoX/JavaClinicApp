@@ -295,7 +295,7 @@ public class ExampleDataSeeder
 
     private Patient setupPatient(User user) {
         final var city = faker.address().city();
-        final var hasStreets = city.indexOf('a') == -1 && city.indexOf('ó') == -1;
+        final var hasStreets = city.indexOf('a') == -1 && city.indexOf("ó") == -1;
         final var patient = new Patient(user, randomPESEL());
         patient.setCity(faker.address().city());
         if (hasStreets) {

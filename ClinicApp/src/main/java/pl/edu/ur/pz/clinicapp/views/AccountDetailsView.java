@@ -15,6 +15,7 @@ import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
+import javax.persistence.EntityManager;
 import java.net.URL;
 import java.time.Duration;
 import java.util.List;
@@ -70,12 +71,23 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
     @FXML private PasswordField repeatPasswordField;
 
     private List<Node> patientOnlyThings;
-    private List<Node> doctoryOnlyThings;
+    private List<Node> doctorOnlyThings;
 
 
     Query createDBUser;
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
 
+    /**
+     * Initializes view wit list of fields to be edited according to user role.
+     *
+     * @param url
+     * The location used to resolve relative paths for the root object, or
+     * {@code null} if the location is not known.
+     *
+     * @param resourceBundle
+     * The resources used to localize the root object, or {@code null} if
+     * the root object was not localized.
+     */
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         patientOnlyThings = List.of(
@@ -91,7 +103,7 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
                 repeatPasswordField
         );
 
-        doctoryOnlyThings = List.of(
+        doctorOnlyThings = List.of(
                 visitDurationTextField,
                 specializationTextField,
                 maxDaysTextField
@@ -114,10 +126,20 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
         return mode;
     }
     private final ReadOnlyObjectWrapper<Mode> mode = new ReadOnlyObjectWrapper<>();
+
+    /**
+     * Gets curretn mode
+     * @return {@link AccountDetailsView.Mode}
+     */
     public Mode getMode() {
         return mode.get();
     }
 
+    /**
+     * Sets whether fields are visible or editable depending on action to be performed.
+     *
+     * @param mode {@link AccountDetailsView.Mode} used to specify which settings are set (view/edit/create).
+     */
     public void setMode(Mode mode) {
         this.mode.set(mode);
 
@@ -139,7 +161,7 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
                 }
             }
             if (doctor != null){
-                for(final var node : doctoryOnlyThings){
+                for(final var node : doctorOnlyThings){
                     setNodeEnabledVisibleManaged(node, true);
                 }
             }
@@ -160,7 +182,7 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
                         field.setEditable(false);
                     }
                 }
-                for (final var node : doctoryOnlyThings) {
+                for (final var node : doctorOnlyThings) {
                     if (node instanceof TextField field) {
                         field.setEditable(false);
                     }
@@ -183,7 +205,7 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
                     }
                 }
                 if (doctor != null){
-                    for (final var node : doctoryOnlyThings){
+                    for (final var node : doctorOnlyThings){
                         if(node instanceof TextField field){
                             field.setEditable(true);
                         }
@@ -194,6 +216,11 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
         }
     }
 
+    /**
+     * Sets whether node should be visible
+     * @param node node to set
+     * @param show true or false depending if node should be shown
+     */
     private void setNodeEnabledVisibleManaged(Node node, boolean show) {
         node.setDisable(!show);
         node.setVisible(show);
@@ -311,7 +338,10 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
         return false;
     }
 
-    public void editAction(ActionEvent actionEvent) {
+    /**
+     * Sets mode to Edit if data is to be edited.
+     */
+    public void editAction() {
         setMode(Mode.EDIT);
     }
 
@@ -416,15 +446,27 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
     }
 
 
+    /**
+     * Updates user password if both password fields are the same.
+     */
     @FXML
     private void updatePassword(){
         if(!passwordField.getText().equals(repeatPasswordField.getText()) || passwordField.getText() == null ||
         passwordField.getText().trim().equals("")){
-            showErrorAlert("Niepoprawne hasło", "Złe hasło", "");
+            showErrorAlert("Niepoprawne hasło", "Złe hasło", "Hasła w obu polach muszą " +
+                    "być identyczne.");
         }
         else {
-            //TODO
+            EntityManager em = ClinicApplication.getEntityManager();
+            em.getTransaction().begin();
+            javax.persistence.Query query = ClinicApplication.getEntityManager().createNamedQuery("changePassword");
+            query.setParameter("uname", user.getDatabaseUsername());
+            query.setParameter("passwd", passwordField.getText());
+            query.executeUpdate();
+            em.getTransaction().commit();
             showAlert(Alert.AlertType.CONFIRMATION,"Zmiana hasła", "Zmieniono hasło", "");
+            passwordField.setText(null);
+            repeatPasswordField.setText(null);
         }
     }
 
@@ -457,6 +499,12 @@ public class AccountDetailsView extends ViewControllerBase implements Initializa
         return days.matches("[0-9]{1,3}");
     }
 
+    /**
+     * Shows error {@link Alert}
+     * @param title Alert title
+     * @param headerText Alert header text
+     * @param contentText Alert content text
+     */
     private void showErrorAlert(String title, String headerText, String contentText) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle(title);
