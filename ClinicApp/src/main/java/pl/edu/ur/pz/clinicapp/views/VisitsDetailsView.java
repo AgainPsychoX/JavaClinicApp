@@ -28,13 +28,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.nullCoalesce;
-
-
-/**
- * Available window modes (details of existing referral or creation of a new one).
- */
-
-
 public class VisitsDetailsView extends ViewControllerBase implements Initializable {
 
     private static final BooleanProperty editState = new SimpleBooleanProperty(false);
@@ -77,6 +70,10 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
      * Current view mode.
      */
     private Mode currMode;
+
+    /**
+     * Current {@link pl.edu.ur.pz.clinicapp.models.Appointment} which is currently displaying/editing.
+     */
     private Appointment appointment;
     
     @Override
@@ -158,13 +155,14 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         pickedDate.setText(dateFormat.format(Date.from(appointment.getDate())));
         datePicker.setDisable(true);
-
+        timestamp = Timestamp.from(appointment.getDate());
         notesTextField.setEditable(false);
         notesTextField.setText(appointment.getNotes());
         // in case the referral was edited while app is running
         ClinicApplication.getEntityManager().refresh(appointment);
 
-        if (role != User.Role.ADMIN && appointment.getAddedBy() != ClinicApplication.requireUser() && role != User.Role.RECEPTION) {
+        if ((role != User.Role.ADMIN && appointment.getAddedBy() != ClinicApplication.requireUser()
+                && role != User.Role.RECEPTION) || appointment.getDate().isBefore(Instant.now())) {
             buttonBox.getChildren().remove(editButton);
             buttonBox.getChildren().remove(deleteButton);
         } else {
@@ -183,6 +181,7 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
         buttonBox.getChildren().remove(deleteButton);
         notesTextField.setEditable(true);
         datePicker.setDisable(false);
+        pickedDate.setText(null);
         if (!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
         notesTextField.setText(null);
         setEditState(true);
@@ -248,7 +247,8 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
                 ClinicApplication.getEntityManager().refresh(appointment);
                 datePicker.setDisable(true);
                 createNotif(doctorCombo.getValue().asUser(), patientCombo.getValue().asUser(),
-                        "Wprowadzono zmiany do wizyty odbywającej się w dniu: " + formatter.format(timestamp.toInstant()) + ".");
+                        "Wprowadzono zmiany do wizyty odbywającej się w dniu: " +
+                                formatter.format(timestamp.toInstant()) + ".");
             }
         }
         setEditState(!getEditState());
@@ -257,7 +257,7 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
     /** Function executes query for creating {@link pl.edu.ur.pz.clinicapp.models.Appointment}. **/
     private void editSaveCreate() {
         if (notesTextField.getText() == null || patientCombo.getValue() == null ||
-                doctorCombo.getValue() == null || pickedDate.getText() == null) {
+                doctorCombo.getValue() == null || pickedDate.getText() == null || timestamp == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Błąd zapisu");
             alert.setHeaderText("Nie wypełniono wymaganych pól");
@@ -393,6 +393,9 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
         pickedDate.setEditable(false);
     }
 
+    /**
+     * Available window modes (details of existing visit or creation of a new one).
+     */
     public enum Mode {DETAILS, CREATE}
 
 
@@ -400,8 +403,13 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
     public void pickDate() {
         if (doctorCombo.getValue() != null) {
             Schedule schedule = Schedule.of(doctorCombo.getValue());
-            final var dialog = new AppointmentSlotPickerDialog(schedule, nullCoalesce(
-                    appointment.getDate().atZone(ZoneId.systemDefault()).toLocalDateTime(), LocalDateTime.now()));
+            AppointmentSlotPickerDialog dialog;
+            if (currMode == Mode.DETAILS) {
+                dialog = new AppointmentSlotPickerDialog(schedule, nullCoalesce(
+                        appointment.getDate().atZone(ZoneId.systemDefault()).toLocalDateTime(), LocalDateTime.now()));
+            } else {
+                dialog = new AppointmentSlotPickerDialog(schedule, LocalDateTime.now());
+            }
             dialog.showAndWait();
             final var selection = dialog.getResult();
             if (selection.isPresent()) {
