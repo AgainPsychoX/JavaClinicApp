@@ -181,6 +181,7 @@ public class VisitsDetailsView extends ViewControllerBase implements Initializab
         buttonBox.getChildren().remove(deleteButton);
         notesTextField.setEditable(true);
         datePicker.setDisable(false);
+        pickedDate.setText(null);
         if (!buttonBox.getChildren().contains(editButton)) buttonBox.getChildren().add(editButton);
         notesTextField.setText(null);
         setEditState(true);
