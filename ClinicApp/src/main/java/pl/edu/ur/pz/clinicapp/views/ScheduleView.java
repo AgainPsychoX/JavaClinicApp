@@ -11,7 +11,6 @@ import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneFreeSelectionModel;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneScheduleEntryCell;
-import pl.edu.ur.pz.clinicapp.dialogs.AppointmentSlotPickerDialog;
 import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.dialogs.ScheduleSimpleEntryEditDialog;
 import pl.edu.ur.pz.clinicapp.models.*;
@@ -25,7 +24,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.nullCoalesce;
+import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.requireConfirmation;
 import static pl.edu.ur.pz.clinicapp.utils.TemporalUtils.alignDateToWeekStart;
 
 public class ScheduleView extends ViewControllerBase implements Initializable {
@@ -43,6 +43,7 @@ public class ScheduleView extends ViewControllerBase implements Initializable {
     protected WeekPaneFreeSelectionModel<WeekPane.Entry> weekPaneSelectionModel;
 
     @FXML protected Button goTimetableButton;
+    @FXML protected Button newVisitButton;
     @FXML protected Button newEntryButton;
     @FXML protected Button detailsButton;
 
@@ -245,22 +246,18 @@ public class ScheduleView extends ViewControllerBase implements Initializable {
 
     @FXML
     protected void newVisitAction(ActionEvent actionEvent) {
-        getParentController().goToView(
-                VisitsDetailsView.class,
-                VisitsDetailsView.Mode.CREATE
-        );
-        // TODO: allow passing preset info, like date = getSelectedDateTime()
-
-        // FIXME: Temporary testing code for ScheduleSlotPickerDialog,
-        //  as I don't have mental at this moment to deal with shit in VisitsDetailsView
-        {
-            runDelayed(333, () -> {
-                final var dialog = new AppointmentSlotPickerDialog(
-                        schedule, nullCoalesce(getSelectedDateTime(), getDate().atStartOfDay()));
-                dialog.showAndWait();
-                System.out.println(dialog.getResult());
-            });
+        if (requireConfirmation("Nowa wizyta",
+                "Utworzenie nowej wizyty wymaga wyboru pacjenta. Czy chcesz przejść do listy pacjentów?",
+                ButtonType.CANCEL)) {
+            getParentController().goToView(PatientsView.class);
         }
+
+        // TODO: button currently not working due to lack of patient picker inside the `VisitsDetailsView`
+//        getParentController().goToView(
+//                VisitsDetailsView.class,
+//                VisitsDetailsView.Mode.CREATE
+//        );
+        // TODO: allow passing preset info, like date = getSelectedDateTime()
     }
 
     @FXML

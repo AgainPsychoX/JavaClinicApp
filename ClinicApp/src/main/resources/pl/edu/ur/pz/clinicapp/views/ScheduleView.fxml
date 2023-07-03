@@ -43,7 +43,8 @@
             <Button fx:id="goTimetableButton" mnemonicParsing="false" onAction="#goTimetableAction" text="Przejdź do harmonogramu" />
             <HBox alignment="CENTER" maxWidth="1.7976931348623157E308" spacing="8.0" HBox.hgrow="ALWAYS">
                <children>
-                  <Button fx:id="newEntryButton" mnemonicParsing="false" onAction="#newEntryAction" text="Nowy inny wpis" />
+                   <Button fx:id="newVisitButton" mnemonicParsing="false" onAction="#newVisitAction" text="Nowa wizyta" />
+                   <Button fx:id="newEntryButton" mnemonicParsing="false" onAction="#newEntryAction" text="Nowy inny wpis" />
                </children>
             </HBox>
             <HBox alignment="CENTER_RIGHT" spacing="8.0" HBox.hgrow="SOMETIMES">
