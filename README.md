@@ -229,4 +229,5 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 
 ## Pliki instalacyjne wraz z opisem instalacji i konfiguracji wraz pierwszego uruchomienia
 Instalator aplikacji jest wformie pliku ClinicAppInstall.exe
-Instrukcja wraz z opisem instalacji i konfiguracji wraz z pierwszym uruchomieniem znajduje się w pliku manual.pdf
+Instrukcja wraz z opisem instalacji i konfiguracji wraz z pierwszym uruchomieniem znajduje się w pliku manual.pdf.
+Hasła przykładowych użytkowników zseedowanych do bazy to nazwa ich roli (dla lekarzy: "lekarz", dla administratorów: "administrator", dla pacjentów: "pacjent", dla recepcji: "recepcja", dla pielęgniarek: "pielęgniarka").
