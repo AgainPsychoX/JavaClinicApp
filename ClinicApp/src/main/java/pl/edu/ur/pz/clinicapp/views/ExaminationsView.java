@@ -8,11 +8,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.VBox;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
-public class ExaminationsView extends ChildControllerBase<MainWindowController> {
+public class ExaminationsView extends ViewControllerBase {
     @FXML protected Button addTestButton;
     @FXML protected VBox vBox;
     @FXML protected TableView table;

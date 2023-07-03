@@ -1,6 +1,7 @@
 package pl.edu.ur.pz.clinicapp.views;
 
 import javafx.animation.PauseTransition;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -16,13 +17,11 @@ import javafx.util.Duration;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
-import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.time.LocalDate;
 import java.util.EnumMap;
@@ -31,7 +30,7 @@ import java.util.List;
 /**
  * View controller to view and search for {@link Referral}s.
  */
-public class ReferralsView extends ChildControllerBase<MainWindowController> {
+public class ReferralsView extends ViewControllerBase {
 
     @FXML
     protected HBox backBox;
@@ -176,8 +175,8 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
         dateCol.setCellValueFactory(new PropertyValueFactory<>("addedDateFormatted"));
         fulDateCol.setCellValueFactory(new PropertyValueFactory<>("fulfilmentDateFormatted"));
         interestCol.setCellValueFactory(new PropertyValueFactory<>("pointOfInterest"));
-        patientCol.setCellValueFactory(new PropertyValueFactory<>("patientName"));
-        doctorCol.setCellValueFactory(new PropertyValueFactory<>("doctorName"));
+        patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatient().getDisplayName()));
+        doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getDoctor().getDisplayName()));
         notesCol.setCellValueFactory(new PropertyValueFactory<>("notes"));
         feedbackCol.setCellValueFactory(new PropertyValueFactory<>("feedback"));
         tagsCol.setCellValueFactory(new PropertyValueFactory<>("StringTags"));
@@ -272,7 +271,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
                 return true;
             if (referral.getPointOfInterest() != null && referral.getPointOfInterest().toLowerCase().contains(text.trim()))
                 return true;
-            if (referral.getDoctorName().toLowerCase().contains(text.trim())) return true;
+            if (referral.getDoctor().getDisplayName().toLowerCase().contains(text.trim())) return true;
             if (referral.getNotes().toLowerCase().contains(text.trim())) return true;
             if (referral.getFeedback() != null && referral.getFeedback().toLowerCase().contains(text.trim()))
                 return true;
@@ -290,7 +289,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
      * Opens details view of the chosen referral in DETAILS mode.
      */
     public void displayDetails() {
-        this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS,
+        this.getParentController().goToView(ReferralDetailsView.class,
                 ReferralDetailsView.RefMode.DETAILS, table.getSelectionModel().getSelectedItem(), targetPatient);
     }
 
@@ -298,12 +297,12 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
      * Opens details view in CREATE mode.
      */
     public void addReferral() {
-        this.getParentController().goToView(MainWindowController.Views.REFERRAL_DETAILS,
+        this.getParentController().goToView(ReferralDetailsView.class,
                 ReferralDetailsView.RefMode.CREATE, targetPatient);
     }
 
     public void onBackClick() {
-        this.getParentController().goToView(MainWindowController.Views.PATIENT_DETAILS,
+        this.getParentController().goToView(PatientDetailsView.class,
                 PatientDetailsView.RefMode.DETAILS, targetPatient);
     }
 
@@ -312,7 +311,7 @@ public class ReferralsView extends ChildControllerBase<MainWindowController> {
      */
     @FXML
     public void printReferrals(){
-        this.getParentController().goToView(MainWindowController.Views.REPORTS, ReportDialog.Mode.REFERRALS, referrals);
+        this.getParentController().goToView(ReportDialog.class, ReportDialog.Mode.REFERRALS, referrals);
     }
 
 

@@ -47,7 +47,7 @@ import java.time.ZoneId;
         // TODO: use Hibernate `persist` (or `merge`) to insert/update and `remove` to delete
         @NamedNativeQuery(
                 name = "editAppointment",
-                query = "UPDATE appointments SET date = :date",
+                query = "UPDATE appointments SET date = :date, notes = :notes WHERE id = :id",
                 resultClass = Appointment.class
         ),
         @NamedNativeQuery(
@@ -160,5 +160,13 @@ public class Appointment extends MedicalHistoryEntry implements Schedule.Entry {
     @Override
     public boolean doesCrossDays(ZoneId zone) {
         return false;
+    }
+
+
+
+    @Override
+    public String toString() {
+        return String.format("Appointment{id=%d,date=%s,duration=%s,patient_id=%d,doctor_id=%d}",
+                getId(), getDate(), getDuration(), getPatient().getId(), getDoctor().getId());
     }
 }

@@ -11,7 +11,6 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.util.StringConverter;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 import pl.edu.ur.pz.clinicapp.controls.WeekPaneSelectionModel;
 import pl.edu.ur.pz.clinicapp.dialogs.TimetableEntryEditDialog;
@@ -19,10 +18,11 @@ import pl.edu.ur.pz.clinicapp.models.Doctor;
 import pl.edu.ur.pz.clinicapp.models.Timetable;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.models.UserReference;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DirtyFixes;
 import pl.edu.ur.pz.clinicapp.utils.DurationUtils;
 import pl.edu.ur.pz.clinicapp.utils.InteractionGuard;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewController;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.net.URL;
 import java.text.DecimalFormat;
@@ -46,7 +46,7 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.*;
 /**
  * Main window view controller to display and manage timetables for the user.
  */
-public class TimetableView extends ChildControllerBase<MainWindowController> implements Initializable {
+public class TimetableView extends ViewControllerBase implements Initializable {
     private static final Logger logger = Logger.getLogger(TimetableView.class.getName());
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -191,6 +191,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
         return mode.get();
     }
 
+
     private void setButtonEnabledVisibleManaged(Button button, boolean show) {
         button.setDisable(!show);
         button.setVisible(show);
@@ -211,7 +212,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
                 setButtonEnabledVisibleManaged(addEntryButton, false);
                 setButtonEnabledVisibleManaged(editEntryButton, false);
                 setButtonEnabledVisibleManaged(deleteTimetableButton, false);
-                setButtonEnabledVisibleManaged(editTimetableButton, true);
+                setButtonEnabledVisibleManaged(editTimetableButton, canEdit);
                 setButtonEnabledVisibleManaged(cancelButton, false);
                 setButtonEnabledVisibleManaged(saveButton, false);
             }
@@ -228,6 +229,22 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
                 setButtonEnabledVisibleManaged(cancelButton, true);
                 setButtonEnabledVisibleManaged(saveButton, true);
             }
+        }
+    }
+
+    @Override
+    public boolean onNavigation(Class<? extends ViewController> which, Object... context) {
+        // TODO: more proper dirty flag
+        if (getMode() == Mode.VIEW) {
+            return true;
+        }
+        else {
+            final var dialog = new Alert(Alert.AlertType.WARNING);
+            dialog.setTitle("Niezapisane zmiany");
+            dialog.setHeaderText(null);
+            dialog.setContentText("Musisz najpierw anulować lub zapisać zmiany.");
+            dialog.showAndWait();
+            return false;
         }
     }
 
@@ -258,6 +275,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
     }
 
     protected UserReference userReference;
+    protected boolean canEdit;
 
     /**
      * Returns reference to owner of the timetable(s).
@@ -274,7 +292,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
      * @return User that is owns the timetable(s).
      */
     public User getUser() {
-        return timetables.get(0).getUser();
+        return userReference.asUser();
     }
 
     /**
@@ -338,6 +356,10 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
         return index < 0 ? null : timetables.get(index);
     }
 
+    /**
+     * Selects timetable to show/edit.
+     * @param timetable the timetable to select
+     */
     public void select(Timetable timetable) {
         final var index = timetables.indexOf(timetable);
         if (index == -1) {
@@ -346,6 +368,10 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
         select(index);
     }
 
+    /**
+     * Selects timetable to show/edit, effective on given date.
+     * @param date date to look for timetable at
+     */
     public void select(ZonedDateTime date) {
         final var index = findEffectiveTimetableIndex(date);
         if (index == -1) {
@@ -360,6 +386,10 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
 
     private static final NumberFormat totalHoursNumberFormat = new DecimalFormat("#.##");
 
+    /**
+     * Selects timetable to show/edit by index.
+     * @param index index in list sorted by effective time
+     */
     public void select(int index) {
         final var count = timetables.size();
         while (index < 0) index += count;
@@ -377,14 +407,14 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
         if (nextTimetable != null) {
             nextTimetableButton.setDisable(false);
             endDatePicker.setValue(nextTimetable.getEffectiveDate().toLocalDate());
-            resetEndDateButton.setDisable(false); // in view mode always disabled
+            if (getMode() != Mode.VIEW) {
+                resetEndDateButton.setDisable(false); // in view mode always disabled
+            }
         }
         else {
             nextTimetableButton.setDisable(true);
             endDatePicker.setValue(null);
-            if (getMode() != Mode.VIEW) {
-                resetEndDateButton.setDisable(true); // in view mode always disabled
-            }
+            resetEndDateButton.setDisable(true); // already unlimited effectiveness
         }
 
         deleteTimetableButton.setDisable(index == 0);
@@ -407,7 +437,8 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
      */
     @Override
     public void populate(Object... context) {
-        userReference = ClinicApplication.getUser();
+        final var loggedInUser = ClinicApplication.getUser();
+        userReference = loggedInUser;
         var mode = Mode.VIEW;
         timetables = null;
         var preselectedIndex = -1;
@@ -455,26 +486,14 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
             throw new IllegalStateException();
         }
 
-        if (timetables == null) {
-            timetables = new ArrayList<>(Timetable.forUser(userReference));
-            timetables.sort(Comparator.comparing(Timetable::getEffectiveDate));
-        }
-        if (timetables.size() == 0) {
-            // TODO: for doctors: create empty timetable, start in 'new' mode
-            // TODO: for other users: info dialog about not being supported and redirect to other view
-            throw new UnsupportedOperationException("Not implemented yet");
-        }
+        if (userReference.equals(loggedInUser)) {
+            canEdit = true;
 
-        final var entityManager = ClinicApplication.getEntityManager();
-        for (var timetable : timetables) {
-            entityManager.detach(timetable);
-        }
-
-        setMode(mode);
-
-        if (userReference.equals(ClinicApplication.getUser())) {
             headerText.setText("Twój harmonogram");
-        } else {
+        }
+        else {
+            canEdit = loggedInUser.getRole() == User.Role.ADMIN;
+
             if (userReference instanceof Doctor doctor && doctor.getSpeciality() != null) {
                 headerText.setText("Harmonogram dla %s (%s)".formatted(
                         doctor.getDisplayName(), doctor.getSpeciality()));
@@ -484,12 +503,51 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
             }
         }
 
-        if (preselectedDate != null) {
-            select(preselectedDate);
-        } else if (preselectedIndex >= 0) {
-            select(preselectedIndex);
-        } else {
-            select(ZonedDateTime.now());
+        if (timetables == null) {
+            timetables = new ArrayList<>(Timetable.forUser(userReference));
+            timetables.sort(Comparator.comparing(Timetable::getEffectiveDate));
+        }
+        if (timetables.size() == 0) {
+            if (canEdit) {
+                // Add first timetable and jump into edit mode
+                setMode(Mode.EDIT);
+                timetables.add(new Timetable(ZonedDateTime.now()));
+                select(0);
+
+                final var proceed = requireConfirmation("Pierwszy wzór harmonogramu",
+                        ("Nie został jeszcze dodany żaden wzór harmonogramu. Czy chcesz dodać pierwszy wzór teraz? " +
+                         "Anulowanie spowoduje cofnięcie do poprzedniego widoku."),
+                        ButtonType.CANCEL);
+                if (proceed) {
+                    return; // prevents navigation back
+                }
+            }
+            else /* cannot edit */ {
+                final var dialog = new Alert(Alert.AlertType.WARNING);
+                dialog.setTitle("Brak określonego harmonogramu");
+                dialog.setHeaderText(null);
+                dialog.setContentText("Nie został jeszcze dodany żaden wzór harmonogramu i brak uprawnień do edycji. " +
+                        "Nastąpi cofnięcie do poprzedniego widoku.");
+                dialog.showAndWait();
+            }
+
+            getParentController().goBack();
+        }
+        else /* at least one timetable exist */ {
+            final var entityManager = ClinicApplication.getEntityManager();
+            for (var timetable : timetables) {
+                entityManager.detach(timetable);
+            }
+
+            setMode(mode);
+
+            if (preselectedDate != null) {
+                select(preselectedDate);
+            } else if (preselectedIndex >= 0) {
+                select(preselectedIndex);
+            } else {
+                select(ZonedDateTime.now());
+            }
         }
     }
 
@@ -880,22 +938,7 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
     protected void goScheduleAction(ActionEvent actionEvent) {
         interactionGuard.begin();
 
-        // TODO: allow in edit if not dirty
-        if (getMode() == Mode.EDIT) {
-            final var dialog = new Alert(Alert.AlertType.WARNING);
-            dialog.setTitle("Niezapisane zmiany");
-            dialog.setHeaderText(null);
-            dialog.setContentText("Musisz najpierw anulować lub zapisać zmiany.");
-            dialog.showAndWait();
-            interactionGuard.end();
-            return;
-        }
-
-        getParentController().goToView(
-                MainWindowController.Views.SCHEDULE,
-                getUserReference(),
-                getTimetable().getEffectiveDate()
-        );
+        getParentController().goToView(ScheduleView.class, getUserReference(), getTimetable().getEffectiveDate());
 
         interactionGuard.end();
     }
@@ -1083,5 +1126,4 @@ public class TimetableView extends ChildControllerBase<MainWindowController> imp
 
         interactionGuard.end();
     }
-
 }

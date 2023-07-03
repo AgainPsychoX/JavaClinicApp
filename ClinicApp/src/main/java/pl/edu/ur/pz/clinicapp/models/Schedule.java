@@ -5,15 +5,13 @@ import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 
 import javax.persistence.*;
 import java.time.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static pl.edu.ur.pz.clinicapp.utils.TemporalUtils.alignDateToWeekStart;
 
 /**
- * Utility class that eases manipulation of user schedule & timetables.
+ * Utility class that eases manipulation of user schedule and timetables.
  */
 public class Schedule {
     protected UserReference userReference;
@@ -29,6 +27,15 @@ public class Schedule {
         final var instance = new Schedule();
         instance.userReference = user;
         return instance;
+    }
+
+    protected List<Timetable> cachedTimetables;
+
+    public List<Timetable> getCachedTimetables() {
+        if (cachedTimetables == null) {
+            cachedTimetables = Timetable.forUser(userReference); // natural order
+        }
+        return Collections.unmodifiableList(cachedTimetables);
     }
 
     /**
@@ -48,7 +55,6 @@ public class Schedule {
         // Find possibly effective timetable for the beginning
         Iterator<Timetable> timetablesIterator = timetables.iterator();
         if (!timetablesIterator.hasNext()) {
-            assert false; // throw only in debug
             return List.of();
         }
         Timetable effectiveTimetable = timetablesIterator.next();
@@ -491,6 +497,12 @@ public class Schedule {
 
         // Empty constructor is required for JPA standard.
         public SimpleEntry() {}
+
+        public SimpleEntry(Instant begin, Instant end) {
+            this.type = Type.NONE;
+            this.begin = begin;
+            this.end = end;
+        }
 
         public SimpleEntry(Entry.Type type, Instant begin, Instant end) {
             this.type = type;

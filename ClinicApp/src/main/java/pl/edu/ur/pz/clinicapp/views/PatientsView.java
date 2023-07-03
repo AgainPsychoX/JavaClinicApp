@@ -16,10 +16,10 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.util.Duration;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.dialogs.RegisterDialog;
 import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.io.IOException;
 import java.net.URI;
@@ -28,7 +28,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class PatientsView extends ChildControllerBase<MainWindowController> implements Initializable {
+public class PatientsView extends ViewControllerBase implements Initializable {
 
     @FXML
     protected Button registerButton;
@@ -123,13 +123,13 @@ public class PatientsView extends ChildControllerBase<MainWindowController> impl
 
     @FXML
     protected void detailsAction(ActionEvent event){
-        this.getParentController().goToView(MainWindowController.Views.PATIENT_DETAILS,
+        this.getParentController().goToView(PatientDetailsView.class,
                 PatientDetailsView.RefMode.DETAILS, table.getSelectionModel().getSelectedItem());
 
     }
 
     public void register() {
-        this.getParentController().goToView(MainWindowController.Views.REGISTER,
+        this.getParentController().goToView(RegisterDialog.class,
                 "INDIRECT");
     }
 

@@ -19,12 +19,12 @@ import javafx.util.Duration;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
+import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.awt.*;
 import java.io.IOException;
@@ -36,7 +36,10 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.ResourceBundle;
 
-public class PrescriptionsView extends ChildControllerBase<MainWindowController> implements Initializable {
+/**
+ * View controller to view and search for {@link Prescription}s.
+ */
+public class PrescriptionsView extends ViewControllerBase implements Initializable {
     @FXML protected VBox vBox;
     @FXML protected TableView<Prescription> table;
     @FXML protected TableColumn<Prescription, String> patientCol;
@@ -125,8 +128,8 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
             addButton.setVisible(false);
         }
 
-        doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getDoctorName()));
-        patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatientName()));
+        doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddedBy().getDisplayName()));
+        patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatient().getDisplayName()));
         codeCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getGovernmentId()));
         tagsCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getStringTags()));
         dateCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddedDateFormatted()));
@@ -145,7 +148,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     }
 
     /**
-     * Popluates view with data depending on context.
+     * Populates view with data depending on context.
      * Gets {@link Patient from context if present}
      * Clears buttonBox and adds button depending on context.
      * Maps filter modes to corresponding display strings.
@@ -251,7 +254,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
         filteredPrescriptions.setPredicate(referral -> {
             if (text.isBlank()) return true;
             if (referral.getAddedDate().toString().contains(text.trim())) return true;
-            if (referral.getDoctorName().toLowerCase().contains(text.trim())) return true;
+            if (referral.getAddedBy().getDisplayName().toLowerCase().contains(text.trim())) return true;
             if (referral.getNotes().toLowerCase().contains(text.trim())) return true;
             if (referral.getStringTags().toLowerCase().contains(text.trim())) return true;
             return referral.getGovernmentId() != null && referral.getGovernmentId().contains(text.trim());
@@ -263,20 +266,20 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
     }
 
     /**
-     * Opens details view of the chosen referral in DETAILS mode.
+     * Opens {@link PrescriptionDetailsView} view of the chosen referral in DETAILS mode.
      */
     @FXML
     public void displayDetails() {
-        this.getParentController().goToView(MainWindowController.Views.PRESCRIPTION_DETAILS,
+        this.getParentController().goToView(PrescriptionDetailsView.class,
                 PrescriptionDetailsView.Mode.DETAILS, table.getSelectionModel().getSelectedItem(), targetPatient);
     }
 
     /**
-     * Opens details view in CREATE mode.
+     * Opens {@link PrescriptionDetailsView} view in CREATE mode.
      */
     @FXML
     protected void addPrescription() {
-        this.getParentController().goToView(MainWindowController.Views.PRESCRIPTION_DETAILS,
+        this.getParentController().goToView(PrescriptionDetailsView.class,
                 PrescriptionDetailsView.Mode.CREATE, targetPatient);
     }
 
@@ -297,7 +300,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
      */
     @FXML
     public void onBackClick(){
-        this.getParentController().goToView(MainWindowController.Views.PATIENT_DETAILS,
+        this.getParentController().goToView(PatientDetailsView.class,
         PatientDetailsView.RefMode.DETAILS, targetPatient);
     }
 
@@ -306,7 +309,7 @@ public class PrescriptionsView extends ChildControllerBase<MainWindowController>
      */
     @FXML
     protected void printPrescriptions() {
-        this.getParentController().goToView(MainWindowController.Views.REPORTS, ReportDialog.Mode.PRESCRIPTIONS, prescriptions);
+        this.getParentController().goToView(ReportDialog.class, ReportDialog.Mode.PRESCRIPTIONS, prescriptions);
 
     }
 }

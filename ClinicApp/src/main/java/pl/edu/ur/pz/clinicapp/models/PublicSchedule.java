@@ -10,7 +10,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
- * Utility class that eases manipulation of anonymized schedule & timetables,
+ * Utility class that eases manipulation of anonymized schedule and timetables,
  * avoiding calling concrete user instance while providing vague schedule entries counterparts where necessary.
  */
 public class PublicSchedule extends Schedule {

@@ -15,17 +15,17 @@ import javafx.util.Duration;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
+import pl.edu.ur.pz.clinicapp.dialogs.RegisterDialog;
+import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.net.URL;
 import java.util.EnumMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.ResourceBundle;
 
-public class AccountsView extends ChildControllerBase<MainWindowController> implements Initializable {
+public class AccountsView extends ViewControllerBase implements Initializable {
     @FXML protected VBox vBox;
     @FXML protected TableView<User> table;
     @FXML protected TableColumn<User, Integer> idCol;
@@ -64,6 +64,17 @@ public class AccountsView extends ChildControllerBase<MainWindowController> impl
             filter.setVisible(true);
     }
 
+    /**
+     * Sets cell values according to {@link User} fields
+     *
+     * @param location
+     * The location used to resolve relative paths for the root object, or
+     * {@code null} if the location is not known.
+     *
+     * @param resources
+     * The resources used to localize the root object, or {@code null} if
+     * the root object was not localized.
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
 //        idCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getId()));
@@ -77,6 +88,12 @@ public class AccountsView extends ChildControllerBase<MainWindowController> impl
     }
 
 
+    /**
+     * Populates view from givien context
+     * Prepares queries for database operatoins.
+     * Maps filter modes to corresponding display strings.
+     * @param context Optional context arguments.
+     */
     @Override
     public void populate(Object... context) {
         session = ClinicApplication.getEntityManager().unwrap(Session.class);
@@ -94,7 +111,7 @@ public class AccountsView extends ChildControllerBase<MainWindowController> impl
         filteredModeToString.put(filterMode.ALL, "Wszyscy użytkownicy");
         filteredModeToString.put(filterMode.DOCTORS, "Lekarze");
         filteredModeToString.put(filterMode.PATIENTS, "Pacjenci");
-        filteredModeToString.put(filterMode.WORKERS, "Pozostali praocownicy");
+        filteredModeToString.put(filterMode.WORKERS, "Pozostali pracownicy");
 
         currQuery = allUsers;
         setFilterVals();
@@ -106,6 +123,10 @@ public class AccountsView extends ChildControllerBase<MainWindowController> impl
         refresh();
     }
 
+    /**
+     * Sets values of table cells.
+     * If search field is not empty, perform search again - for user's convenience (no need to hit enter/type again)
+     */
     @Override
     public void refresh() {
         table.getSelectionModel().clearSelection();
@@ -127,7 +148,9 @@ public class AccountsView extends ChildControllerBase<MainWindowController> impl
         super.dispose();
     }
 
-
+    /**
+     * Changes items in table according to selected filter mode.
+     */
     @FXML
     protected void changeFilter(){
         if(filter.getSelectionModel().getSelectedItem() == null) return;
@@ -144,18 +167,29 @@ public class AccountsView extends ChildControllerBase<MainWindowController> impl
     }
 
 
+    /**
+     * Opens {@link AccountDetailsView} view of the chosen user in VIEW mode.
+     */
     @FXML
     public void displayDetails(){
-        this.getParentController().goToView(MainWindowController.Views.ACCOUNT_DETAILS,
+        this.getParentController().goToView(AccountDetailsView.class,
                 table.getSelectionModel().getSelectedItem(), AccountDetailsView.Mode.VIEW);
     }
 
+    /**
+     * Opens {@link pl.edu.ur.pz.clinicapp.dialogs.ReportDialog} with form to register new user
+     */
     @FXML
     public void addUser(){
-        this.getParentController().goToView(MainWindowController.Views.ACCOUNT_DETAILS,
-             ClinicApplication.getUser(), AccountDetailsView.Mode.CREATE);
+        this.getParentController().goToViewRaw(RegisterDialog.class,
+                "INDIRECT",  RegisterDialog.Mode.ACCOUNT);
     }
 
+    /**
+     * Filters table rows according to text typed in the search field.
+     *
+     * @param event Performed action.
+     */
     @FXML
     public void searchAction(ActionEvent event) {
         searchDebounce.stop();

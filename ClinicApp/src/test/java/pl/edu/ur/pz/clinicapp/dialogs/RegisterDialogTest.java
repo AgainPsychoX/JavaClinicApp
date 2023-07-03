@@ -36,9 +36,9 @@ class RegisterDialogTest {
 
     @Test
     void nameSurnameValidator() {
-        assertTrue(RegisterDialog.nameSurnameValidator("Grzegorz"));
-        assertTrue(RegisterDialog.nameSurnameValidator("Brzęczyszczykiewicz"));
-        assertFalse(RegisterDialog.nameSurnameValidator("Adam22"));
-        assertFalse(RegisterDialog.nameSurnameValidator("Adam_"));
+        assertTrue(RegisterDialog.nameSurnameSpecializationValidator("Grzegorz"));
+        assertTrue(RegisterDialog.nameSurnameSpecializationValidator("Brzęczyszczykiewicz"));
+        assertFalse(RegisterDialog.nameSurnameSpecializationValidator("Adam22"));
+        assertFalse(RegisterDialog.nameSurnameSpecializationValidator("Adam_"));
     }
 }

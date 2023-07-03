@@ -4,14 +4,32 @@ import pl.edu.ur.pz.clinicapp.utils.DurationMinutesConverter;
 
 import javax.persistence.*;
 import java.time.Duration;
-import java.util.List;
 
 @Entity
 @Table(name = "doctors")
 @NamedQueries({
         @NamedQuery(name = "doctors",  query = "FROM Doctor d LEFT JOIN FETCH d.user")
 })
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "createDoctor", query = "INSERT INTO public.doctors "
+                +"(id, default_visit_duration, max_days_in_advance, name, speciality, surname) "
+                +"VALUES (:id, :visitDuration, :maxDays, :name, :surname, :speciality)",
+                resultClass = Doctor.class)
+})
 public class Doctor implements UserReference {
+    // Empty constructor is required for JPA standard.
+    protected Doctor() {}
+
+
+    public Doctor(User user) {
+        this.id = user.getId();
+        this.user = user;
+        this.name = user.getName();
+        this.surname = user.getSurname();
+    }
+
+
+
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Doctors are users
      */
@@ -21,6 +39,9 @@ public class Doctor implements UserReference {
     @Override
     public Integer getId() {
         return id;
+    }
+    public void setId(int id){
+        this.id = id;
     }
 
     @OneToOne(optional = false, orphanRemoval = true,
@@ -114,7 +135,7 @@ public class Doctor implements UserReference {
 
     @Column(nullable = false, columnDefinition = "int default 30")
     @Convert(converter = DurationMinutesConverter.class)
-    private Duration defaultVisitDuration;
+    private Duration defaultVisitDuration = Duration.ofMinutes(30);
     public Duration getDefaultVisitDuration() {
         return defaultVisitDuration;
     }
@@ -127,17 +148,11 @@ public class Doctor implements UserReference {
      * the doctor themselves can bypass this check.
      */
     @Column(nullable = false, columnDefinition = "int default 60")
-    private int maxDaysInAdvance;
+    private int maxDaysInAdvance = 60;
     public int getMaxDaysInAdvance() {
         return maxDaysInAdvance;
     }
     public void setMaxDaysInAdvance(int maxDaysInAdvance) {
         this.maxDaysInAdvance = maxDaysInAdvance;
-    }
-
-
-
-    public List<Timetable> getTimetables() {
-        return Timetable.forUser(this);
     }
 }

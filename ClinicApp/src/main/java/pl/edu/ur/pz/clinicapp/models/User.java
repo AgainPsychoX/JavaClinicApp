@@ -5,6 +5,7 @@ import org.hibernate.annotations.Type;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -12,14 +13,18 @@ import java.util.List;
 @NamedQueries({
         @NamedQuery(name = "User.getCurrent", query = "FROM User u WHERE u.databaseUsername = FUNCTION('CURRENT_USER')"),
         @NamedQuery(name = "User.getByLogin", query = "FROM User u WHERE u.databaseUsername = FUNCTION('get_user_internal_name', :input)"),
+        @NamedQuery(name = "User.byRole", query = "FROM User u WHERE u.role = :role"),
         @NamedQuery(name = "User.clearTimetables", query = "DELETE FROM Timetable t WHERE t.user.id = :id"),
+        // TODO: clean up queries (again)
         @NamedQuery(name = "allUsers", query = "FROM User"),
         @NamedQuery(name = "allDoctors", query = "FROM User WHERE role = 'DOCTOR'"),
         @NamedQuery(name = "allPatients", query = "FROM User WHERE role = 'PATIENT'"),
-        @NamedQuery(name = "allWorkers", query = "FROM User WHERE role = 'RECEPTION' OR role ='NURSE' or role = 'ADMIN'")
+        @NamedQuery(name = "allWorkers", query = "FROM User WHERE role = 'RECEPTION' OR role ='NURSE' or role = 'ADMIN'"),
 })
 @NamedNativeQueries({
         @NamedNativeQuery(name = "login", query = "SELECT get_user_internal_name(:input) AS internal_name"),
+        @NamedNativeQuery(name = "changePassword", query = "CALL change_password(:uname, :passwd)"),
+        // TODO: clean up queries (again)
 //        @NamedNativeQuery(name = "createUser", query = "INSERT INTO users "
 //                +"(internal_name, email, name, phone, role, surname) VALUES "
 //                +"(:internalName, :email, :name, :phone, :role, :surname)",
@@ -28,12 +33,11 @@ import java.util.List;
 //        @NamedNativeQuery(name = "createDatabaseUser", query = "CREATE USER :userName LOGIN ENCRYPTED "
 //                +"PASSWORD :password IN ROLE gp_patients",
 //                resultClass = User.class),
-        @NamedNativeQuery(name = "createDatabaseUser", query = "SELECT 1 FROM create_database_user(:userName, :password)"),
+        @NamedNativeQuery(name = "createDatabaseUser", query = "SELECT 1 FROM create_database_user(:userName, :password, :role)"),
         @NamedNativeQuery(name = "findDatabaseUser", query = "SELECT FROM pg_catalog.pg_roles WHERE rolname = :rolname",
                 resultClass = User.class),
-
 })
-public final class User implements UserReference {
+public class User implements UserReference {
     @Override
     public User asUser() {
         return this;
@@ -43,7 +47,6 @@ public final class User implements UserReference {
         ANONYMOUS,
         // TODO: rethink role field (as users can be both patients & doctors at the same time, no?
         PATIENT,
-        PATIENT_DB,
         RECEPTION,
         NURSE,
         DOCTOR,
@@ -53,15 +56,15 @@ public final class User implements UserReference {
             return this == RECEPTION || this == NURSE;
         }
 
-        public String toString() {
-            // TODO: when we have localization it will look much nicer
-            if (this == PATIENT)   return "Pacjent";
-            if (this == PATIENT_DB)   return "PATIENT";
-            if (this == RECEPTION) return "Recepcja";
-            if (this == NURSE)     return "Pielęgniarka";
-            if (this == DOCTOR)    return "Lekarz";
-            if (this == ADMIN)     return "Administrator";
-            return this.name();
+        public String localizedName() {
+            return switch (this) {
+                case ANONYMOUS  -> "Niezalogowany";
+                case PATIENT    -> "Pacjent";
+                case RECEPTION  -> "Recepcja";
+                case NURSE      -> "Pielęgniarka";
+                case DOCTOR     -> "Lekarz";
+                case ADMIN      -> "Administrator";
+            };
         }
     }
 
@@ -75,7 +78,7 @@ public final class User implements UserReference {
         return id;
     }
     @SuppressWarnings("unused") // required by @Access(AccessType.PROPERTY)
-    private void setId(Integer id) {
+    protected void setId(Integer id) {
         this.id = id;
     }
 
@@ -88,6 +91,18 @@ public final class User implements UserReference {
     }
     public void setRole(Role role) {
         this.role = role;
+    }
+
+    /**
+     * Prepares query to select all user by given role.
+     * @param role Role of users to query.
+     * @return Query for the users of given role.
+     */
+    static public TypedQuery<User> queryByRole(Role role) {
+        final var em = ClinicApplication.getEntityManager();
+        final var query = em.createNamedQuery("User.byRole", User.class);
+        query.setParameter("role", role);
+        return query;
     }
 
     @Column(nullable = true, length = 64, unique = true)
@@ -105,7 +120,7 @@ public final class User implements UserReference {
         return phone;
     }
     public void setPhone(String phone) {
-        this.phone = phone;
+        this.phone = phone.replaceAll("\\s", "");
     }
 
     @Column(nullable = false, length = 40)
@@ -143,24 +158,39 @@ public final class User implements UserReference {
      * Users have database accounts
      */
 
+    /**
+     * Special value for database username, to mark for insert trigger to have the database username generated.
+     */
+    final private static String DATABASE_USERNAME_AUTOGENERATE = "!";
+
     @Column(name = "internal_name", nullable = false, length = 40, unique = true)
-    private String databaseUsername;
+    @GeneratedValue()
+    private String databaseUsername = DATABASE_USERNAME_AUTOGENERATE;
     public String getDatabaseUsername() {
+        if (databaseUsername.equals(DATABASE_USERNAME_AUTOGENERATE)) {
+            final var em = ClinicApplication.getEntityManager();
+            if (em.contains(this)) {
+                em.flush();
+                em.refresh(this);
+            }
+        }
         return databaseUsername;
     }
     public void setDatabaseUsername(String databaseUsername) {
         this.databaseUsername = databaseUsername;
     }
 
+    /**
+     * Used in anonymous database session to get internal database username, to connect as given user.
+     * @param emailOrPESEL login input string, email or PESEL identifying the user
+     * @return actual database username, or similarly looking random one (to avoid users enumeration).
+     */
     static public String getDatabaseUsernameForInput(String emailOrPESEL) {
         final var em = ClinicApplication.getEntityManager();
         final var query = em.createNamedQuery("login");
         query.setParameter("input", emailOrPESEL.toLowerCase());
         return (String) query.getSingleResult();
     }
-
-    // TODO: method to change password, potentially via some database function
-    //  to allow changing other users (patients) passwords by doctor/reception/admin.
 
     /**
      * Finds entity of user that currently connected (whose privileges are effective in this session).
@@ -183,6 +213,20 @@ public final class User implements UserReference {
         query.setParameter("input", emailOrPESEL.toLowerCase());
         return query.getSingleResult();
     }
+
+    /**
+     * Sets new password for the user.
+     * @param newPassword new password to use
+     */
+    public void changePassword(String newPassword) {
+        final var em = ClinicApplication.getEntityManager();
+        final var query = em.createNamedQuery("changePassword");
+        query.setParameter("uname", getDatabaseUsername());
+        query.setParameter("passwd", newPassword);
+        query.executeUpdate();
+    }
+
+    // TODO: allow changing other users (patients) passwords by doctor/reception (see security.sql change_password)
 
 
 
@@ -300,7 +344,7 @@ public final class User implements UserReference {
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, orphanRemoval = true)
     @OrderBy("effective_date")
-    private List<Timetable> timetables;
+    private List<Timetable> timetables = new ArrayList<>(7);
 
     /**
      * Provides access to timetables for given user. Upon persisting/merging,
@@ -324,12 +368,16 @@ public final class User implements UserReference {
      * @param timetable timetable to add
      */
     public void addTimetable(Timetable timetable) {
+        final var entityManager = ClinicApplication.getEntityManager();
         timetable.setUser(this);
         if (Hibernate.isInitialized(timetables)) {
             timetables.add(timetable);
+            if (!entityManager.contains(timetable)) {
+                entityManager.persist(timetable);
+            }
         }
         else {
-            ClinicApplication.getEntityManager().persist(timetable);
+            entityManager.persist(timetable);
         }
     }
 
@@ -341,11 +389,15 @@ public final class User implements UserReference {
      * @param timetable timetable to remove
      */
     public void removeTimetable(Timetable timetable) {
+        final var entityManager = ClinicApplication.getEntityManager();
         if (Hibernate.isInitialized(timetables)) {
             timetables.remove(timetable);
+            if (entityManager.contains(timetable)) {
+                entityManager.remove(timetable);
+            }
         }
         else {
-            ClinicApplication.getEntityManager().remove(timetable);
+            entityManager.remove(timetable);
         }
         if (timetable.getUser() != this) {
             return; // not our concern

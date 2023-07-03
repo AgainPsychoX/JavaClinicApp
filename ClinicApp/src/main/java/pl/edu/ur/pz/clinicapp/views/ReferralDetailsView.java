@@ -12,7 +12,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -28,12 +27,12 @@ import org.hibernate.jpa.TypedParameterValue;
 import org.hibernate.query.Query;
 import org.hibernate.type.StandardBasicTypes;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DateUtils;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewController;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.awt.*;
 import java.io.*;
@@ -42,7 +41,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,15 +50,12 @@ import java.util.TimeZone;
 /**
  * View controller to edit, delete or display details of a {@link Referral}.
  */
-public class ReferralDetailsView extends ChildControllerBase<MainWindowController> {
+public class ReferralDetailsView extends ViewControllerBase {
 
     /**
      * Available window modes (details of existing referral or creation of a new one).
      */
     public enum RefMode {DETAILS, CREATE}
-
-    ;
-
     private RefMode currMode;
     @FXML
     protected CheckBox nursesCheck;
@@ -107,9 +102,10 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
     Query deleteQuery = session.getNamedQuery("deleteReferral");
     private Referral ref;
 
+    // TODO: editState is bad name: What true/false means? Consider 'isDirty` boolean or enum
+
     private static BooleanProperty editState = new SimpleBooleanProperty(false);
     private Patient targetPatient;
-    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     public static boolean getEditState() {
         return editState.getValue();
@@ -117,6 +113,11 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
 
     public static void setEditState(boolean editState) {
         ReferralDetailsView.editState.set(editState);
+    }
+
+    @Override
+    public boolean onNavigation(Class<? extends ViewController> which, Object... context) {
+        return !getEditState() || exitConfirm();
     }
 
     /**
@@ -140,13 +141,13 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
             if (exitConfirm()) {
                 editState.setValue(!editState.getValue());
                 if (targetPatient!=null) {
-                    this.getParentController().goToView(MainWindowController.Views.REFERRALS, targetPatient);
-                } else this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
+                    this.getParentController().goToView(ReferralsView.class, targetPatient);
+                } else this.getParentController().goToViewRaw(ReferralsView.class);
             }
         } else {
             if (targetPatient!=null) {
-                this.getParentController().goToView(MainWindowController.Views.REFERRALS, targetPatient);
-            } else this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
+                this.getParentController().goToView(ReferralsView.class, targetPatient);
+            } else this.getParentController().goToViewRaw(ReferralsView.class);
         }
     }
 
@@ -278,7 +279,7 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
      */
     @Override
     public void refresh() {
-        doctorField.setText(ref.getDoctorName());
+        doctorField.setText(ref.getDoctor().getDisplayName());
         fulDatePicker.setValue((ref.getFulfilmentDate() == null)
                 ? null
                 : Timestamp.from(ref.getFulfilmentDate()).toLocalDateTime().toLocalDate());
@@ -325,8 +326,8 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
                         alert.showAndWait();
                         editState.setValue(!editState.getValue());
                     } else {
-                        String newAddedDate = LocalDate.parse(dateVal, formatter).toString() + " " + dateTimeVal;
-                        String newFulDate = (fulDateVal == null || fulDateVal.isBlank()) ? "" : LocalDate.parse(fulDateVal, formatter).toString() + " " + fulDateTimeVal;
+                        String newAddedDate = LocalDate.parse(dateVal).toString() + " " + dateTimeVal;
+                        String newFulDate = (fulDateVal == null || fulDateVal.isBlank()) ? "" : LocalDate.parse(fulDateVal).toString() + " " + fulDateTimeVal;
                         editQuery.setParameter("addedDate", Timestamp.valueOf((dateTimeVal.length() != 8)
                                 ? newAddedDate + ":00" : newAddedDate));
                         if (newFulDate.isBlank()) {
@@ -382,8 +383,8 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
                     transaction = session.beginTransaction();
                     Referral newRef = new Referral();
                     newRef.setAddedBy(ClinicApplication.getUser());
-                    String newAddedDate = LocalDate.parse(dateVal, formatter).toString() + " " + dateTimeVal;
-                    String newFulDate = (fulDateVal == null || fulDateVal.isBlank()) ? "" : LocalDate.parse(fulDateVal, formatter).toString() + " " + fulDateTimeVal;
+                    String newAddedDate = LocalDate.parse(dateVal).toString() + " " + dateTimeVal;
+                    String newFulDate = (fulDateVal == null || fulDateVal.isBlank()) ? "" : LocalDate.parse(fulDateVal).toString() + " " + fulDateTimeVal;
                     newRef.setAddedDate(Timestamp.valueOf((dateTimeVal.length() != 8)
                             ? newAddedDate + ":00" : newAddedDate).toInstant());
                     if (fulDateVal == null || fulDateVal.isBlank()) {
@@ -417,13 +418,12 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
                     exit.setContentText("Dodano nowe skierowanie.");
                     exit.showAndWait();
 
-                    this.getParentController().goToView(MainWindowController.Views.REFERRALS, targetPatient);
+                    this.getParentController().goToView(ReferralsView.class, targetPatient);
                     return;
                 }
             }
             editState.setValue(!editState.getValue());
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
             transaction = session.getTransaction();
             if (transaction.isActive()) transaction.rollback();
             Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -432,6 +432,9 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
             alert.setContentText("Poprawne formaty: gg:mm lub gg:mm:ss");
             alert.showAndWait();
         } catch (DateTimeParseException d) {
+            d.printStackTrace();
+            transaction = session.getTransaction();
+            if (transaction.isActive()) transaction.rollback();
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Błąd zapisu");
             alert.setHeaderText("Niepoprawny format daty.");
@@ -463,8 +466,8 @@ public class ReferralDetailsView extends ChildControllerBase<MainWindowControlle
             exit.showAndWait();
 
             if (targetPatient!=null) {
-                this.getParentController().goToView(MainWindowController.Views.REFERRALS, targetPatient);
-            } else this.getParentController().goToViewRaw(MainWindowController.Views.REFERRALS);
+                this.getParentController().goToView(ReferralsView.class, targetPatient);
+            } else this.getParentController().goToViewRaw(ReferralsView.class);
         } else {
             alert.close();
         }

@@ -25,14 +25,14 @@ import org.hibernate.jpa.TypedParameterValue;
 import org.hibernate.query.Query;
 import org.hibernate.type.StandardBasicTypes;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
-import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.utils.ChildControllerBase;
 import pl.edu.ur.pz.clinicapp.utils.DateUtils;
 import pl.edu.ur.pz.clinicapp.utils.ReportObject;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewController;
+import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
 import java.awt.*;
 import java.io.*;
@@ -49,7 +49,7 @@ import java.util.*;
 /**
  * View controller to edit, delete or display details of a {@link Prescription}.
  */
-public class PrescriptionDetailsView extends ChildControllerBase<MainWindowController> implements Initializable {
+public class PrescriptionDetailsView extends ViewControllerBase implements Initializable {
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
      * Elements and initialization
@@ -98,6 +98,11 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
      */
     public static void setEditState(boolean editState) {
         PrescriptionDetailsView.editState.set(editState);
+    }
+
+    @Override
+    public boolean onNavigation(Class<? extends ViewController> which, Object... context) {
+        return !getEditState() || exitConfirm();
     }
 
     /**
@@ -244,9 +249,9 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
     }
 
     /**
-     * Popluates the view from given context.
+     * Populates the view from given context.
      * <p>
-     * If no arguemnts are given, the view will show empty values.
+     * If no arguments are given, the view will show empty values.
      *
      * <ol>
      *     <li>First argument can specify {@link Mode} /li>
@@ -300,13 +305,13 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
             if (exitConfirm()) {
                 editState.setValue(!editState.getValue());
                 if (isTarget) {
-                    this.getParentController().goToView(MainWindowController.Views.PRESCRIPTIONS, targetPatient);
-                } else this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
+                    this.getParentController().goToView(PrescriptionsView.class, targetPatient);
+                } else this.getParentController().goToViewRaw(PrescriptionsView.class);
             }
         } else {
             if (isTarget) {
-                this.getParentController().goToView(MainWindowController.Views.PRESCRIPTIONS, targetPatient);
-            } else this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
+                this.getParentController().goToView(PrescriptionsView.class, targetPatient);
+            } else this.getParentController().goToViewRaw(PrescriptionsView.class);
         }
     }
 
@@ -330,11 +335,11 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
     @Override
     public void refresh() {
         if (getMode() == Mode.DETAILS) {
-            doctorTextField.setText(prescription.getDoctorName());
+            doctorTextField.setText(prescription.getAddedBy().getDisplayName());
             notesTextField.setText(prescription.getNotes());
             tagsTextField.setText(prescription.getStringTags());
             govIdTextField.setText(prescription.getGovernmentId());
-            patientTextField.setText(prescription.getPatientName());
+            patientTextField.setText(prescription.getPatient().getDisplayName());
             Instant instant = prescription.getAddedDate();
             LocalDate date = instant.atZone(ZoneId.systemDefault()).toLocalDate();
             addedDatePicker.setValue(date);
@@ -346,7 +351,8 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
     }
 
     /**
-     *
+     * According to current edit state sets fields editable or saves entered data (edits chosen {@link Prescription}
+     * or creates a new one).
      */
     @FXML
     public void editSave() {
@@ -407,7 +413,7 @@ public class PrescriptionDetailsView extends ChildControllerBase<MainWindowContr
 
                     if(showAlert(Alert.AlertType.CONFIRMATION, "Dodawanie recepty",
                             "Pomyślnie dodano receptę", "Kod recepty: " + newPr.getGovernmentId())){
-                        this.getParentController().goToViewRaw(MainWindowController.Views.PRESCRIPTIONS);
+                        this.getParentController().goToViewRaw(PrescriptionsView.class);
                     }
                     return;
                 }

@@ -4,16 +4,9 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Date;
 
 @NamedNativeQueries(
         {
-//                @NamedNativeQuery(
-//                        name = "findUsersReferrals",
-//                        query = "SELECT * FROM referrals R INNER JOIN patients P ON R.patient_id=P.id "
-//                                + "INNER JOIN users U on U.id = P.id WHERE U.internal_name = :uname",
-//                        resultClass = Referral.class
-//                ),
                 @NamedNativeQuery(
                         name = "editReferral",
                         query = "UPDATE referrals "
@@ -67,13 +60,6 @@ public class Referral extends MedicalHistoryEntry {
      */
     public Doctor getDoctor() {
         return getAddedBy().asDoctor();
-    }
-
-    /**
-     * Name and surname of the doctor who created the referral (displayed in referrals list).
-     */
-    public String getDoctorName() {
-        return this.getAddedBy().getDisplayName();
     }
 
     /**

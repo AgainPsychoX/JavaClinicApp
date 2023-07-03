@@ -1,5 +1,7 @@
 package pl.edu.ur.pz.clinicapp;
 
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -9,28 +11,18 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import org.hibernate.exception.GenericJDBCException;
-import org.hibernate.service.spi.ServiceException;
 import pl.edu.ur.pz.clinicapp.dialogs.LoginDialog;
-import pl.edu.ur.pz.clinicapp.dialogs.RegisterDialog;
 import pl.edu.ur.pz.clinicapp.localization.JavaFxBuiltInsLocalizationFix;
 import pl.edu.ur.pz.clinicapp.models.User;
-import pl.edu.ur.pz.clinicapp.views.PrescriptionDetailsView;
-import pl.edu.ur.pz.clinicapp.utils.ExampleDataSeeder;
-import pl.edu.ur.pz.clinicapp.views.ReferralDetailsView;
 
+import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
+import javax.persistence.PersistenceException;
 import javax.security.auth.login.LoginException;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
@@ -41,21 +33,8 @@ import static pl.edu.ur.pz.clinicapp.utils.OtherUtils.linkStageSizeToPane;
 public class ClinicApplication extends Application {
     private static final Logger logger = Logger.getLogger(ClinicApplication.class.getName());
 
-    private Properties properties;
-    private EntityManagerFactory entityManagerFactory;
-    private EntityManager entityManager;
-    private User user;
-    private MainWindowController mainWindowController;
-
-    static private ClinicApplication instance;
-
-    /**
-     * Provides access to application-wide properties/configuration/settings.
-     * @return Properties object.
-     */
-    public static Properties getProperties() {
-        return instance.properties;
-    }
+    @Inject
+    static ApplicationContext context;
 
     /**
      * Provides access to the entity manager that allows operating persistable data,
@@ -63,7 +42,7 @@ public class ClinicApplication extends Application {
      * @return Entity manager.
      */
     public static EntityManager getEntityManager() {
-        return instance.entityManager;
+        return context.getEntityManager();
     }
 
     /**
@@ -71,14 +50,7 @@ public class ClinicApplication extends Application {
      * @return Currently logged-in user, or null if no one logged-in.
      */
     public static User getUser() {
-        if (instance.user == null) {
-            return null;
-        }
-        final var em = getEntityManager();
-        if (!em.contains(instance.user)) {
-            em.refresh(instance.user);
-        }
-        return instance.user;
+        return context.getUser();
     }
 
     /**
@@ -87,17 +59,11 @@ public class ClinicApplication extends Application {
      * @return Currently logged-in user
      */
     public static User requireUser() throws IllegalStateException {
-        final var user = getUser();
-        if (user == null) {
-            throw new IllegalStateException("");
-        }
-        return user;
+        return context.requireUser();
     }
 
     @Override
     public void start(Stage stage) throws Exception {
-        instance = this;
-
         // Load logging custom properties if any
         try (FileInputStream loggingPropertiesFile = new FileInputStream("logging.properties")) {
             LogManager.getLogManager().readConfiguration(loggingPropertiesFile);
@@ -108,20 +74,15 @@ public class ClinicApplication extends Application {
         }
         logger.finest("Hello!");
 
-        // Load app properties
-        try (InputStream inputStream = ClassLoader.getSystemResourceAsStream("app.default.properties")) {
-            final var defaults = new Properties();
-            defaults.load(inputStream);
-            properties = new Properties(defaults);
-        }
-        try (FileInputStream appPropertiesFile = new FileInputStream("app.properties")) {
-            properties.load(appPropertiesFile);
-        }
-        catch (FileNotFoundException e) {
-            // Ignore, defaults will be used.
-        }
+        final var injector = Guice.createInjector(new AbstractModule() {
+            @Override
+            protected void configure() {
+                bind(ApplicationContext.class).to(DefaultApplicationContext.class);
+            }
+        });
+        context = injector.getInstance(ApplicationContext.class);
 
-        final var locale = new Locale(properties.getProperty("locale"));
+        final var locale = context.getLocale();
         JavaFxBuiltInsLocalizationFix.injectLocalizationForJavaFxBuiltInControls(locale);
         Locale.setDefault(locale);
 
@@ -137,23 +98,23 @@ public class ClinicApplication extends Application {
         }
     }
 
-    private boolean tryRememberedLogin = true;
+    static private boolean tryRememberedLogin = true;
 
     private boolean waitForLogin() {
         final var dialog = tryRememberedLogin
                 ? new LoginDialog(
-                    properties.getProperty("login.remember.identity"),
-                    properties.getProperty("login.remember.password"))
+                    context.getProperties().getProperty("login.remember.identity"),
+                    context.getProperties().getProperty("login.remember.password"))
                 : new LoginDialog(); // without prefill with remembered stuff
         dialog.showAndWait();
-        if (user == null) {
+        if (getUser() == null) {
             Platform.exit();
             return false;
         }
         return true;
     }
 
-    private void handleUnexpectedDatabaseConnectionError(Exception e, String extraMessage) {
+    static private void handleUnexpectedDatabaseConnectionError(Exception e, String extraMessage) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setContentText("Wystąpił błąd w czasie łączenia do bazy danych.\n\n" +
                 (extraMessage == null ? "" : (extraMessage + "\n\n"))
@@ -164,18 +125,8 @@ public class ClinicApplication extends Application {
         System.exit(1);
     }
 
-    private void disconnectFromDatabase() {
-        // TODO: gracefully disconnect from the database (if connected)
-        if (entityManager != null) {
-            entityManager.close();
-        }
-        if (entityManagerFactory != null) {
-            entityManagerFactory.close();
-        }
-    }
-
     private boolean isSeedingAvailable() {
-        return !isStringNullOrBlank(properties.getProperty("seeding.username"));
+        return !isStringNullOrBlank(context.getProperties().getProperty("seeding.username"));
     }
 
     private boolean showConfirmSeedingDialog() {
@@ -194,39 +145,10 @@ public class ClinicApplication extends Application {
         return dialog.showAndWait().orElse(ButtonType.NO) == ButtonType.YES;
     }
 
-    private void seedDatabase() {
+    static private void seedDatabase() {
         // TODO: allow migration only (minimalist/structure only seeding - no example data)
-        disconnectFromDatabase();
-        logger.fine("----------------------------------------------------------------");
-        logger.info("Seeding database...");
         try {
-            // For seeding we need superuser and special setting, so we shadow default settings from `persistence.xml`.
-            entityManagerFactory = Persistence.createEntityManagerFactory("default", Map.ofEntries(
-                    Map.entry("hibernate.connection.username", properties.getProperty("seeding.username")),
-                    Map.entry("hibernate.connection.password", properties.getProperty("seeding.password")),
-                    Map.entry("hibernate.hbm2ddl.auto", "create")
-            ));
-            entityManager = entityManagerFactory.createEntityManager();
-
-            // Reconnect after running HBM2DDL & SQLs; required as Hibernate is blind after permissions changes
-            logger.finer("Reconnecting (planned)");
-            entityManager.close();
-            entityManagerFactory.close();
-            entityManagerFactory = Persistence.createEntityManagerFactory("default", Map.ofEntries(
-                    Map.entry("hibernate.connection.username", properties.getProperty("seeding.username")),
-                    Map.entry("hibernate.connection.password", properties.getProperty("seeding.password"))
-            ));
-            entityManager = entityManagerFactory.createEntityManager();
-
-            // Invoke example data seeder
-            long seed = new Random().nextLong();
-            final var seedString = properties.getProperty("seeding.seed");
-            if (!isStringNullOrBlank(seedString)) {
-                seed = Long.parseLong(seedString);
-            }
-            new ExampleDataSeeder(entityManager, seed).run();
-
-            logger.info("Finished seeding!");
+            context.seedDatabase();
         }
         catch (Exception e) {
             logger.log(Level.SEVERE, "Error seeding database!", e);
@@ -237,53 +159,37 @@ public class ClinicApplication extends Application {
             alert.showAndWait();
             System.exit(1);
         }
-        finally {
-            logger.fine("----------------------------------------------------------------");
-        }
     }
 
-    /**
-     * Connects to database anonymously, in order to fetch user details while logging in or view public data as guest.
-     */
-    private void connectToDatabaseAnonymously() {
-        disconnectFromDatabase();
+    static private void connectToDatabaseAnonymously() {
         try {
-            // For anonymous connect, the login details are used from  `persistence.xml` along other settings.
-            entityManagerFactory = Persistence.createEntityManagerFactory("default");
-            entityManager = entityManagerFactory.createEntityManager();
+            context.connectToDatabaseAnonymously();
         }
-        catch (ServiceException e) {
+        catch (PersistenceException e) {
             handleUnexpectedDatabaseConnectionError(e, "Sprawdź, czy dla zadanych ustawień aplikacji " +
                     "baza danych jest poprawnie skonfigurowana, uruchomiona i dostępna.");
         }
     }
 
-    private void connectToDatabaseAsUser(String emailOrPESEL, String password) throws LoginException {
+    static private void connectToDatabaseAsUser(String emailOrPESEL, String password) throws LoginException {
         try {
-            final var username = User.getDatabaseUsernameForInput(emailOrPESEL);
-            logger.fine("Database username for '%s' is '%s'".formatted(emailOrPESEL, username));
-
-            // We shadow default (anonymous) login details from `persistence.xml` with user specific ones.
-            final var emf = Persistence.createEntityManagerFactory("default", Map.ofEntries(
-                    Map.entry("hibernate.connection.username", username),
-                    Map.entry("hibernate.connection.password", password)
-            ));
-            final var em = emf.createEntityManager();
-
-            // Late replace to prevent reconnecting as anonymous on login failures and allow database username fetching
-            disconnectFromDatabase();
-            entityManagerFactory = emf;
-            entityManager = em;
+            context.connectToDatabaseAsUser(emailOrPESEL, password);
         }
-        catch (ServiceException e) {
-            if (e.getCause() instanceof GenericJDBCException genericJDBCException) {
-                final var text = genericJDBCException.getSQLException().toString();
-                if (text.contains("password") && text.contains("fail")) {
-                    throw new LoginException("Authentication failed");
-                }
-            }
+        catch (PersistenceException e) {
             handleUnexpectedDatabaseConnectionError(e, null);
         }
+    }
+
+    static public void logOut() {
+        connectToDatabaseAnonymously();
+        logger.info("Logged out");
+        tryRememberedLogin = false;
+    }
+
+    static public void logIn(String emailOrPESEL, String password) throws LoginException {
+        logger.info("Logging in as `%s`".formatted(emailOrPESEL));
+        connectToDatabaseAsUser(emailOrPESEL, password);
+        logger.info("Logged in");
     }
 
     private void spawnMainWindow() throws IOException {
@@ -294,33 +200,20 @@ public class ClinicApplication extends Application {
         stage.setTitle("ClinicApp");
         stage.setScene(scene);
         linkStageSizeToPane(stage, pane);
-        mainWindowController = loader.getController();
 //        stage.setWidth(pane.getMinWidth());
 //        stage.setHeight(pane.getMinHeight());
+
+        final MainWindowController mainWindowController = loader.getController();
         stage.setOnCloseRequest(we -> {
-            if((ReferralDetailsView.getEditState() && !ReferralDetailsView.exitConfirm())
-            || (PrescriptionDetailsView.getEditState() && !PrescriptionDetailsView.exitConfirm())
-            || (RegisterDialog.getEditState() && !RegisterDialog.exitConfirm())){
+            if (mainWindowController.isPreventingClose()) {
+                logger.fine("Main window closing cancelled");
                 we.consume();
-            }else {
-                logOut();
+                return;
             }
+
+            logOut();
         });
         stage.showAndWait();
-    }
-
-    static public void logOut() {
-        instance.user = null;
-        instance.connectToDatabaseAnonymously();
-        logger.info("Logged out");
-        instance.tryRememberedLogin = false;
-    }
-
-    static public void logIn(String emailOrPESEL, String password) throws LoginException {
-        logger.info("Logging in as `%s`".formatted(emailOrPESEL));
-        instance.connectToDatabaseAsUser(emailOrPESEL, password);
-        instance.user = User.getCurrentFromConnection();
-        logger.info("Logged in");
     }
 
     public static void main(String[] args) {
