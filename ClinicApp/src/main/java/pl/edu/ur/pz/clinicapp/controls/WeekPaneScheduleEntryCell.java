@@ -44,6 +44,10 @@ public class WeekPaneScheduleEntryCell<T extends WeekPane.Entry> extends WeekPan
                         getStyleClass().add(simpleEntry.getType().name().toLowerCase());
                     }
                 }
+
+                if (scheduleEntry.getDuration().toMinutes() < 15) {
+                    getStyleClass().add("small");
+                }
             }
         }
     }
