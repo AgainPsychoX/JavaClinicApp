@@ -1,0 +1,60 @@
+
+/* This file should contain default styling for WeekPane component.
+ * Application & view specific styles should go else where.
+ */
+
+.week-pane .scroll-pane {
+    -fx-background-color: transparent;
+}
+.week-pane .header.grid {
+    -fx-border-style: solid;
+    -fx-border-color: #aaa;
+    -fx-border-width: 0 0 1 0;
+
+    -fx-background-color: linear-gradient(from 0% 0% to 0% 100%, rgba(0, 0, 0, 0.0), rgba(0, 0, 0, 0.17));
+    -fx-background-position: top;
+    -fx-background-repeat: no-repeat;
+    -fx-background-size: 100% 16px;
+}
+.week-pane .rows.grid .row {
+    -fx-border-color: #ccc;
+    -fx-border-width: 0 0 1 0;
+    -fx-border-style: solid;
+}
+.week-pane .rows.grid .column.day {
+    -fx-border-color: #ccc;
+    -fx-border-width: 0 0 0 1;
+    -fx-border-style: solid;
+}
+.week-pane .entry {
+    -entry-color: #A4C2FD;
+    -fx-background-color: -entry-color;
+
+    -fx-border-color: -entry-color -entry-color #ccc #ccc;
+    -fx-border-width: 1 1 1 1;
+    -fx-border-style: solid;
+
+    -fx-alignment: top-center;
+}
+
+.week-pane .free-selector {
+    -fx-border-color: black;
+    -fx-border-width: 1 1 1 1;
+    -fx-border-style: dashed;
+}
+
+.week-pane .entry:selected {
+    -fx-background-color: derive(-entry-color, +20%);
+
+    -fx-border-color: black;
+    -fx-border-width: 1 1 1 1;
+    -fx-border-style: dashed;
+}
+
+.week-pane .entry.selection {
+    -entry-color: rgba(222, 222, 222, 0.5);
+
+    -fx-border-color: black;
+    -fx-border-width: 1 1 1 1;
+    -fx-border-style: dashed;
+}

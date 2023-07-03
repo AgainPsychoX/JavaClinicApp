@@ -1,0 +1,82 @@
+
+/* Fancy primary colored buttons */
+.my-primary-button {
+    -fx-background-color: #4D89FF;
+    -fx-padding: 8px;
+    -fx-pref-width: 200px;
+    -fx-text-fill: white;
+    -fx-cursor: hand;
+}
+.my-primary-button:hover {
+    -fx-background-color: #2a72ff;
+}
+
+
+
+/* Fix for scroll panes always having gray background */
+.scroll-pane > .viewport {
+   -fx-background-color: transparent;
+}
+
+
+
+/* Reset default action buttons color */
+.reset-default-button-color:default {
+    -fx-base: #ececec;
+}
+
+
+/* Navigation related stuff */
+/* Note: Navigation background color: #A4C2FD */
+.navigation-menu-button {
+    -fx-text-fill: white;
+    -fx-max-width: Infinity;
+    -fx-background-color: transparent;
+    -fx-font-size: 16px;
+}
+.navigation-menu-button:hover {
+    -fx-background-color: #9fb6e3;
+}
+.navigation-menu-button.active {
+    -fx-background-color: #284C92;
+}
+.navigation-menu-button.log-out {
+    -fx-text-fill: #ec0000;
+}
+
+
+
+/* Util to make prompt text (shown when field is empty/null) look like regular */
+.prompt-text-as-regular .text-field {
+    -fx-prompt-text-fill: black;
+}
+
+
+
+/* TODO: encapsulate this one to areas it applies only to avoid weird styles elsewhere */
+.text-input:readonly, .text-area:readonly .content {
+    -fx-background-color: #d3d3d3;
+}
+/* ... */
+
+.back-text:hover {
+    -fx-fill: #2a72ff;
+}
+
+
+
+/* Week pane coloring (for `Schedule.Entry.Type`s)  */
+.week-pane .entry.open              { -entry-color: #c2ffbd; }
+.week-pane .entry.closed            { -entry-color: #ff9191; }
+.week-pane .entry.vacation          { -entry-color: #ffa6e1; }
+.week-pane .entry.holidays          { -entry-color: #fffa91; }
+.week-pane .entry.sick_leave        { -entry-color: #ffbb91; }
+.week-pane .entry.emergency_leave   { -entry-color: #ffbb91; }
+.week-pane .entry.appointment       { -entry-color: #a4c2fd; }
+.week-pane .entry.other.appointment { -entry-color: #d4d4d4; }
+.week-pane .entry.extra             { -entry-color: #abfda4; }
+.week-pane .entry.other             { -entry-color: #d4d4d4; }
+
+.timetable-view .week-pane .entry { -entry-color: #7bff70; }
+
+.week-pane .entry.small { -fx-font-size: 9px ;}

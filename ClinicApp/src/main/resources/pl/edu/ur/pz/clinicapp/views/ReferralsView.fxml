@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<VBox fx:id="vBox" prefHeight="540.0" prefWidth="600.0" spacing="8.0" stylesheets="@../common.css" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="pl.edu.ur.pz.clinicapp.views.ReferralsView">
+   <children>
+      <HBox fx:id="backBox">
+         <children>
+            <Text fx:id="backText" fill="#4d89ff" onMouseClicked="#onBackClick" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="back-text" text="&lt;  Powrót do pacjenta" wrappingWidth="566.3203277587891">
+               <font>
+                  <Font name="System Bold" size="16.0" />
+               </font>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Text>
+         </children>
+      </HBox>
+      <HBox alignment="CENTER_LEFT">
+         <children>
+            <HBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+               <children>
+                  <ComboBox fx:id="filter" onAction="#changeFilter" prefWidth="254.0">
+                  </ComboBox>
+                  <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+                     <children>
+                        <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Szukaj: " />
+                        <TextField fx:id="searchTextField" onAction="#searchAction" />
+                     </children>
+                  </HBox>
+               </children>
+            </HBox>
+         </children>
+      </HBox>
+      <TableView fx:id="table" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
+         <columns>
+            <TableColumn fx:id="dateCol" maxWidth="200.0" minWidth="70.0" prefWidth="105.0" text="Data wystawienia" />
+            <TableColumn fx:id="fulDateCol" maxWidth="200.0" minWidth="15.399993896484375" prefWidth="105.0" text="Data realizacji" />
+            <TableColumn fx:id="patientCol" maxWidth="200.0" minWidth="15.399993896484375" prefWidth="105.0" text="Pacjent" />
+            <TableColumn fx:id="doctorCol" maxWidth="200.0" minWidth="26.4000244140625" prefWidth="120.0" text="Lekarz skierowujący" />
+            <TableColumn fx:id="interestCol" maxWidth="200.0" minWidth="4.399993896484375" prefWidth="70.0" text="Poradnia" />
+            <TableColumn fx:id="notesCol" maxWidth="200.0" minWidth="70.0" prefWidth="-1.0" text="Notatki" />
+            <TableColumn fx:id="feedbackCol" maxWidth="200.0" minWidth="70.0" prefWidth="-1.0" text="Opinia" />
+            <TableColumn fx:id="tagsCol" maxWidth="200.0" minWidth="70.0" prefWidth="-1.0" text="Tagi" />
+            <TableColumn fx:id="codeCol" maxWidth="200.0" minWidth="70.0" prefWidth="-1.0" text="Kod" />
+         </columns>
+      </TableView>
+      <HBox alignment="CENTER_LEFT">
+         <children>
+            <HBox fx:id="buttonBox" alignment="BOTTOM_CENTER" spacing="8.0" HBox.hgrow="ALWAYS">
+               <children>
+                  <Button fx:id="detailsButton" disable="true" mnemonicParsing="false" onAction="#displayDetails" prefWidth="200.0" styleClass="my-primary-button" text="Szczegóły">
+                     <padding>
+                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                     </padding>
+                  </Button>
+                  <Button fx:id="addButton" layoutX="194.0" layoutY="10.0" mnemonicParsing="false" onAction="#addReferral" prefWidth="200.0" styleClass="my-primary-button" text="Dodaj">
+                     <padding>
+                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                     </padding>
+                  </Button>
+                  <Button fx:id="printButton" mnemonicParsing="false" onAction="#printReferrals" prefWidth="200.0" styleClass="my-primary-button" text="Drukuj ">
+                     <padding>
+                        <Insets bottom="8.0" left="8.0" right="8.0" top="8.0" />
+                     </padding>
+                  </Button>
+               </children>
+            </HBox>
+         </children>
+      </HBox>
+   </children>
+   <padding>
+      <Insets bottom="16.0" left="16.0" right="16.0" top="16.0" />
+   </padding>
+</VBox>
