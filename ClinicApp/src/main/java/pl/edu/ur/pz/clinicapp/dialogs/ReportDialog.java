@@ -19,6 +19,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
+import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
@@ -113,8 +114,8 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
                 configuration.getLocale());
 
         try {
-            File templatesDirectory = new File(templatesURL.getPath());
-            configuration.setDirectoryForTemplateLoading(templatesDirectory);
+            String templatesPath = templatesURL.getFile();
+            configuration.setDirectoryForTemplateLoading(new File(templatesPath));
             configuration.setSharedVariable("bundle", resourceBundle);
             configuration.setSharedVariable("DateUtils", new DateUtils());
         } catch (IOException | TemplateModelException e) {
