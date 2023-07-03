@@ -192,7 +192,7 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
      *     <li>{@link pl.edu.ur.pz.clinicapp.views.ReferralsView} matches {@link Referral} fields</li>
      *     <li>{@link pl.edu.ur.pz.clinicapp.views.PatientsView} matches {@link Patient} fields</li>
      * </ul>
-     * Adds translations from @see <a href="pl/edu/ur/pz/clinicapp/localization/strings_pl.properties"
+     * Adds translations from {@see <a href="pl/edu/ur/pz/clinicapp/localization/strings_pl.properties>}"
      */
     @Override
     public void refresh() {

@@ -5,15 +5,13 @@ import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 
 import javax.persistence.*;
 import java.time.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 import static pl.edu.ur.pz.clinicapp.utils.TemporalUtils.alignDateToWeekStart;
 
 /**
- * Utility class that eases manipulation of user schedule & timetables.
+ * Utility class that eases manipulation of user schedule and timetables.
  */
 public class Schedule {
     protected UserReference userReference;
@@ -29,6 +27,15 @@ public class Schedule {
         final var instance = new Schedule();
         instance.userReference = user;
         return instance;
+    }
+
+    protected List<Timetable> cachedTimetables;
+
+    public List<Timetable> getCachedTimetables() {
+        if (cachedTimetables == null) {
+            cachedTimetables = Timetable.forUser(userReference); // natural order
+        }
+        return Collections.unmodifiableList(cachedTimetables);
     }
 
     /**
