@@ -16,6 +16,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
@@ -34,6 +35,7 @@ public class DefaultApplicationContext implements ApplicationContext {
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
     Properties properties;
+    Locale locale;
 
     @Override
     public Properties getProperties() {
@@ -60,6 +62,14 @@ public class DefaultApplicationContext implements ApplicationContext {
             logger.warning("Error loading properties: " + e.getMessage());
             Platform.exit();
         }
+
+        locale = new Locale(getProperties().getProperty("locale"));
+        logger.fine("Selected locale: " + locale);
+    }
+
+    @Override
+    public Locale getLocale() {
+        return locale;
     }
 
     /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */

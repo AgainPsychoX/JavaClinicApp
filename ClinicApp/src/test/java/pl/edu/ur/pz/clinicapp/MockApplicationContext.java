@@ -19,11 +19,6 @@ public class MockApplicationContext implements ApplicationContext {
     }
 
     @Override
-    public Locale getLocale() {
-        return ApplicationContext.super.getLocale();
-    }
-
-    @Override
     public EntityManager getEntityManager() {
         return null;
     }
