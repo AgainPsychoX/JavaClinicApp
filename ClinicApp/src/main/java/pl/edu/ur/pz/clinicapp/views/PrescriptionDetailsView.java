@@ -482,7 +482,10 @@ public class PrescriptionDetailsView extends ViewControllerBase implements Initi
             File file = fileChooser.showSaveDialog(new Stage());
 
             Template template = configuration.getTemplate("prescriptionDetailsTemplate.ftl", "UTF-8");
-            File outputFile = new File("output.html");
+            File tempDir = new File(System.getProperty("java.io.tmpdir"), "templates");
+            tempDir.mkdirs();
+
+            File outputFile = new File(tempDir, "output.html");
             Writer writer = new FileWriter(outputFile);
 
             Map<String, Object> dataModel = new HashMap<>();
@@ -493,7 +496,7 @@ public class PrescriptionDetailsView extends ViewControllerBase implements Initi
 
             writer.close();
 
-            HtmlConverter.convertToPdf(new FileInputStream("output.html"),
+            HtmlConverter.convertToPdf(new FileInputStream(new File(tempDir, "output.html")),
                     new FileOutputStream(file), properties);
 
             if (!outputFile.delete()) {

@@ -434,7 +434,10 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
 
                 Template template = configuration.getTemplate("referralsTemplate.ftl", "UTF-8");
 
-                File outputFile = new File("output.html");
+                File tempDir = new File(System.getProperty("java.io.tmpdir"), "templates");
+                tempDir.mkdirs();
+
+                File outputFile = new File(tempDir, "output.html");
                 Writer writer = new FileWriter(outputFile);
 
                 Map<String, Object> dataModel = new HashMap<>();
@@ -447,8 +450,8 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
 
                 template.process(dataModel, writer);
                 writer.close();
-                HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file),
-                        properties);
+                HtmlConverter.convertToPdf(new FileInputStream(new File(tempDir, "output.html")),
+                        new FileOutputStream(file), properties);
 
                 if(!outputFile.delete())
                     throw new RuntimeException();
@@ -484,7 +487,9 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
 
             Template template = configuration.getTemplate("usersTemplate.ftl", "UTF-8");
 
-            File outputFile = new File("output.html");
+            File tempDir = new File(System.getProperty("java.io.tmpdir"), "templates");
+            tempDir.mkdirs();
+            File outputFile = new File(tempDir, "output.html");
             Writer writer = new FileWriter(outputFile);
 
             Map<String, Object> dataModel = new HashMap<>();
@@ -493,9 +498,8 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
 
             template.process(dataModel, writer);
             writer.close();
-            HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file),
-                    properties);
-
+            HtmlConverter.convertToPdf(new FileInputStream(new File(tempDir, "output.html")),
+                    new FileOutputStream(file), properties);
             if(!outputFile.delete())
                 throw new RuntimeException();
             showAlert(Alert.AlertType.INFORMATION, "Generowanie raportu", "Utworzono raport", "");
@@ -532,7 +536,10 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
                 File file = fileChooser.showSaveDialog(new Stage());
                 Template template = configuration.getTemplate("prescriptionsTemplate.ftl");
 
-                File outputFile = new File("output.html");
+                File tempDir = new File(System.getProperty("java.io.tmpdir"), "templates");
+                tempDir.mkdirs();
+
+                File outputFile = new File(tempDir, "output.html");
                 Writer writer = new FileWriter(outputFile);
 
                 Map<String, Object> dataModel = new HashMap<>();
@@ -545,8 +552,8 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
 
                 template.process(dataModel, writer);
                 writer.close();
-                HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file),
-                        properties);
+                HtmlConverter.convertToPdf(new FileInputStream(new File(tempDir, "output.html")),
+                        new FileOutputStream(file), properties);
 
                 if(!outputFile.delete())
                     throw new RuntimeException();
@@ -609,7 +616,10 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
 
             Template template = configuration.getTemplate("timetableTemplate.ftl");
 
-            File outputFile = new File("output.html");
+            File tempDir = new File(System.getProperty("java.io.tmpdir"), "templates");
+            tempDir.mkdirs();
+
+            File outputFile = new File(tempDir, "output.html");
             Writer writer = new FileWriter(outputFile);
 
             Map<String, Object> dataModel = new HashMap<>();
@@ -622,8 +632,8 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
 
             writer.close();
 
-            HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file),
-                    properties);
+            HtmlConverter.convertToPdf(new FileInputStream(new File(tempDir, "output.html")),
+                    new FileOutputStream(file), properties);
 
             if(!outputFile.delete())
                 throw new RuntimeException();
