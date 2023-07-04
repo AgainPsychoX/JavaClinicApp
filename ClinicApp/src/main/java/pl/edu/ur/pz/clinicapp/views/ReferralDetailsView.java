@@ -464,7 +464,7 @@ public class ReferralDetailsView extends ViewControllerBase {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Błąd zapisu");
             alert.setHeaderText("Niepoprawny format daty.");
-            alert.setContentText("Poprawny format: dd.mm.rrrr");
+            alert.setContentText("Poprawny format: rrrr-mm-dd");
             alert.showAndWait();
         }
     }
