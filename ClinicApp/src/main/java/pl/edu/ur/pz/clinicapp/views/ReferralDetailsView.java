@@ -180,7 +180,7 @@ public class ReferralDetailsView extends ViewControllerBase {
                 if (after) {
                     if (ClinicApplication.getUser().getRole() == User.Role.NURSE) {
                         editButton.setText("Zapisz");
-                        if(ref == null || ref.getFulfilmentDate() == null) {
+                        if(ref == null || ref.getFulfilmentDate() == null || (currMode != RefMode.DETAILS)) {
                             fulDatePicker.setEditable(true);
                             fulDatePicker.setDisable(false);
                             fulDateTimeField.setEditable(true);
@@ -192,7 +192,7 @@ public class ReferralDetailsView extends ViewControllerBase {
                         nursesCheck.setDisable(true);
                     } else {
                         editButton.setText("Zapisz");
-                        if(ref == null || ref.getFulfilmentDate() == null) {
+                        if(ref == null || ref.getFulfilmentDate() == null || (currMode != RefMode.DETAILS)) {
                             fulDatePicker.setEditable(true);
                             fulDatePicker.setDisable(false);
                             fulDateTimeField.setEditable(true);
