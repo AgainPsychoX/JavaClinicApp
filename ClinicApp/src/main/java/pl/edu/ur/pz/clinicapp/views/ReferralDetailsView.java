@@ -34,18 +34,19 @@ import pl.edu.ur.pz.clinicapp.utils.DateUtils;
 import pl.edu.ur.pz.clinicapp.utils.views.ViewController;
 import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
+import javax.persistence.TemporalType;
 import java.awt.*;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * View controller to edit, delete or display details of a {@link Referral}.
@@ -56,6 +57,7 @@ public class ReferralDetailsView extends ViewControllerBase {
      * Available window modes (details of existing referral or creation of a new one).
      */
     public enum RefMode {DETAILS, CREATE}
+
     private RefMode currMode;
     @FXML
     protected CheckBox nursesCheck;
@@ -107,6 +109,7 @@ public class ReferralDetailsView extends ViewControllerBase {
      */
     private static BooleanProperty editState = new SimpleBooleanProperty(false);
     private Patient targetPatient;
+    private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
     public static boolean getEditState() {
         return editState.getValue();
@@ -141,12 +144,12 @@ public class ReferralDetailsView extends ViewControllerBase {
         if (editState.getValue()) {
             if (exitConfirm()) {
                 editState.setValue(!editState.getValue());
-                if (targetPatient!=null) {
+                if (targetPatient != null) {
                     this.getParentController().goToView(ReferralsView.class, targetPatient);
                 } else this.getParentController().goToViewRaw(ReferralsView.class);
             }
         } else {
-            if (targetPatient!=null) {
+            if (targetPatient != null) {
                 this.getParentController().goToView(ReferralsView.class, targetPatient);
             } else this.getParentController().goToViewRaw(ReferralsView.class);
         }
@@ -167,20 +170,21 @@ public class ReferralDetailsView extends ViewControllerBase {
      */
     @Override
     public void populate(Object... context) {
-        if(context.length > 2) targetPatient = ((Patient) context[2]);
+        if (context.length > 2) targetPatient = ((Patient) context[2]);
+        datePicker.setEditable(false);
+        datePicker.setDisable(true);
+        dateTimeField.setEditable(false);
         editState.addListener(new ChangeListener<Boolean>() {
             @Override
             public void changed(ObservableValue<? extends Boolean> observableValue, Boolean before, Boolean after) {
                 if (after) {
                     if (ClinicApplication.getUser().getRole() == User.Role.NURSE) {
                         editButton.setText("Zapisz");
-                        fulDatePicker.setEditable(true);
-                        fulDatePicker.setDisable(false);
-                        fulDateTimeField.setEditable(true);
-                        datePicker.setEditable(false);
-                        datePicker.setDisable(true);
-                        dateTimeField.setEditable(false);
-                        interestField.setEditable(false);
+                        if(ref == null || ref.getFulfilmentDate() == null) {
+                            fulDatePicker.setEditable(true);
+                            fulDatePicker.setDisable(false);
+                            fulDateTimeField.setEditable(true);
+                        }
                         notesArea.setEditable(false);
                         feedbackArea.setEditable(true);
                         codeField.setEditable(false);
@@ -188,12 +192,11 @@ public class ReferralDetailsView extends ViewControllerBase {
                         nursesCheck.setDisable(true);
                     } else {
                         editButton.setText("Zapisz");
-                        fulDatePicker.setEditable(true);
-                        fulDatePicker.setDisable(false);
-                        fulDateTimeField.setEditable(true);
-                        datePicker.setEditable(true);
-                        datePicker.setDisable(false);
-                        dateTimeField.setEditable(true);
+                        if(ref == null || ref.getFulfilmentDate() == null) {
+                            fulDatePicker.setEditable(true);
+                            fulDatePicker.setDisable(false);
+                            fulDateTimeField.setEditable(true);
+                        }
                         if (!nursesCheck.isSelected() || currMode == RefMode.CREATE) interestField.setEditable(true);
                         notesArea.setEditable(true);
                         feedbackArea.setEditable(true);
@@ -206,9 +209,6 @@ public class ReferralDetailsView extends ViewControllerBase {
                     fulDatePicker.setEditable(false);
                     fulDatePicker.setDisable(true);
                     fulDateTimeField.setEditable(false);
-                    datePicker.setEditable(false);
-                    datePicker.setDisable(true);
-                    dateTimeField.setEditable(false);
                     interestField.setEditable(false);
                     notesArea.setEditable(false);
                     feedbackArea.setEditable(false);
@@ -253,14 +253,18 @@ public class ReferralDetailsView extends ViewControllerBase {
             }
             refresh();
         } else {
+            fulDatePicker.setEditable(true);
+            fulDatePicker.setDisable(false);
+            fulDateTimeField.setEditable(true);
+
             buttonBox.getChildren().add(editButton);
             if (!interestBox.getChildren().contains(nursesCheck)) interestBox.getChildren().add(nursesCheck);
 
             doctorField.setText(ClinicApplication.getUser().getDisplayName());
             fulDatePicker.setValue(null);
             fulDateTimeField.setText(null);
-            datePicker.setValue(null);
-            dateTimeField.setText(null);
+            datePicker.setValue(LocalDate.now());
+            dateTimeField.setText(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")));
             interestField.setText(null);
             notesArea.setText(null);
             feedbackArea.setText(null);
@@ -299,7 +303,6 @@ public class ReferralDetailsView extends ViewControllerBase {
         feedbackArea.setText(ref.getFeedback());
         codeField.setText(ref.getGovernmentId());
         tagsField.setText(ref.getStringTags());
-//        tagsField.setText(ref.getStringTags());
     }
 
     /**
@@ -329,14 +332,18 @@ public class ReferralDetailsView extends ViewControllerBase {
                     } else {
                         String newAddedDate = LocalDate.parse(dateVal).toString() + " " + dateTimeVal;
                         String newFulDate = (fulDateVal == null || fulDateVal.isBlank()) ? "" : LocalDate.parse(fulDateVal).toString() + " " + fulDateTimeVal;
-                        editQuery.setParameter("addedDate", Timestamp.valueOf((dateTimeVal.length() != 8)
-                                ? newAddedDate + ":00" : newAddedDate));
+                        Timestamp addedDate = Timestamp.valueOf((dateTimeVal.length() != 8)
+                                ? newAddedDate + ":00" : newAddedDate);
+                        Timestamp fulfilmentDate;
+                        editQuery.setParameter("addedDate", addedDate);
                         if (newFulDate.isBlank()) {
-                            editQuery.setParameter("fulfilmentDate",
-                                    new TypedParameterValue(StandardBasicTypes.CALENDAR_DATE, null));
+                            editQuery.setParameter("fulfilmentDate", (Instant) null, TemporalType.TIMESTAMP);
                         } else {
-                            editQuery.setParameter("fulfilmentDate", Timestamp.valueOf((fulDateTimeVal.length() != 8)
-                                    ? newFulDate + ":00" : newFulDate));
+                            fulfilmentDate = Timestamp.valueOf((fulDateTimeVal.length() != 8)
+                                    ? newFulDate + ":00" : newFulDate);
+                            if (addedDate.compareTo(fulfilmentDate) >= 0)
+                                throw new IllegalArgumentException("IllegalFulDate");
+                            editQuery.setParameter("fulfilmentDate", fulfilmentDate);
                         }
                         editQuery.setParameter("pointOfInterest", (interestField.getText() == null
                                 || interestField.getText().isBlank())
@@ -381,19 +388,24 @@ public class ReferralDetailsView extends ViewControllerBase {
                     alert.showAndWait();
                     editState.setValue(!editState.getValue());
                 } else {
-                    transaction = session.beginTransaction();
-                    Referral newRef = new Referral();
-                    newRef.setAddedBy(ClinicApplication.getUser());
                     String newAddedDate = LocalDate.parse(dateVal).toString() + " " + dateTimeVal;
                     String newFulDate = (fulDateVal == null || fulDateVal.isBlank()) ? "" : LocalDate.parse(fulDateVal).toString() + " " + fulDateTimeVal;
-                    newRef.setAddedDate(Timestamp.valueOf((dateTimeVal.length() != 8)
-                            ? newAddedDate + ":00" : newAddedDate).toInstant());
+                    Timestamp addedDate = Timestamp.valueOf((dateTimeVal.length() != 8)
+                            ? newAddedDate + ":00" : newAddedDate);
+                    Timestamp fulfilmentDate;
+                    Referral newRef = new Referral();
                     if (fulDateVal == null || fulDateVal.isBlank()) {
                         newRef.setFulfilmentDate(null);
                     } else {
-                        newRef.setFulfilmentDate(Timestamp.valueOf((fulDateTimeVal.length() != 8)
-                                ? newFulDate + ":00" : newFulDate).toInstant());
+                        fulfilmentDate = Timestamp.valueOf((fulDateTimeVal.length() != 8)
+                                ? newFulDate + ":00" : newFulDate);
+                        if (addedDate.compareTo(fulfilmentDate) >= 0) {
+                            throw new IllegalArgumentException("IllegalFulDate");
+                        }
+
+                        newRef.setFulfilmentDate(fulfilmentDate.toInstant());
                     }
+                    newRef.setAddedDate(addedDate.toInstant());
                     newRef.setPointOfInterest((interestField.getText() == null
                             || interestField.getText().isBlank())
                             ? null : interestField.getText().trim());
@@ -410,8 +422,12 @@ public class ReferralDetailsView extends ViewControllerBase {
                             || codeField.getText().isBlank())
                             ? null : codeField.getText().trim());
                     newRef.setPatient(targetPatient);
+                    newRef.setAddedBy(ClinicApplication.getUser());
+
+                    transaction = session.beginTransaction();
                     session.persist(newRef);
                     transaction.commit();
+
                     editState.setValue(!editState.getValue());
 
                     exit.setTitle("Dodawnaie skierowania");
@@ -425,12 +441,21 @@ public class ReferralDetailsView extends ViewControllerBase {
             }
             editState.setValue(!editState.getValue());
         } catch (IllegalArgumentException e) {
+            e.printStackTrace();
             transaction = session.getTransaction();
-            if (transaction.isActive()) transaction.rollback();
+            if (transaction.isActive()) {
+                transaction.rollback();
+                System.out.println("ROLLBACK");
+            }
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Błąd zapisu");
-            alert.setHeaderText("Niepoprawny format godziny.");
-            alert.setContentText("Poprawne formaty: gg:mm lub gg:mm:ss");
+            if (e.getMessage().equals("IllegalFulDate")) {
+                alert.setHeaderText("Niepoprawna data realizacji.");
+                alert.setContentText("Data realizacji musi być późniejsza niż wystawienia.");
+            } else {
+                alert.setHeaderText("Niepoprawny format godziny.");
+                alert.setContentText("Poprawne formaty: gg:mm lub gg:mm:ss");
+            }
             alert.showAndWait();
         } catch (DateTimeParseException d) {
             d.printStackTrace();
@@ -466,7 +491,7 @@ public class ReferralDetailsView extends ViewControllerBase {
             exit.setContentText("Usunięto wybrane skierowanie.");
             exit.showAndWait();
 
-            if (targetPatient!=null) {
+            if (targetPatient != null) {
                 this.getParentController().goToView(ReferralsView.class, targetPatient);
             } else this.getParentController().goToViewRaw(ReferralsView.class);
         } else {
@@ -502,7 +527,8 @@ public class ReferralDetailsView extends ViewControllerBase {
 
     /**
      * Generates PDF report containing selected {@link Referral}.
-     * @throws IOException when there is a file missing
+     *
+     * @throws IOException        when there is a file missing
      * @throws URISyntaxException when string couldn't be passed as {@link URI} reference
      */
     @FXML

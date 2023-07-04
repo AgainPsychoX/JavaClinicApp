@@ -152,7 +152,8 @@ public class ReferralsView extends ViewControllerBase {
         if (targetPatient != null) {
             buttonBox.getChildren().add(detailsButton);
             buttonBox.getChildren().add(printButton);
-            if (!(currUserRole == User.Role.RECEPTION)) buttonBox.getChildren().add(addButton);
+            if (!(currUserRole == User.Role.RECEPTION) && (targetPatient.asUser() != ClinicApplication.requireUser()))
+                buttonBox.getChildren().add(addButton);
             if (!vBox.getChildren().contains(backBox)) vBox.getChildren().add(0, backBox);
             backText.setText("< Powrót do pacjenta " + targetPatient.getDisplayName());
         } else {
@@ -313,7 +314,7 @@ public class ReferralsView extends ViewControllerBase {
      * Opens {@link ReportDialog}, passing current {@link Referral} list
      */
     @FXML
-    public void printReferrals(){
+    public void printReferrals() {
         this.getParentController().goToView(ReportDialog.class, ReportDialog.Mode.REFERRALS, referrals);
     }
 
