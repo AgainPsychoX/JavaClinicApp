@@ -58,6 +58,18 @@ public class PatientsView extends ViewControllerBase implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        // Make double click to jump to patient details
+        table.setRowFactory(tv -> {
+            final var row = new TableRow<Patient>();
+            row.setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2 && !row.isEmpty()) {
+                    this.getParentController().goToView(
+                            PatientDetailsView.class, PatientDetailsView.RefMode.DETAILS, row.getItem());
+                }
+            });
+            return row;
+        });
+
         nameCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getName()));
         surnameCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSurname()));
         peselCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPESEL()));
