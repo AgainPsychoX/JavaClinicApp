@@ -15,18 +15,26 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.hibernate.exception.ConstraintViolationException;
 import org.hibernate.jpa.TypedParameterValue;
 import org.hibernate.query.Query;
 import org.hibernate.type.StandardBasicTypes;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
+import pl.edu.ur.pz.clinicapp.models.Doctor;
+import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.User;
+import pl.edu.ur.pz.clinicapp.utils.JPAUtils;
 import pl.edu.ur.pz.clinicapp.utils.views.ViewController;
 import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 import pl.edu.ur.pz.clinicapp.views.AccountsView;
 import pl.edu.ur.pz.clinicapp.views.PatientsView;
 
+import javax.print.Doc;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Optional;
+
+import static pl.edu.ur.pz.clinicapp.utils.ProblemHandlingUtils.reportExceptionNicely;
 
 public class RegisterDialog extends ViewControllerBase {
 
@@ -44,7 +52,6 @@ public class RegisterDialog extends ViewControllerBase {
     }
 
     Session session = ClinicApplication.getEntityManager().unwrap(Session.class);
-    Query createPatientQuery = session.getNamedQuery("createPatient");
     Query createDatabaseUserQuery = session.getNamedQuery("createDatabaseUser");
     Query createDoctorQuery = session.getNamedQuery("createDoctor");
     Query findDatabaseUserQuery = session.getNamedQuery("findDatabaseUser");
@@ -150,7 +157,6 @@ public class RegisterDialog extends ViewControllerBase {
      */
     @FXML
     void register() {
-        Transaction transaction;
         selectedRole = User.Role.PATIENT;
         if(getMode() == Mode.ACCOUNT) {
             String roleName = roleComboBox.getSelectionModel().getSelectedItem();
@@ -211,74 +217,52 @@ public class RegisterDialog extends ViewControllerBase {
                     "Pola \"hasło\" i \"powtórz hasło\" muszą być takie same.");
         } else {
             try {
-                transaction = session.beginTransaction();
+                JPAUtils.transaction(entityManager -> {
+                    final var user = new User();
+                    user.setEmail((emailField.getText() == null || emailField.getText().isBlank()) ? null : emailField.getText().trim());
+                    user.setName(nameField.getText().trim());
+                    user.setPhone((phoneField.getText() == null || phoneField.getText().isBlank()) ? null : phoneField.getText().trim());
+                    user.setSurname(surnameField.getText().trim());
+                    user.setRole(selectedRole);
+                    entityManager.persist(user);
+                    user.changePassword(passwordField.getText());
 
-                User newUser = new User();
-                newUser.setEmail((emailField.getText() == null || emailField.getText().isBlank()) ? null : emailField.getText().trim());
-                newUser.setName(nameField.getText().trim());
-                newUser.setPhone((phoneField.getText() == null || phoneField.getText().isBlank()) ? null : phoneField.getText().trim());
-                newUser.setSurname(surnameField.getText().trim());
-                newUser.setRole(selectedRole);
+                    final var patient = new Patient(user, PESELField.getText().trim());
+                    patient.setCity(cityField.getText().trim());
+                    patient.setStreet(streetField.getText().trim());
+                    patient.setBuilding(buildingField.getText().trim());
+                    patient.setPostCity(postCityField.getText().trim());
+                    patient.setPostCode(postCodeField.getText().trim());
+                    entityManager.persist(patient);
 
-                session.persist(newUser);
-                newUser.changePassword(passwordField.getText());
-                // FIXME: instead of using query to create patient data, let's use hibernate
+                    if (selectedRole == User.Role.DOCTOR) {
+                        final var doctor = new Doctor(user);
+                        doctor.setSpeciality(specializationTextField.getText().trim());
+                        doctor.setDefaultVisitDuration(Duration.ofMinutes(
+                                Integer.parseInt(visitDurationTextField.getText().trim()))); // TODO: make it integer spinner; add info it's minutes
+                        doctor.setMaxDaysInAdvance(Integer.parseInt(maxDaysTextField.getText().trim()));
+                        entityManager.persist(doctor);
+                    }
 
-                createPatientQuery.setParameter("building", (buildingField.getText() == null
-                        || buildingField.getText().isBlank())
-                        ? new TypedParameterValue(StandardBasicTypes.STRING, null)
-                        : buildingField.getText().trim());
-                createPatientQuery.setParameter("city", (cityField.getText() == null
-                        || cityField.getText().isBlank())
-                        ? new TypedParameterValue(StandardBasicTypes.STRING, null)
-                        : cityField.getText().trim());
-                createPatientQuery.setParameter("pesel", PESELField.getText().trim());
-                createPatientQuery.setParameter("post_city", (postCityField.getText() == null
-                        || postCityField.getText().isBlank())
-                        ? new TypedParameterValue(StandardBasicTypes.STRING, null)
-                        : postCityField.getText().trim());
-                createPatientQuery.setParameter("post_code", (postCodeField.getText() == null
-                        || postCodeField.getText().isBlank())
-                        ? new TypedParameterValue(StandardBasicTypes.STRING, null)
-                        : postCodeField.getText().trim());
-                createPatientQuery.setParameter("street", (streetField.getText() == null
-                        || streetField.getText().isBlank())
-                        ? new TypedParameterValue(StandardBasicTypes.STRING, null)
-                        : streetField.getText().trim());
-                createPatientQuery.setParameter("id", newUser.getId());
+                    Alert exit = new Alert(Alert.AlertType.INFORMATION);
+                    exit.setTitle("Rejestracja");
+                    exit.setHeaderText("Rejestracja zakończona pomyślnie");
+                    exit.setContentText("Zarejestrowano nową osobę.");
+                    exit.showAndWait();
 
-                createPatientQuery.executeUpdate();
-
-                // FIXME: use hibernate ffs
-
-                if(selectedRole == User.Role.DOCTOR){
-                    createDoctorQuery.setParameter("id", newUser.getId());
-                    createDoctorQuery.setParameter("visitDuration",
-                            Integer.parseInt(visitDurationTextField.getText().trim()));
-                    createDoctorQuery.setParameter("maxDays", Integer.parseInt(maxDaysTextField.getText().trim()));
-                    createDoctorQuery.setParameter("name", newUser.getName());
-                    createDoctorQuery.setParameter("surname", newUser.getSurname());
-                    createDoctorQuery.setParameter("speciality", specializationTextField.getText().trim());
-                    createDoctorQuery.executeUpdate();
-                }
-                transaction.commit();
-                Alert exit = new Alert(Alert.AlertType.INFORMATION);
-                exit.setTitle("Rejestracja");
-                exit.setHeaderText("Rejestracja zakończona pomyślnie");
-                exit.setContentText("Zarejestrowano nową osobę.");
-                exit.showAndWait();
-
-                fieldsEdited.setValue(0);
-                if(getMode() == Mode.PATIENT)
-                    this.getParentController().goToViewRaw(PatientsView.class); //WrongClassException?
-                else
-                    this.getParentController().goToViewRaw(AccountsView.class);
-            } catch (Exception e) {
-                transaction = session.getTransaction();
-                if (transaction.isActive()) transaction.rollback();
-                if (e.getMessage().contains("ConstraintViolationException")) {
+                    fieldsEdited.setValue(0);
+                    if (getMode() == Mode.PATIENT)
+                        this.getParentController().goToViewRaw(PatientsView.class); //WrongClassException?
+                    else
+                        this.getParentController().goToViewRaw(AccountsView.class);
+                });
+            }
+            catch (Exception e) {
+                if (e.getCause() instanceof ConstraintViolationException) {
                     showErrorAlert("Błąd zapisu", "Podane dane istnieją już w bazie.",
                             "Wprowadzony PESEL lub email jest już przypisany do istniejącego użytkownika.");
+                } else {
+                    reportExceptionNicely("Błąd zapisu", e);
                 }
             }
         }
