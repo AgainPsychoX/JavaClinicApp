@@ -195,10 +195,9 @@ public class ScheduleSlotPickerDialog extends Stage {
 
     /**
      * List of {@link WeekPane.Entry}ies currently used to represent the selected range on the week pane.
-     * Might include one original {@link Schedule.Entry} and many {@link Schedule.ScheduleWeekPaneEntry}ies.
      * Should be kept in natural order.
      */
-    private List<WeekPane.Entry> selectionWeekPaneEntries;
+    private List<Schedule.ScheduleWeekPaneEntry> selectionWeekPaneEntries;
 
     protected void showWeek(LocalDate weekStart) {
         weekStart = alignDateToWeekStart(weekStart);
@@ -210,7 +209,7 @@ public class ScheduleSlotPickerDialog extends Stage {
             logger.finer("Showing different week: " + weekStart);
             currentWeekStart = weekStart;
             final var entries = schedule.generateWeekPaneEntriesForSchedule(weekStart);
-            selectionWeekPaneEntries = schedule.generateWeekPaneEntriesForScheduleEntries(
+            selectionWeekPaneEntries = Schedule.generateWeekPaneEntriesForScheduleEntries(
                     weekStart, List.of(selectionScheduleEntry));
             entries.addAll(selectionWeekPaneEntries);
             weekPane.setEntries(entries);
@@ -225,7 +224,7 @@ public class ScheduleSlotPickerDialog extends Stage {
     protected void refreshAllWeekPaneEntriesAfterDateChanges() {
         logger.finest("Refreshing week pane after date changes");
         weekPane.getEntries().removeAll(selectionWeekPaneEntries);
-        selectionWeekPaneEntries = schedule.generateWeekPaneEntriesForScheduleEntries(
+        selectionWeekPaneEntries = Schedule.generateWeekPaneEntriesForScheduleEntries(
                 getCurrentWeekStart(), List.of(selectionScheduleEntry));
         weekPane.getEntries().addAll(selectionWeekPaneEntries);
     }
@@ -236,9 +235,7 @@ public class ScheduleSlotPickerDialog extends Stage {
     protected void refreshFirstWeekPaneEntry() {
         logger.finest("Refreshing first entry");
         final var first = selectionWeekPaneEntries.get(0);
-        if (first instanceof Schedule.ScheduleWeekPaneEntry entry) {
-            entry.startMinute = beginTimeSpinner.getValue().toSecondOfDay() / 60;
-        }
+        first.startMinute = beginTimeSpinner.getValue().toSecondOfDay() / 60;
         weekPane.refreshEntry(first);
     }
 
@@ -248,9 +245,7 @@ public class ScheduleSlotPickerDialog extends Stage {
     protected void refreshLastWeekPaneEntry() {
         logger.finest("Refreshing last entry");
         final var last = selectionWeekPaneEntries.get(selectionWeekPaneEntries.size() - 1);
-        if (last instanceof Schedule.ScheduleWeekPaneEntry entry) {
-            entry.endMinute = endTimeSpinner.getValue().toSecondOfDay() / 60;
-        }
+        last.endMinute = endTimeSpinner.getValue().toSecondOfDay() / 60;
         weekPane.refreshEntry(last);
     }
 
