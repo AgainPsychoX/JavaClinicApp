@@ -10,10 +10,7 @@ import javafx.collections.transformation.SortedList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.util.Duration;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
 import pl.edu.ur.pz.clinicapp.dialogs.RegisterDialog;
@@ -25,8 +22,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 public class PatientsView extends ViewControllerBase implements Initializable {
 
@@ -73,9 +72,20 @@ public class PatientsView extends ViewControllerBase implements Initializable {
         nameCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getName()));
         surnameCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getSurname()));
         peselCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPESEL()));
-        phoneCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPhone()));
+
+        // Show phone number like multiple 3-digits parts separated by space
+        phoneCol.setCellValueFactory(features -> {
+            final var phoneNumber = features.getValue().getPhone();
+            if (phoneNumber == null) {
+                return new ReadOnlyObjectWrapper<>(null);
+            } else {
+                return new ReadOnlyObjectWrapper<>(String.join(" ", phoneNumber.split("(?<=\\G.{3})")));
+            }
+        });
+
         emailCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getEmail()));
-        addressCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddressDisplayShort()));
+        addressCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(
+                features.getValue().getAddressDisplayShort()));
 
         // Debounce for search action on key typed to avoid lag
         searchDebounce = new PauseTransition(Duration.millis(250));
