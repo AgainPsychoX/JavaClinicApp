@@ -593,4 +593,63 @@ public class ReferralDetailsView extends ViewControllerBase {
             throw new RuntimeException(e);
         }
     }
+
+//    @FXML
+//    protected void referralReport() throws IOException, URISyntaxException {
+//        Configuration configuration = new Configuration(Configuration.VERSION_2_3_32);
+//
+//        ConverterProperties properties = new ConverterProperties();
+//        DefaultFontProvider fontProvider = new DefaultFontProvider(true, true, true);
+//
+//        // Load the font from the JAR file
+//        InputStream fontStream = ClinicApplication.class.getResourceAsStream("/fonts/calibri.ttf");
+//        fontProvider.addFont(String.valueOf(fontStream));
+//
+//        properties.setFontProvider(fontProvider);
+//        properties.setCharset("UTF-8");
+//        try {
+//        // Load the template from the JAR file
+//        configuration.setClassForTemplateLoading(ClinicApplication.class, "pl/edu/ur/pz/clinicapp/templates");
+//        configuration.setDefaultEncoding("UTF-8");
+//        configuration.setSQLDateAndTimeTimeZone(TimeZone.getDefault());
+//        configuration.setSharedVariable("DateUtils", new DateUtils());
+//
+//        FileChooser fileChooser = new FileChooser();
+//        fileChooser.setTitle("Zapisywanie recepty");
+//        fileChooser.setInitialFileName("referral.pdf");
+//        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Pliki PDF", "*.pdf"));
+//        File file = fileChooser.showSaveDialog(new Stage());
+//
+//        Template template = configuration.getTemplate("referralDetailsTemplate.ftl", "UTF-8");
+//        File outputFile = new File("output.html");
+//        Writer writer = new FileWriter(outputFile);
+//
+//        Map<String, Object> dataModel = new HashMap<>();
+//        dataModel.put("referral", ref);
+//
+//        template.process(dataModel, writer);
+//        writer.close();
+//
+//        HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file), properties);
+//
+//        if (!outputFile.delete()) {
+//            Alert alert = new Alert(Alert.AlertType.ERROR);
+//            alert.setTitle("Błąd usuwania pliku");
+//            alert.setHeaderText("Nie można usunąć pliku");
+//        }
+//
+//        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+//        alert.setTitle("Generowanie skierowania");
+//        alert.setHeaderText("Utworzono skierowanie");
+//        alert.showAndWait();
+//
+//        } catch (FileNotFoundException | TemplateException e) {
+//            Alert alert = new Alert(Alert.AlertType.ERROR);
+//            alert.setTitle("Błąd generowania");
+//            alert.setHeaderText("Wystąpił błąd");
+//            alert.setContentText(e.getLocalizedMessage());
+//            alert.showAndWait();
+//            throw new RuntimeException(e);
+//        }
+//    }
 }
