@@ -27,10 +27,12 @@ import org.hibernate.jpa.TypedParameterValue;
 import org.hibernate.query.Query;
 import org.hibernate.type.StandardBasicTypes;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
+import pl.edu.ur.pz.clinicapp.dialogs.ReportDialog;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Referral;
 import pl.edu.ur.pz.clinicapp.models.User;
 import pl.edu.ur.pz.clinicapp.utils.DateUtils;
+import pl.edu.ur.pz.clinicapp.utils.ReportObject;
 import pl.edu.ur.pz.clinicapp.utils.views.ViewController;
 import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 
@@ -533,20 +535,10 @@ public class ReferralDetailsView extends ViewControllerBase {
      */
     @FXML
     protected void referralReport() throws IOException, URISyntaxException {
-        Configuration configuration = new Configuration(Configuration.VERSION_2_3_32);
-
-        ConverterProperties properties = new ConverterProperties();
-        DefaultFontProvider fontProvider = new DefaultFontProvider(true, true, true);
-
-        fontProvider.addFont(String.valueOf(ClinicApplication.class.getResource("fonts/calibri.ttf")));
-
-        properties.setFontProvider(fontProvider);
-        properties.setCharset("UTF-8");
-
-        URL templatesURL = ClinicApplication.class.getResource("templates");
-
+        ReportObject reportObject = ReportDialog.createConfig();
+        Configuration configuration = reportObject.getConfiguration();
+        ConverterProperties properties = reportObject.getProperties();
         try {
-            configuration.setDirectoryForTemplateLoading(new File(templatesURL.toURI()));
             configuration.setDefaultEncoding("UTF-8");
             configuration.setSQLDateAndTimeTimeZone(TimeZone.getDefault());
             configuration.setSharedVariable("DateUtils", new DateUtils());

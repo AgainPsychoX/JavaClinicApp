@@ -469,9 +469,7 @@ public class PrescriptionDetailsView extends ViewControllerBase implements Initi
         ReportObject reportObject = ReportDialog.createConfig();
         Configuration configuration = reportObject.getConfiguration();
         ConverterProperties properties = reportObject.getProperties();
-        URL templatesURL = reportObject.getTemplatesURL();
         try {
-            configuration.setDirectoryForTemplateLoading(new File(templatesURL.toURI()));
             configuration.setDefaultEncoding("UTF-8");
             configuration.setSQLDateAndTimeTimeZone(TimeZone.getDefault());
             configuration.setSharedVariable("DateUtils", new DateUtils());
