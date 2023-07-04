@@ -45,7 +45,7 @@ public class ReportDialogTest {
 
         URL templatesURL = ClinicApplication.class.getResource("templates");
 
-        reportObject = new ReportObject(configuration, properties, templatesURL);
+        reportObject = new ReportObject(configuration, properties);
     }
 
     @Test
@@ -63,8 +63,6 @@ public class ReportDialogTest {
         assertNotNull(properties.getFontProvider());
         assertEquals("UTF-8", properties.getCharset());
 
-        URL templatesURL = reportObject.getTemplatesURL();
-        assertNotNull(templatesURL);
     }
 
 

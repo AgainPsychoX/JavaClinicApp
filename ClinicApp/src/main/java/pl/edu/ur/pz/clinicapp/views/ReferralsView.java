@@ -88,8 +88,14 @@ public class ReferralsView extends ViewControllerBase {
     User.Role currUserRole;
     private Patient targetPatient;
 
+    /**
+     * Available filtering options (own referrals, redirected to nurses, created by logged user or all).
+     */
     private enum filterMode {OWN, NURSES, CREATED, ALL}
 
+    /**
+     * Map of {@link filterMode}s and display names.
+     */
     private static final EnumMap<filterMode, String> filterModeToString = new EnumMap<>(filterMode.class);
 
     /**
@@ -121,11 +127,6 @@ public class ReferralsView extends ViewControllerBase {
     public void setFilterVals(User.Role role) {
         if (role == User.Role.NURSE || role == User.Role.PATIENT || targetPatient != null) {
             filter.setVisible(false);
-//        } else if (role == User.Role.DOCTOR) {
-//            filter.setItems(FXCollections.observableArrayList(
-//                    filterModeToString.get(filterMode.CREATED),
-//                    filterModeToString.get(filterMode.OWN)
-//            ));
         } else {
             filter.setItems(FXCollections.observableArrayList(
                     filterModeToString.get(filterMode.ALL),
@@ -151,7 +152,8 @@ public class ReferralsView extends ViewControllerBase {
         if (targetPatient != null) {
             buttonBox.getChildren().add(detailsButton);
             buttonBox.getChildren().add(printButton);
-            if (!(currUserRole == User.Role.RECEPTION)) buttonBox.getChildren().add(addButton);
+            if (!(currUserRole == User.Role.RECEPTION) && (targetPatient.asUser() != ClinicApplication.requireUser()))
+                buttonBox.getChildren().add(addButton);
             if (!vBox.getChildren().contains(backBox)) vBox.getChildren().add(0, backBox);
             backText.setText("< Powrót do pacjenta " + targetPatient.getDisplayName());
         } else {
@@ -275,7 +277,6 @@ public class ReferralsView extends ViewControllerBase {
             if (referral.getNotes().toLowerCase().contains(text.trim())) return true;
             if (referral.getFeedback() != null && referral.getFeedback().toLowerCase().contains(text.trim()))
                 return true;
-//            if (referral.getStringTags().toLowerCase().contains(text.trim())) return true;
             if (referral.getStringTags().toLowerCase().contains(text.trim())) return true;
             return referral.getGovernmentId() != null && referral.getGovernmentId().contains(text.trim());
         });
@@ -301,6 +302,9 @@ public class ReferralsView extends ViewControllerBase {
                 ReferralDetailsView.RefMode.CREATE, targetPatient);
     }
 
+    /**
+     * Sends to previous view.
+     */
     public void onBackClick() {
         this.getParentController().goToView(PatientDetailsView.class,
                 PatientDetailsView.RefMode.DETAILS, targetPatient);
@@ -310,7 +314,7 @@ public class ReferralsView extends ViewControllerBase {
      * Opens {@link ReportDialog}, passing current {@link Referral} list
      */
     @FXML
-    public void printReferrals(){
+    public void printReferrals() {
         this.getParentController().goToView(ReportDialog.class, ReportDialog.Mode.REFERRALS, referrals);
     }
 
