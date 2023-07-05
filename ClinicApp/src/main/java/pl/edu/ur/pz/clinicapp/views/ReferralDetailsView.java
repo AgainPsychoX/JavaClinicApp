@@ -332,8 +332,8 @@ public class ReferralDetailsView extends ViewControllerBase {
                         alert.showAndWait();
                         editState.setValue(!editState.getValue());
                     } else {
-                        String newAddedDate = LocalDate.parse(dateVal).toString() + " " + dateTimeVal;
-                        String newFulDate = (fulDateVal == null || fulDateVal.isBlank()) ? "" : LocalDate.parse(fulDateVal).toString() + " " + fulDateTimeVal;
+                        String newAddedDate = LocalDate.parse(dateVal, formatter).toString() + " " + dateTimeVal;
+                        String newFulDate = (fulDateVal == null || fulDateVal.isBlank()) ? "" : LocalDate.parse(fulDateVal, formatter).toString() + " " + fulDateTimeVal;
                         Timestamp addedDate = Timestamp.valueOf((dateTimeVal.length() != 8)
                                 ? newAddedDate + ":00" : newAddedDate);
                         Timestamp fulfilmentDate;
@@ -390,8 +390,8 @@ public class ReferralDetailsView extends ViewControllerBase {
                     alert.showAndWait();
                     editState.setValue(!editState.getValue());
                 } else {
-                    String newAddedDate = LocalDate.parse(dateVal).toString() + " " + dateTimeVal;
-                    String newFulDate = (fulDateVal == null || fulDateVal.isBlank()) ? "" : LocalDate.parse(fulDateVal).toString() + " " + fulDateTimeVal;
+                    String newAddedDate = LocalDate.parse(dateVal, formatter).toString() + " " + dateTimeVal;
+                    String newFulDate = (fulDateVal == null || fulDateVal.isBlank()) ? "" : LocalDate.parse(fulDateVal, formatter).toString() + " " + fulDateTimeVal;
                     Timestamp addedDate = Timestamp.valueOf((dateTimeVal.length() != 8)
                             ? newAddedDate + ":00" : newAddedDate);
                     Timestamp fulfilmentDate;
@@ -466,7 +466,7 @@ public class ReferralDetailsView extends ViewControllerBase {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Błąd zapisu");
             alert.setHeaderText("Niepoprawny format daty.");
-            alert.setContentText("Poprawny format: rrrr-mm-dd");
+            alert.setContentText("Poprawny format: dd.mm.rrrr");
             alert.showAndWait();
         }
     }
