@@ -189,7 +189,8 @@ public class ScheduleSimpleEntryEditDialog extends BaseEditDialog {
     @Override
     protected boolean delete() {
         if (getDuration().toHours() > 10) {
-            if (!requireConfirmation("Potwierdzenie usunięcia", "Dany", ButtonType.CANCEL)) {
+            if (!requireConfirmation("Potwierdzenie usunięcia",
+                    "Czy na pewno chcesz usunąć ten wpis?", ButtonType.CANCEL)) {
                 return false;
             }
         }

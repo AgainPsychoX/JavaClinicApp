@@ -321,14 +321,21 @@ public class ScheduleView extends ViewControllerBase implements Initializable {
         }
         dialog.showAndWait();
         switch (dialog.getState()) {
-            case NEW_COMMITTED -> {
-                weekPane.getEntries().add(new Schedule.ScheduleWeekPaneEntry(dialog.getEntry()));
+            case EDIT_COMMITTED, DELETE_COMMITTED -> {
+                final var entries = weekPane.getEntries().filtered(e -> {
+                    if (e instanceof Schedule.ScheduleWeekPaneEntry proxy) {
+                        return proxy.getScheduleEntry() == dialog.getEntry();
+                    }
+                    return false;
+                });
+                weekPane.getEntries().removeAll(entries);
             }
-            case EDIT_COMMITTED -> {
-                weekPane.refreshEntry(weekPaneEntry);
-            }
-            case DELETE_COMMITTED -> {
-                weekPane.getEntries().remove(weekPaneEntry);
+        }
+        switch (dialog.getState()) {
+            case NEW_COMMITTED, EDIT_COMMITTED -> {
+                final var entries =
+                        Schedule.generateWeekPaneEntriesForScheduleEntries(getDate(), List.of(dialog.getEntry()));
+                weekPane.getEntries().addAll(entries);
             }
         }
     }
