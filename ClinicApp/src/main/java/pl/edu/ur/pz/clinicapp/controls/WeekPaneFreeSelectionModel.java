@@ -91,10 +91,11 @@ public class WeekPaneFreeSelectionModel<T extends WeekPane.Entry> extends WeekPa
         });
         selectedTimeOfDayProperty().addListener((observable, oldTimeOfDay, timeOfDay) -> {
             final var rgp = weekPane.getRowGenerationParams();
-            if (timeOfDay == null) /* select whole day */ {
+            if (timeOfDay == null || timeOfDay.isBefore(rgp.startTimeOfDay())) {
                 GridPane.setRowIndex(selector, 0);
                 GridPane.setMargin(selector, new Insets(0, 0, 0, 0));
-            } else /* select part of the day */ {
+            }
+            else {
                 GridPane.setRowIndex(selector, rgp.calculateRowIndex(timeOfDay));
                 GridPane.setMargin(selector, new Insets(rgp.calculateRowOffset(timeOfDay), 0, 0, 0));
             }
