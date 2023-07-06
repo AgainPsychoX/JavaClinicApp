@@ -178,7 +178,7 @@ public class ReferralsView extends ViewControllerBase {
         fulDateCol.setCellValueFactory(new PropertyValueFactory<>("fulfilmentDateFormatted"));
         interestCol.setCellValueFactory(new PropertyValueFactory<>("pointOfInterest"));
         patientCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getPatient().getDisplayName()));
-        doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getDoctor().getDisplayName()));
+        doctorCol.setCellValueFactory(features -> new ReadOnlyObjectWrapper<>(features.getValue().getAddedBy().getDisplayName()));
         notesCol.setCellValueFactory(new PropertyValueFactory<>("notes"));
         feedbackCol.setCellValueFactory(new PropertyValueFactory<>("feedback"));
         tagsCol.setCellValueFactory(new PropertyValueFactory<>("StringTags"));
@@ -273,7 +273,7 @@ public class ReferralsView extends ViewControllerBase {
                 return true;
             if (referral.getPointOfInterest() != null && referral.getPointOfInterest().toLowerCase().contains(text.trim()))
                 return true;
-            if (referral.getDoctor().getDisplayName().toLowerCase().contains(text.trim())) return true;
+            if (referral.getAddedBy().getDisplayName().toLowerCase().contains(text.trim())) return true;
             if (referral.getNotes().toLowerCase().contains(text.trim())) return true;
             if (referral.getFeedback() != null && referral.getFeedback().toLowerCase().contains(text.trim()))
                 return true;

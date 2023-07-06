@@ -286,7 +286,7 @@ public class ReferralDetailsView extends ViewControllerBase {
      */
     @Override
     public void refresh() {
-        doctorField.setText(ref.getDoctor().getDisplayName());
+        doctorField.setText(ref.getAddedBy().getDisplayName());
         fulDatePicker.setValue((ref.getFulfilmentDate() == null)
                 ? null
                 : Timestamp.from(ref.getFulfilmentDate()).toLocalDateTime().toLocalDate());
