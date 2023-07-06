@@ -227,7 +227,12 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 	- Hibernate
 - Baza danych PostgreSQL
 
+## Wykorzystane biblioteki
+- Apache FreeMaker (https://freemarker.apache.org/)
+- pdfHTML (https://itextpdf.com/products/convert-html-css-to-pdf-pdfhtml)
+  
+
 ## Pliki instalacyjne wraz z opisem instalacji i konfiguracji wraz pierwszego uruchomienia
-Instalator aplikacji jest wformie pliku ClinicAppInstall.exe
+Instalator aplikacji jest w formie pliku ClinicAppInstall.exe
 Instrukcja wraz z opisem instalacji i konfiguracji wraz z pierwszym uruchomieniem znajduje się w pliku manual.pdf.
 Hasła przykładowych użytkowników zseedowanych do bazy to nazwa ich roli (dla lekarzy: "lekarz", dla administratorów: "administrator", dla pacjentów: "pacjent", dla recepcji: "recepcja", dla pielęgniarek: "pielęgniarka").
