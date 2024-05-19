@@ -1,8 +1,9 @@
-Programowanie zespołowe laboratorium 2 grupa 5. 
 
-# Dokumentacja projetu: **System do zarządzania przychodnią**
+# System do zarządzania przychodnią
 
-## Zespoł projetowy:
+Projekt stworzony w ramach Programowania Zespołowego, laboratorium 2 grupa 5. 
+
+## Zespół projektowy:
 
 | Imię i nazwisko       | E-mail                            | Rola, zakres odpowiedzialności  |
 |-----------------------|-----------------------------------|---------------------------------|
@@ -19,7 +20,7 @@ System pozwala na łatwe zarządzanie przychodnią, od rejestracji wizyt przez t
 ## Cele projektu 
 
 + Umożliwienie rejestracji i ewidencji wizyt pacjentów przychodni.
-+ Koorydynacja terminarzy dostępności lekarzy.
++ Koordynacja terminarzy dostępności lekarzy.
 + Zarządzanie personelem (np. lekarze, pielęgniarki).
 + System składa się z aplikacji złożonej z kilku modułów oraz bazy danych.
 
@@ -34,9 +35,9 @@ System pozwala na łatwe zarządzanie przychodnią, od rejestracji wizyt przez t
 	+ Moduł "moje dane"
 		+ Przeglądanie (i aktualizacja) swoich danych
     + Moduł "wizyty"
-		+ Przelądanie szczegółów wizyt (nadchodzących i poprzednich)
+		+ Przeglądanie szczegółów wizyt (nadchodzących i poprzednich)
 		+ Dodawanie wizyt (z uwzględnieniem terminarzy lekarzy)
-		+ Uzupełenianie szczgółów wizyt (notatki, recepta lekarza itd.)
+		+ Uzupełnianie szczegółów wizyt (notatki, recepta lekarza itd.)
 		+ Przekładanie wizyt
 	+ Moduł "pacjenci”
 		+ Przeglądanie i wyszukiwanie pacjentów
@@ -47,7 +48,7 @@ System pozwala na łatwe zarządzanie przychodnią, od rejestracji wizyt przez t
     + Moduł "badania"
         + zlecanie badań (lekarz)
         + przeglądanie zleconych badań
-        + uzupełenianie danych (pielęgniarki)
+        + uzupełnianie danych (pielęgniarki)
 	+ Moduł "recepty"
     	+ pacjent widzi swoje recepty
     	+ lekarz widzi wszystkie recepty (z możliwym filtrowaniem)
@@ -59,7 +60,7 @@ System pozwala na łatwe zarządzanie przychodnią, od rejestracji wizyt przez t
 	+ Moduł administracji
 		+ Zarządzanie kontami (lekarzy, recepcyjnych i pielęgniarek)
 	+ Moduł raportów
-		+ Wypełenienie terminarzy (lekarzy, zasobów, personelu)
+		+ Wypełnienie terminarzy (lekarzy, zasobów, personelu)
 		+ Zainteresowanie pacjentów (lekarze, specjalności)
 		+ Historia pacjenta (wizyty, badania, recepty, skierowania)
 	+ Moduł konfiguracji
@@ -69,7 +70,7 @@ System pozwala na łatwe zarządzanie przychodnią, od rejestracji wizyt przez t
 ## Panele / zakładki systemu, które będą oferowały potrzebne funkcjonalności 
 
 - Panel administratora 
-	- Administrator ma dostęp do edycji, usuwania, dodawania użytkowników lub zasobów stworzonych przez uzytkowników 
+	- Administrator ma dostęp do edycji, usuwania, dodawania użytkowników lub zasobów stworzonych przez użytkowników 
 - Panel lekarza 
 	- przegladanie powiadomień
 	- edycja swoich danych
@@ -80,10 +81,10 @@ System pozwala na łatwe zarządzanie przychodnią, od rejestracji wizyt przez t
 - Panel recepcji
 	- zarzadzanie pacjentami
 - Panel pielegniarek
-  	- zarzadzanie skierowaniami oznaczynymi jako zabieg
+  	- zarzadzanie skierowaniami oznaczanymi jako zabieg
 - Panel pacjenta
   	- umawianie sie na wizyte do lekarza
-  	- edycja sowjego profilu
+  	- edycja swojego profilu
 	- przegladanie recept
    	- przegladanie skierowań
 
@@ -200,7 +201,7 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 	+ opcjonalne powiązanie do wizyty
 	+ łączą pacjenta i lekarza
 	+ daty
-	+ tekst (w tym nazwy i dawkowanie, przeciwskazania itd.)
+	+ tekst (w tym nazwy i dawkowanie, przeciwwskazania itd.)
 	+ ID z systemu rządowego e-recept
 + Skierowania
     + opcjonalne powiązanie do wizyty
@@ -214,7 +215,7 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 	+ zbiór ciągłych zajętych przedziałów czasowych dla każdego dnia tygodnia
   	+ system tworzy wstępne przedziały wg. harmonogramu lekarza (dni i godziny przyjęć w ciągu tygodnia).
   	+ lekarz może uzupełnić na przyszłość terminarz (urlopy, sytuacje losowe itd)
-+ Powiadomonienia
++ Powiadomienia
 	+ konto źródłowe
 	+ konto docelowe
 	+ data wysłania
