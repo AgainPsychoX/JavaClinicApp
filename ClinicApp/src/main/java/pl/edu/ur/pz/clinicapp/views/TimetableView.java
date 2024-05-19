@@ -125,7 +125,7 @@ public class TimetableView extends ViewControllerBase implements Initializable {
                     boolean isTall = this.getPrefHeight() > 32;
                     setText("%s - %s%s(%s)".formatted(
                             item.getStartAsLocalTime().toString().replaceFirst("^0+(?!$)", ""),
-                            item.getEndAsLocalTime(),
+                            nullCoalesce(item.getEndAsLocalTime(), "24:00"),
                             (isTall ? "\n" : " "),
                             (isTall ? longDurationConverter : shortDurationConverter)
                                     .toString(item.getDurationMinutes() * 60 * 1000)

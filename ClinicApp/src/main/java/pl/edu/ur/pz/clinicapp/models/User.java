@@ -120,7 +120,7 @@ public class User implements UserReference {
         return phone;
     }
     public void setPhone(String phone) {
-        this.phone = phone.replaceAll("\\s", "");
+        this.phone = phone == null ? null : phone.replaceAll("\\s", "");
     }
 
     @Column(nullable = false, length = 40)

@@ -174,53 +174,70 @@ public class Schedule {
      * Generate {@link WeekPane.Entry}ies (as {@link ScheduleWeekPaneEntry}ies; multiple for multi-day entries),
      * to represent given {@link Schedule.Entry}ies properly. Order is kept natural if the passed schedule entries list
      * also were kept in natural order.
-     * @param weekStartDate week start date
+     * @param weekStartDate week start date (monday).
      * @param scheduleEntries entries to be represented on the week pane
      * @return list of week pane entries, ready to be set on display on the week pane
      */
-    public List<WeekPane.Entry> generateWeekPaneEntriesForScheduleEntries(
+    static public List<ScheduleWeekPaneEntry> generateWeekPaneEntriesForScheduleEntries(
             LocalDate weekStartDate, List<Schedule.Entry> scheduleEntries) {
-        // TODO: unit testing
         final var zone = ZoneId.systemDefault();
-        final var weekEndDate = weekStartDate.plusDays(7);
-        final var resultList = new ArrayList<WeekPane.Entry>(80);
+        final var weekEndDate = weekStartDate.plusDays(7); // exclusive
+        final var resultList = new ArrayList<ScheduleWeekPaneEntry>(80);
 
         for (final var scheduleEntry : scheduleEntries) {
             final var beginDateTime = scheduleEntry.getBeginInstant().atZone(zone);
+            if (!beginDateTime.toLocalDate().isBefore(weekEndDate)) {
+                continue;
+            }
+
             final var endDateTime = scheduleEntry.getEndInstant().atZone(zone);
+            if (endDateTime.toLocalDate().isBefore(weekStartDate)) {
+                continue;
+            }
+
             if (scheduleEntry.doesCrossDays(zone)) {
                 var date = beginDateTime.toLocalDate();
+
                 if (date.isBefore(weekStartDate)) {
+                    date = weekStartDate;
+                }
+                else {
                     // Add first entry if starts inside the week
                     final var startMinute = beginDateTime.getHour() * 60 + beginDateTime.getMinute();
                     resultList.add(new ScheduleWeekPaneEntry(scheduleEntry, date.getDayOfWeek(), startMinute, 1440));
 
-                    date = weekStartDate;
+                    date = date.plusDays(1);
                 }
 
-                final var dayBeforeEndDate = endDateTime.toLocalDate().minusDays(1);
-                if (dayBeforeEndDate.isAfter(weekEndDate)) /* the original entry lasts outside the week */ {
-                    // Add full days entries
-                    while (date.isBefore(weekEndDate)) {
-                        resultList.add(new ScheduleWeekPaneEntry(scheduleEntry, date.getDayOfWeek(), 0, 1440));
-                        date = date.plusDays(1);
-                    }
-                } else /* the original entry ends inside the week */ {
-                    // Add full days entries
-                    while (date.isBefore(dayBeforeEndDate)) {
+                if (endDateTime.toLocalDate().isBefore(weekEndDate)) /* the original entry ends inside the week */ {
+                    // Add full days entries, except last one
+                    while (date.isBefore(endDateTime.toLocalDate())) {
                         resultList.add(new ScheduleWeekPaneEntry(scheduleEntry, date.getDayOfWeek(), 0, 1440));
                         date = date.plusDays(1);
                     }
 
                     // Add last entry which might be not full day
-                    final var endMinute = endDateTime.getHour() * 60 + endDateTime.getMinute();
-                    resultList.add(new ScheduleWeekPaneEntry(scheduleEntry, endDateTime.getDayOfWeek(), 0, endMinute));
+                    var end = endDateTime.getHour() * 60 + endDateTime.getMinute();
+                    if (end != 0) {
+                        resultList.add(new ScheduleWeekPaneEntry(scheduleEntry, date.getDayOfWeek(), 0, end));
+                    }
+                }
+                else /* the original entry lasts after the weekend */ {
+                    // Add full days entries
+                    while (date.isBefore(weekEndDate)) {
+                        resultList.add(new ScheduleWeekPaneEntry(scheduleEntry, date.getDayOfWeek(), 0, 1440));
+                        date = date.plusDays(1);
+                    }
                 }
             }
             else {
                 // Add the entry as singular one
                 final var start = beginDateTime.getHour() * 60 + beginDateTime.getMinute();
-                final var end = endDateTime.getHour() * 60 + endDateTime.getMinute();
+                var end = endDateTime.getHour() * 60 + endDateTime.getMinute();
+                if (end == 0) {
+                    assert beginDateTime.toLocalDate().plusDays(1).isEqual(endDateTime.toLocalDate());
+                    end = 1440; // whole day entry
+                }
                 resultList.add(new ScheduleWeekPaneEntry(scheduleEntry, beginDateTime.getDayOfWeek(), start, end));
             }
         }
@@ -356,9 +373,16 @@ public class Schedule {
          * @return true if the entry crosses over multiple days, false otherwise.
          */
         default boolean doesCrossDays(ZoneId zone) {
-            final var startDay = getBeginInstant().atZone(zone).getDayOfWeek();
-            final var endDay = getEndInstant().atZone(zone).getDayOfWeek();
-            return startDay != endDay;
+            final var endZoned = getEndInstant().atZone(zone);
+            final var startDay = getBeginInstant().atZone(zone).toLocalDate();
+            final var endDay = endZoned.toLocalDate();
+            if (startDay.equals(endDay)) {
+                return false;
+            }
+            if (startDay.plusDays(1).isEqual(endDay)) {
+                return endZoned.toLocalTime().toSecondOfDay() > 0; // zero means not crossing, as time of 24:00
+            }
+            return true;
         }
 
         /**

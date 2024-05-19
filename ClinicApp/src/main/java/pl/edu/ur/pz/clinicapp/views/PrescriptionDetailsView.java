@@ -469,9 +469,7 @@ public class PrescriptionDetailsView extends ViewControllerBase implements Initi
         ReportObject reportObject = ReportDialog.createConfig();
         Configuration configuration = reportObject.getConfiguration();
         ConverterProperties properties = reportObject.getProperties();
-        URL templatesURL = reportObject.getTemplatesURL();
         try {
-            configuration.setDirectoryForTemplateLoading(new File(templatesURL.toURI()));
             configuration.setDefaultEncoding("UTF-8");
             configuration.setSQLDateAndTimeTimeZone(TimeZone.getDefault());
             configuration.setSharedVariable("DateUtils", new DateUtils());
@@ -484,7 +482,10 @@ public class PrescriptionDetailsView extends ViewControllerBase implements Initi
             File file = fileChooser.showSaveDialog(new Stage());
 
             Template template = configuration.getTemplate("prescriptionDetailsTemplate.ftl", "UTF-8");
-            File outputFile = new File("output.html");
+            File tempDir = new File(System.getProperty("java.io.tmpdir"), "templates");
+            tempDir.mkdirs();
+
+            File outputFile = new File(tempDir, "output.html");
             Writer writer = new FileWriter(outputFile);
 
             Map<String, Object> dataModel = new HashMap<>();
@@ -495,7 +496,7 @@ public class PrescriptionDetailsView extends ViewControllerBase implements Initi
 
             writer.close();
 
-            HtmlConverter.convertToPdf(new FileInputStream("output.html"),
+            HtmlConverter.convertToPdf(new FileInputStream(new File(tempDir, "output.html")),
                     new FileOutputStream(file), properties);
 
             if (!outputFile.delete()) {

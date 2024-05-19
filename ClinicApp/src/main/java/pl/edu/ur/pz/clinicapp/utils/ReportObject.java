@@ -11,12 +11,10 @@ import java.net.URL;
 public class ReportObject {
     private Configuration configuration;
     private ConverterProperties properties;
-    private URL templatesURL;
 
-    public ReportObject(Configuration configuration, ConverterProperties properties, URL templatesURL) {
+    public ReportObject(Configuration configuration, ConverterProperties properties) {
         this.configuration = configuration;
         this.properties = properties;
-        this.templatesURL = templatesURL;
     }
 
     public Configuration getConfiguration() {
@@ -35,11 +33,4 @@ public class ReportObject {
         this.properties = properties;
     }
 
-    public URL getTemplatesURL() {
-        return templatesURL;
-    }
-
-    public void setTemplatesURL(URL templatesURL) {
-        this.templatesURL = templatesURL;
-    }
 }

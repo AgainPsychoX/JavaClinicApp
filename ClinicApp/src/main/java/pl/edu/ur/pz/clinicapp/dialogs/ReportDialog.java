@@ -19,6 +19,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import pl.edu.ur.pz.clinicapp.ClinicApplication;
+import pl.edu.ur.pz.clinicapp.MainWindowController;
 import pl.edu.ur.pz.clinicapp.controls.WeekPane;
 import pl.edu.ur.pz.clinicapp.models.Patient;
 import pl.edu.ur.pz.clinicapp.models.Prescription;
@@ -30,10 +31,17 @@ import pl.edu.ur.pz.clinicapp.utils.views.ViewControllerBase;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Class for generating PDF reports using .ftl templates based on HTML files using {@link Template} library.
@@ -77,7 +85,7 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
      * Report is configured for Polish language, using unicode encoding.
      * @return new {@link ReportObject}
      */
-    public static ReportObject createConfig() {
+    public static ReportObject createConfig() throws IOException {
         freemarker.template.Configuration configuration = new freemarker.template.Configuration
                 (freemarker.template.Configuration.VERSION_2_3_32);
 
@@ -88,8 +96,35 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
 
         ConverterProperties properties = new ConverterProperties();
         properties.setFontProvider(new DefaultFontProvider(true, true, true));
-        URL templatesURL = ClinicApplication.class.getResource("templates");
-        return new ReportObject(configuration, properties, templatesURL);
+        try {
+            URL url = ClassLoader.getSystemResource("pl/edu/ur/pz/clinicapp");
+            File tempDir = new File(System.getProperty("java.io.tmpdir"), "templates");
+            tempDir.mkdirs();
+
+            try (InputStream inputStream = url.openStream()) {
+                URL zip = ClassLoader.getSystemResource("templates.zip");
+                try (InputStream zipStream = zip.openStream(); ZipInputStream zipInputStream = new ZipInputStream(zipStream)) {
+                    ZipEntry entry;
+                    while ((entry = zipInputStream.getNextEntry()) != null) {
+                        if (!entry.isDirectory()) {
+                            String entryName = entry.getName();
+                            File outputFile = new File(tempDir, entryName);
+                            outputFile.getParentFile().mkdirs();
+                            Files.copy(zipInputStream, outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        }
+                    }
+                }
+                File tempFile = new File(tempDir, "templates");
+                Files.copy(inputStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                configuration.setDirectoryForTemplateLoading(tempDir);
+            }
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Błąd inicializacji", "Brak potrzebnych plików",
+                    e.getLocalizedMessage());
+            throw new RuntimeException(e);
+        }
+
+        return new ReportObject(configuration, properties);
     }
 
     /**
@@ -103,20 +138,45 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
      */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        ReportObject reportObject = createConfig();
+        ReportObject reportObject = null;
+        try {
+            reportObject = createConfig();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         configuration = reportObject.getConfiguration();
         properties = reportObject.getProperties();
-        URL templatesURL = reportObject.getTemplatesURL();
 
         selectedFields = new ArrayList<>();
         resourceBundle = ResourceBundle.getBundle("pl.edu.ur.pz.clinicapp.localization.strings",
                 configuration.getLocale());
 
         try {
-            configuration.setDirectoryForTemplateLoading(new File(templatesURL.toURI()));
-            configuration.setSharedVariable("bundle", resourceBundle);
-            configuration.setSharedVariable("DateUtils", new DateUtils());
-        } catch (IOException | URISyntaxException | TemplateModelException e) {
+            URL url = ClassLoader.getSystemResource("pl/edu/ur/pz/clinicapp");
+            File tempDir = new File(System.getProperty("java.io.tmpdir"), "templates");
+            tempDir.mkdirs();
+
+            try(InputStream inputStream = url.openStream()) {
+                URL zip = ClassLoader.getSystemResource("templates.zip");
+                try(InputStream zipStream = zip.openStream(); ZipInputStream zipInputStream = new ZipInputStream(zipStream)) {
+                    ZipEntry entry;
+                    while ((entry = zipInputStream.getNextEntry()) != null) {
+                        if (!entry.isDirectory()) {
+                            String entryName = entry.getName();
+                            File outputFile = new File(tempDir, entryName);
+                            outputFile.getParentFile().mkdirs();
+                            Files.copy(zipInputStream, outputFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                        }
+                    }
+                }
+                File tempFile = new File(tempDir, "templates");
+                Files.copy(inputStream, tempFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+                configuration.setDirectoryForTemplateLoading(tempDir);
+                configuration.setSharedVariable("bundle", resourceBundle);
+                configuration.setSharedVariable("DateUtils", new DateUtils());
+            }
+        } catch (IOException | TemplateModelException e) {
             showAlert(Alert.AlertType.ERROR, "Błąd inicializacji", "Brak potrzebnych plików",
                     e.getLocalizedMessage());
             throw new RuntimeException(e);
@@ -374,7 +434,10 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
 
                 Template template = configuration.getTemplate("referralsTemplate.ftl", "UTF-8");
 
-                File outputFile = new File("output.html");
+                File tempDir = new File(System.getProperty("java.io.tmpdir"), "templates");
+                tempDir.mkdirs();
+
+                File outputFile = new File(tempDir, "output.html");
                 Writer writer = new FileWriter(outputFile);
 
                 Map<String, Object> dataModel = new HashMap<>();
@@ -387,8 +450,8 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
 
                 template.process(dataModel, writer);
                 writer.close();
-                HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file),
-                        properties);
+                HtmlConverter.convertToPdf(new FileInputStream(new File(tempDir, "output.html")),
+                        new FileOutputStream(file), properties);
 
                 if(!outputFile.delete())
                     throw new RuntimeException();
@@ -424,7 +487,9 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
 
             Template template = configuration.getTemplate("usersTemplate.ftl", "UTF-8");
 
-            File outputFile = new File("output.html");
+            File tempDir = new File(System.getProperty("java.io.tmpdir"), "templates");
+            tempDir.mkdirs();
+            File outputFile = new File(tempDir, "output.html");
             Writer writer = new FileWriter(outputFile);
 
             Map<String, Object> dataModel = new HashMap<>();
@@ -433,9 +498,8 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
 
             template.process(dataModel, writer);
             writer.close();
-            HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file),
-                    properties);
-
+            HtmlConverter.convertToPdf(new FileInputStream(new File(tempDir, "output.html")),
+                    new FileOutputStream(file), properties);
             if(!outputFile.delete())
                 throw new RuntimeException();
             showAlert(Alert.AlertType.INFORMATION, "Generowanie raportu", "Utworzono raport", "");
@@ -472,7 +536,10 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
                 File file = fileChooser.showSaveDialog(new Stage());
                 Template template = configuration.getTemplate("prescriptionsTemplate.ftl");
 
-                File outputFile = new File("output.html");
+                File tempDir = new File(System.getProperty("java.io.tmpdir"), "templates");
+                tempDir.mkdirs();
+
+                File outputFile = new File(tempDir, "output.html");
                 Writer writer = new FileWriter(outputFile);
 
                 Map<String, Object> dataModel = new HashMap<>();
@@ -485,8 +552,8 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
 
                 template.process(dataModel, writer);
                 writer.close();
-                HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file),
-                        properties);
+                HtmlConverter.convertToPdf(new FileInputStream(new File(tempDir, "output.html")),
+                        new FileOutputStream(file), properties);
 
                 if(!outputFile.delete())
                     throw new RuntimeException();
@@ -549,7 +616,10 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
 
             Template template = configuration.getTemplate("timetableTemplate.ftl");
 
-            File outputFile = new File("output.html");
+            File tempDir = new File(System.getProperty("java.io.tmpdir"), "templates");
+            tempDir.mkdirs();
+
+            File outputFile = new File(tempDir, "output.html");
             Writer writer = new FileWriter(outputFile);
 
             Map<String, Object> dataModel = new HashMap<>();
@@ -562,8 +632,8 @@ public class ReportDialog extends ViewControllerBase implements Initializable {
 
             writer.close();
 
-            HtmlConverter.convertToPdf(new FileInputStream("output.html"), new FileOutputStream(file),
-                    properties);
+            HtmlConverter.convertToPdf(new FileInputStream(new File(tempDir, "output.html")),
+                    new FileOutputStream(file), properties);
 
             if(!outputFile.delete())
                 throw new RuntimeException();

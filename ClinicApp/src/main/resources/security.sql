@@ -57,8 +57,10 @@ GRANT EXECUTE ON FUNCTION public.check_user_internal_name_taken TO anonymous;
 
 CREATE OR REPLACE PROCEDURE public.change_password(uname VARCHAR, passwd VARCHAR)
     LANGUAGE plpgsql
-    -- TODO: make it SECURITY DEFINER, allowing changing password other people conditionally
+    SECURITY DEFINER
+    -- FIXME: highly insecure! make it secure by allowing changing password other people conditionally
     --  (always allow own, and doctor manage patients, but not other employees)
+    --  + consider what about self-register? there should be maybe separate procedure...
 AS $$
     BEGIN
         EXECUTE FORMAT('ALTER USER %I WITH PASSWORD %L', uname, passwd);

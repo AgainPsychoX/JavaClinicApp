@@ -59,9 +59,17 @@ public class WeekPane<T extends WeekPane.Entry> extends VBox {
             return LocalTime.of(startMinute / 60, startMinute % 60);
         }
 
+        /**
+         * @return LocalTime of the end, of null if the entry doesn't end here
+         */
         default LocalTime getEndAsLocalTime() {
             final var endMinute = getEndMinute();
-            return LocalTime.of(endMinute / 60, endMinute % 60);
+            if (endMinute >= 1440) {
+                return null;
+            }
+            else {
+                return LocalTime.of(endMinute / 60, endMinute % 60);
+            }
         }
 
         default LocalDateTime calculatePotentialStartInWeek(LocalDate mondayDate) {
