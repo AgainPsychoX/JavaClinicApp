@@ -3,7 +3,11 @@
 
 Projekt stworzony w ramach Programowania Zespołowego, laboratorium 2 grupa 5. 
 
-## Zespół projektowy:
+![Zrzut ekranu z widoku harmonogramu lekarza](https://i.imgur.com/JwDBZkF.png)
+
+<sup><i>Więcej zrzutów ekranu z aplikacji https://imgur.com/a/haWFRQO</i></sup>
+
+## Zespół projektowy
 
 | Imię i nazwisko       | E-mail                            | Rola, zakres odpowiedzialności  |
 |-----------------------|-----------------------------------|---------------------------------|
@@ -88,10 +92,6 @@ System pozwala na łatwe zarządzanie przychodnią, od rejestracji wizyt przez t
 	- przegladanie recept
    	- przegladanie skierowań
 
-## Design 
-
-https://www.figma.com/team_invite/redeem/x6u8JQFmyBvkORG4VOMaAp
-
 ## Typy wymaganych dokumentów w projekcie oraz dostęp do nich 
 
 - Raporty PDF 
@@ -99,7 +99,6 @@ https://www.figma.com/team_invite/redeem/x6u8JQFmyBvkORG4VOMaAp
 	- raport skierowań
 	- raport terminarza
 	- raport zawierajacy 20 najnowszych użytkowników systemu
-
 
 ## Przepływ informacji w środowisku systemu 
 
@@ -154,24 +153,6 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 5. Lekarz konfiguruje swój harmonogram pracy lub dodaje urlop w terminarzu.
 	+ Sprawdzanie poprawności względem przyszłych wizyt
 6. Lekarz prosi o badania u pielęgniarek
-
-## Diagramy UML
-- ###### [Diagram przypadków użycia]
-	![Screenshot](/Diagramy/Dpu.png)
-- ###### [Diagramy aktywności]
-	![Screenshot](/Diagramy/Ustalenieterminarzaakt.png)
-	![Screenshot](/Diagramy/Rejestracjapacjentaakt.png)
-	![Screenshot](/Diagramy/Nadaniespecjalnosciakt.png)
-	![Screenshot](/Diagramy/Edycjawizytyakt.png)
-	![Screenshot](/Diagramy/Nowawizytaakt.png)
-- ###### [Diagramy sekwencji]
-	![Screenshot](/Diagramy/Edycjaterrminarzaseq.png)
-	![Screenshot](/Diagramy/Logowanieseq.png)
-	![Screenshot](/Diagramy/Nadaniespecjalnoscisek.png)
-	![Screenshot](/Diagramy/Tworzeniekontaseq.png)
-	![Screenshot](/Diagramy/Ustalenietermianrzesek.png)
-- ###### [Diagram klas]
-	![Screenshot](/Diagramy/ClassDiagram.png)
 
 ## Baza danych
 ###### Diagram ERD
@@ -231,9 +212,3 @@ Przepływ dany w systemie jest oparty na interakcji użytkowników z bazą danyc
 ## Wykorzystane biblioteki
 - Apache FreeMaker (https://freemarker.apache.org/)
 - pdfHTML (https://itextpdf.com/products/convert-html-css-to-pdf-pdfhtml)
-  
-
-## Pliki instalacyjne wraz z opisem instalacji i konfiguracji wraz pierwszego uruchomienia
-Instalator aplikacji jest w formie pliku ClinicAppInstall.exe
-Instrukcja wraz z opisem instalacji i konfiguracji wraz z pierwszym uruchomieniem znajduje się w pliku manual.pdf.
-Hasła przykładowych użytkowników zseedowanych do bazy to nazwa ich roli (dla lekarzy: "lekarz", dla administratorów: "administrator", dla pacjentów: "pacjent", dla recepcji: "recepcja", dla pielęgniarek: "pielęgniarka").
